@@ -1,5 +1,10 @@
 logs
 target
+project/project
+project/target
+tmp
+dist
+.cache
 /.idea
 /.idea_modules
 /.classpath

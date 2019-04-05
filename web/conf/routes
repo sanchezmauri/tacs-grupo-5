@@ -8,5 +8,9 @@ GET     /                           controllers.FrontendController.index()
 # An example route (Prefix all API routes with apiPrefix defined in application.conf)
 GET     /api/summary                controllers.HomeController.appSummary
 
+# users resource (for admins)
+GET     /api/users                  controllers.UsersController.all
+GET     /api/users/:id              controllers.UsersController.user(id: Long)
+
 # Serve static assets under public directory
 GET     /*file                      controllers.FrontendController.assetOrDefault(file)
