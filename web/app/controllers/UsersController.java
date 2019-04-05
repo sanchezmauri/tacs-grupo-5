@@ -24,6 +24,19 @@ public class UsersController extends Controller {
         return ok(usersJson).as("application/json");
     }
 
+    public Result create(Http.Request request) {
+        JsonNode userToCreateJson = request.body().asJson();
+        Long lastId = users.get(users.size() - 1).getId();
+
+        User newUser = new User(
+            lastId + 1,
+            userToCreateJson.get("name").asText()
+        );
+
+        users.add(newUser);
+        return ok(Json.toJson(newUser)).as("application/json");
+    }
+
     public Result user(Long id) {
         return users.stream()
                 .filter(user -> user.getId().equals(id))
