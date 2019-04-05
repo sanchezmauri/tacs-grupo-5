@@ -10,3 +10,6 @@
 
 ## Instrucciones
 Correr estando en dir `web` sbt. Esto creo que instala cosas. Después tirar `run` y debería levantar el servidor. Ir a localhost:9000
+
+#### Intellij
+[Tutorial Intellij con Play](https://www.playframework.com/documentation/2.7.x/IDE)
