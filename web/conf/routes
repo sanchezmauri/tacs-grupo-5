@@ -8,6 +8,11 @@ GET     /                           controllers.FrontendController.index()
 # An example route (Prefix all API routes with apiPrefix defined in application.conf)
 GET     /api/summary                controllers.HomeController.appSummary
 
+#Auth
+
+POST    /api/login                  controllers.Authenticate.authenticate(request: Request)
+GET     /api/logout                 controllers.Authenticate.logout()
+
 # users resource (for admins)
 GET     /api/users                  controllers.UsersController.all
 POST    /api/users                  controllers.UsersController.create(request: Request)
