@@ -1,5 +1,9 @@
 package models;
 
+import services.CodesService;
+
+import java.util.Map;
+
 public class User {
     private Long id;
     private String name;
@@ -16,5 +20,9 @@ public class User {
 
     public String getName() {
         return name;
+    }
+
+    public static Map<String, Object> getDecodedMapFromToken(String token) throws Exception {
+        return CodesService.decodeMapFromToken(token);
     }
 }

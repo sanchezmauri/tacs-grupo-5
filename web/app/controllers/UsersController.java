@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import annotations.Authenticate;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import models.User;
@@ -37,6 +38,7 @@ public class UsersController extends Controller {
         return ok(Json.toJson(newUser)).as("application/json");
     }
 
+    @Authenticate(types = { "CONSUMER", "ADMIN" })
     public Result user(Long id) {
         return users.stream()
                 .filter(user -> user.getId().equals(id))
