@@ -9,9 +9,12 @@ GET     /                           controllers.FrontendController.index()
 GET     /api/summary                controllers.HomeController.appSummary
 
 # users resource (for admins)
+
 GET     /api/users                  controllers.UsersController.all
 POST    /api/users                  controllers.UsersController.create(request: Request)
 GET     /api/users/:id              controllers.UsersController.user(id: Long)
+
+GET    /api/venues                  controllers.VenuesController.search(request: Request)
 
 # Serve static assets under public directory
 GET     /*file                      controllers.FrontendController.assetOrDefault(file)
