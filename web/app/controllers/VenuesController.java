@@ -1,9 +1,7 @@
 package controllers;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -22,14 +20,58 @@ public class VenuesController extends Controller {
             )
     );
 
+    protected class VenueListed extends Venue {
+
+        private Boolean visited;
+        private Date dateAdded;
+
+        public VenueListed(Venue base,Boolean visited, Date dateAdded) {
+            super(base.getId(), base.getName());
+            this.visited = visited;
+            this.dateAdded = dateAdded;
+        }
+
+        public Boolean getVisited() { return visited; }
+
+        public Date getDateAdded() { return dateAdded; }
+    }
+
+    protected class VenueInterested extends Venue {
+
+        private Long usersInterested;
+
+        public VenueInterested(Venue base,Long usersInterested) {
+            super(base.getId(), base.getName());
+            this.usersInterested = usersInterested;
+        }
+
+        public Long getUsersInterested() { return usersInterested; }
+    }
+
+    public Result usersInterested(Long venueId) {
+        return venues.stream()
+                .filter(x -> x.getId().equals(venueId))
+                .findFirst()
+                .map(x -> new VenueInterested(x, new Random().nextLong()))
+                .map(x -> ok(Json.toJson(x)).as("application/json"))
+                .orElse(noContent());
+    }
 
 
+    public Result venuesAddedSince(int days) {
+
+        Date current = new Date();
+        return ok(Json.toJson(venues.stream()
+                .map(x -> new VenueListed(x, new Random().nextBoolean(), new Date(2019,Calendar.MARCH,new Random().nextInt(25))))
+                .filter(x -> days < 0 || (TimeUnit.DAYS.convert(current.getTime() - x.getDateAdded().getTime(), TimeUnit.MILLISECONDS)) <= days )
+                .count())).as("application/json");
+    }
 
 
     public Result search(Http.Request request) {
 
         if (!request.queryString().containsKey("query")){
-            return badRequest("query is required");
+            return badRequest("Query is required");
         }
         String query = request.getQueryString("query");
 
@@ -44,7 +86,7 @@ public class VenuesController extends Controller {
                 String latitude = request.getQueryString("latitude");
 
             } else {
-                return badRequest("either a geo-codable \"near\" parameter or longitude and latitude must be provided");
+                return badRequest("Either a geo-codable \"near\" parameter or longitude and latitude must be provided");
             }
 
         }
