@@ -58,12 +58,24 @@ public class VenuesController extends Controller {
     }
 
 
-    public Result venuesAddedSince(int days) {
+    private Map<String, Integer> sinceToDay = new HashMap<String, Integer>() {{
+        put("week", 7);
+        put("1", 1);
+        put("3", 3);
+        put("month", 30);
+        put("year", 365);
+        put("forever", Integer.MAX_VALUE);
+    }};
+
+    public Result venuesAddedSince(Optional<String> sinceOpt) {
+        Integer sinceDays = sinceOpt.map(
+            since -> sinceToDay.getOrDefault(since, Integer.MAX_VALUE)
+        ).orElse(Integer.MAX_VALUE); // since forever
 
         Date current = new Date();
         return ok(Json.toJson(venues.stream()
                 .map(x -> new VenueListed(x, new Random().nextBoolean(), new Date(2019,Calendar.MARCH,new Random().nextInt(25))))
-                .filter(x -> days < 0 || (TimeUnit.DAYS.convert(current.getTime() - x.getDateAdded().getTime(), TimeUnit.MILLISECONDS)) <= days )
+                .filter(x -> (TimeUnit.DAYS.convert(current.getTime() - x.getDateAdded().getTime(), TimeUnit.MILLISECONDS)) <= sinceDays.longValue())
                 .count())).as("application/json");
     }
 

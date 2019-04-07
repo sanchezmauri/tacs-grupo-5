@@ -14,7 +14,9 @@ GET     /api/users                  controllers.UsersController.all
 POST    /api/users                  controllers.UsersController.create(request: Request)
 GET     /api/users/:id              controllers.UsersController.user(id: Long)
 
-GET    /api/venues                  controllers.VenuesController.search(request: Request)
+GET     /api/venues                 controllers.VenuesController.search(request: Request)
+GET     /api/venues/:id/userCount   controllers.VenuesController.usersInterested(id: Long)
+GET     /api/venues/count           controllers.VenuesController.venuesAddedSince(since: java.util.Optional[String])
 
 # Serve static assets under public directory
 GET     /*file                      controllers.FrontendController.assetOrDefault(file)
