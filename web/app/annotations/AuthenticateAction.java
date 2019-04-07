@@ -19,7 +19,7 @@ public class AuthenticateAction extends Action<Authenticate> {
                 return (CompletionStage<Result>)unauthorized();
             }
             Map<String, Object> map = User.getDecodedMapFromToken(token);
-            this.configuration.types();
+//            this.configuration.types();
             User user = null; //Aca deberia buscar el usuario segun id y traerlo con los PERMISOS QUE TIENE;
             if (user == null) {
                 return (CompletionStage<Result>) forbidden();

@@ -19,7 +19,7 @@ public class UsersController extends Controller {
             new User(3L, "Otro")
         )
     );
-
+    @Authenticate(types = {"NORMAL"})
     public Result all() {
         JsonNode usersJson = Json.toJson(users);
         return ok(usersJson).as("application/json");
@@ -38,7 +38,7 @@ public class UsersController extends Controller {
         return ok(Json.toJson(newUser)).as("application/json");
     }
 
-    @Authenticate(types = { "CONSUMER", "ADMIN" })
+
     public Result user(Long id) {
         return users.stream()
                 .filter(user -> user.getId().equals(id))
