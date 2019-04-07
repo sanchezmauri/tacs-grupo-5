@@ -7,6 +7,7 @@ import play.libs.Json;
 import play.mvc.*;
 import repos.UserRepository;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -52,9 +53,10 @@ public class UsersController extends Controller {
     }
 
     public Result lastAccess(User user) {
-        // todo: parsear predicado
+        String lastAccessFormatted = user.getLastAccess().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
         return ok(
-            Json.newObject().put("lastAccess", user.getLastAccess().toString())
+            Json.newObject().put("lastAccess", lastAccessFormatted)
         );
     }
 }

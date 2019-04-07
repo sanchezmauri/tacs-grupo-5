@@ -1,5 +1,7 @@
 package models;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import json.LocalDateTimeSerializer;
 import play.mvc.PathBindable;
 import repos.UserRepository;
 
@@ -38,6 +40,7 @@ public class User implements PathBindable<User> {
         return 10;
     }
 
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
     public LocalDateTime getLastAccess() { return lastAccess; }
 
 
