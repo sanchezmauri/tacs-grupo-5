@@ -1,47 +1,62 @@
 package controllers;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import models.User;
 import play.libs.Json;
 import play.mvc.*;
+import repos.UserRepository;
+
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+import java.util.function.Function;
 
 public class UsersController extends Controller {
-    private List<User> users = new ArrayList<>(
-        Arrays.asList(
-            new User(1L, "José"),
-            new User(2L, "Pepe"),
-            new User(3L, "Otro")
-        )
-    );
-
-    public Result all() {
-        JsonNode usersJson = Json.toJson(users);
-        return ok(usersJson).as("application/json");
+    public Result list() {
+        JsonNode usersJson = Json.toJson(UserRepository.all());
+        return ok(usersJson);
     }
 
     public Result create(Http.Request request) {
         JsonNode userToCreateJson = request.body().asJson();
-        Long lastId = users.get(users.size() - 1).getId();
-
         User newUser = new User(
-            lastId + 1,
+            UserRepository.nextId(),
             userToCreateJson.get("name").asText()
         );
 
-        users.add(newUser);
-        return ok(Json.toJson(newUser)).as("application/json");
+        UserRepository.add(newUser);
+        return ok(Json.toJson(newUser));
     }
 
-    public Result user(Long id) {
-        return users.stream()
-                .filter(user -> user.getId().equals(id))
-                .findFirst()
-                .map(u -> ok(Json.toJson(u)).as("application/json"))
-                .orElse(notFound("No user with id " + id.toString()));
+    public Result user(User user) {
+        return ok(Json.toJson(user));
+    }
+
+    public Result listsCount(User user) {
+        return ok(
+            Json.newObject().put("listsCount", user.listsCount())
+        );
+    }
+
+    public Result placesCount(User user, Optional<Boolean> visitedOpt) {
+        // todo: mapear boolean visited a predicado visited
+        /*Function<Object, Boolean> predicate = visitedOpt.map(
+            visited -> (Object place) -> place.visited.equals(visited)
+        ).orElse(
+            (Object place) -> Boolean.TRUE
+        );*/
+        Function<Object, Boolean> predicate = (Object place) -> Boolean.TRUE;
+
+        return ok(
+            Json.newObject().put("placesCount", user.placesCount(predicate))
+        );
+    }
+
+    public Result lastAccess(User user) {
+        String lastAccessFormatted = user.getLastAccess().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+        return ok(
+            Json.newObject().put("lastAccess", lastAccessFormatted)
+        );
     }
 }
