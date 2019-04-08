@@ -8,7 +8,6 @@ GET     /                           controllers.FrontendController.index()
 # An example route (Prefix all API routes with apiPrefix defined in application.conf)
 GET     /api/summary                controllers.HomeController.appSummary
 
-
 # users resource
 POST    /api/users                      controllers.UsersController.create(request: Request)
 
@@ -18,6 +17,11 @@ GET     /api/users/:user                controllers.UsersController.user(user: m
 GET     /api/users/:user/lists/count    controllers.UsersController.listsCount(user: models.User)
 GET     /api/users/:user/places/count   controllers.UsersController.placesCount(user: models.User, visited: java.util.Optional[java.lang.Boolean])
 GET     /api/users/:user/lastAccess     controllers.UsersController.lastAccess(user: models.User)
+
+# venues resource
+GET     /api/venues                 controllers.VenuesController.search(request: Request)
+GET     /api/venues/:id/userCount   controllers.VenuesController.usersInterested(id: Long)
+GET     /api/venues/count           controllers.VenuesController.venuesAddedSince(since: java.util.Optional[String])
 
 # Serve static assets under public directory
 GET     /*file                      controllers.FrontendController.assetOrDefault(file)
