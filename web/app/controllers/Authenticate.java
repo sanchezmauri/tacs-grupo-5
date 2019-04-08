@@ -19,7 +19,7 @@ public class Authenticate extends Controller {
 //        }
         Map<String, Object> token = new HashMap<>();
         token.put("userId","n");
-        request.session().data().put("token",CodesService.generateTokenFromMap(token));
+        request.session().adding("token",CodesService.generateTokenFromMap(token));
         return ok("Ingreso correctamente.");
     }
     public Result logout() {
