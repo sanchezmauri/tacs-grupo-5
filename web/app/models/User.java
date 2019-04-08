@@ -2,6 +2,7 @@ package models;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import json.LocalDateTimeSerializer;
+import org.mindrot.jbcrypt.BCrypt;
 import play.mvc.PathBindable;
 import repos.UserRepository;
 
@@ -11,27 +12,36 @@ import java.util.function.Function;
 public class User implements PathBindable<User> {
     private Long id;
     private String name;
+
+    private String passwordHash;
+
     // todo: placeLists
     private LocalDateTime lastAccess;
 
-    // este ctor está porque el pathBindable necesita una instancia
-    // para hacer el bindeo path -> objeto
-    public User(Long id, String name) {
+    public User(Long id, String name, String plaintextPassword) {
         this.id = id;
         this.name = name;
+        this.passwordHash = BCrypt.hashpw(plaintextPassword, BCrypt.gensalt());
         this.lastAccess = LocalDateTime.now();
     }
 
+    // este ctor está porque el pathBindable necesita una instancia
+    // para hacer el bindeo path -> objeto
     public User() {
         id = 0L;
         name = "";
         lastAccess = LocalDateTime.now();
+        passwordHash = "";
     }
 
 
     public Long getId() { return id; }
     public String getName() {
         return name;
+    }
+
+    public boolean checkPassword(String plaintextPassword) {
+        return BCrypt.checkpw(plaintextPassword, passwordHash);
     }
 
     public int listsCount() { return 1; }

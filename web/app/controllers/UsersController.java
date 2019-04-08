@@ -19,13 +19,19 @@ public class UsersController extends Controller {
 
     public Result create(Http.Request request) {
         JsonNode userToCreateJson = request.body().asJson();
+
+        if (userToCreateJson == null) {
+            return badRequest("ill formatted json.");
+        }
+
         User newUser = new User(
             UserRepository.nextId(),
-            userToCreateJson.get("name").asText()
+            userToCreateJson.get("name").asText(),
+            userToCreateJson.get("password").asText()
         );
 
         UserRepository.add(newUser);
-        return ok(Json.toJson(newUser));
+        return created(Json.toJson(newUser));
     }
 
     public Result user(User user) {
