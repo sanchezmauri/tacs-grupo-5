@@ -4,6 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
+import services.CodesService;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Authenticate extends Controller {
 
@@ -13,6 +17,9 @@ public class Authenticate extends Controller {
 //        if (json.get("email") == null || json.get("password") == null) {
 //            return badRequest(Utils.createErrorMessage("Por favor ingrese mail y contraseña para ingresar al sistema."));
 //        }
+        Map<String, Object> token = new HashMap<>();
+        token.put("userId","n");
+        request.session().data().put("token",CodesService.generateTokenFromMap(token));
         return ok("Ingreso correctamente.");
     }
     public Result logout() {

@@ -21,8 +21,4 @@ public class User {
     public String getName() {
         return name;
     }
-
-    public static Map<String, Object> getDecodedMapFromToken(String token) throws Exception {
-        return CodesService.decodeMapFromToken(token);
-    }
 }

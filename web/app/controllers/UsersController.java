@@ -19,7 +19,6 @@ public class UsersController extends Controller {
             new User(3L, "Otro")
         )
     );
-    @Authenticate(types = {"NORMAL"})
     public Result all() {
         JsonNode usersJson = Json.toJson(users);
         return ok(usersJson).as("application/json");
