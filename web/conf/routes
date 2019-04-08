@@ -21,7 +21,7 @@ GET     /api/users/:user/lastAccess     controllers.UsersController.lastAccess(u
 # venues resource
 GET     /api/venues                 controllers.VenuesController.search(request: Request)
 GET     /api/venues/:id/userCount   controllers.VenuesController.usersInterested(id: Long)
-GET     /api/venues/count           controllers.VenuesController.venuesAddedSince(since: java.util.Optional[String])
+GET     /api/venues/count           controllers.VenuesController.venuesAddedSince(since ?= null)
 
 # Serve static assets under public directory
 GET     /*file                      controllers.FrontendController.assetOrDefault(file)

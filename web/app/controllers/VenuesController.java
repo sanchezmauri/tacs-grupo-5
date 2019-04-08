@@ -1,11 +1,12 @@
 package controllers;
 
+import java.text.NumberFormat;
+import java.text.ParsePosition;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import models.User;
 import models.Venue;
 import play.libs.Json;
 import play.mvc.*;
@@ -58,19 +59,30 @@ public class VenuesController extends Controller {
     }
 
 
-    private Map<String, Integer> sinceToDay = new HashMap<String, Integer>() {{
+
+    private Map<String, Integer> periodToDays = new HashMap<String, Integer>() {{
         put("week", 7);
-        put("1", 1);
-        put("3", 3);
         put("month", 30);
         put("year", 365);
-        put("forever", Integer.MAX_VALUE);
     }};
 
-    public Result venuesAddedSince(Optional<String> sinceOpt) {
-        Integer sinceDays = sinceOpt.map(
-            since -> sinceToDay.getOrDefault(since, Integer.MAX_VALUE)
-        ).orElse(Integer.MAX_VALUE); // since forever
+    private Integer parseSince(String since) {
+        if (since == null || since == "forever")
+            return Integer.MAX_VALUE;
+
+        NumberFormat formatter = NumberFormat.getInstance();
+        ParsePosition pos = new ParsePosition(0);
+        Number number = formatter.parse(since, pos);
+        int days = Math.max(number.intValue(), 1);
+
+        String period = since.substring(pos.getIndex());
+        Integer periodDays = periodToDays.getOrDefault(period, 1);
+
+        return days * periodDays;
+    }
+
+    public Result venuesAddedSince(String since) {
+        Integer sinceDays = parseSince(since);
 
         Date current = new Date();
         return ok(Json.toJson(venues.stream()
