@@ -13,17 +13,17 @@ public class Authenticate extends Controller {
 
 
     public Result authenticate(Http.Request request) {
-        //JsonNode json = request.body().asJson();
-//        if (json.get("email") == null || json.get("password") == null) {
-//            return badRequest(Utils.createErrorMessage("Por favor ingrese mail y contraseña para ingresar al sistema."));
-//        }
-        Map<String, Object> token = new HashMap<>();
-        token.put("userId","n");
-        request.session().adding("token",CodesService.generateTokenFromMap(token));
+        JsonNode json = request.body().asJson();
+        if (json.get("email") == null || json.get("password") == null) {
+            return badRequest(Utils.createErrorMessage("Por favor ingrese mail y contraseña para ingresar al sistema."));
+        }
+//        Map<String, Object> token = new HashMap<>();
+//        token.put("userId","n");
+//        request.session().adding("token",CodesService.generateTokenFromMap(token));
         return ok("Ingreso correctamente.");
     }
     public Result logout() {
-        return ok("Se deslogueo correctamente.").withNewSession();
+        return ok().withNewSession();
     }
 
 }
