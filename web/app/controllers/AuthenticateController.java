@@ -9,7 +9,7 @@ import services.CodesService;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Authenticate extends Controller {
+public class AuthenticateController extends Controller {
 
 
     public Result authenticate(Http.Request request) {
