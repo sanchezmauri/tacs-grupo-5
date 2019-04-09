@@ -23,5 +23,9 @@ GET     /api/venues                 controllers.VenuesController.search(request:
 GET     /api/venues/:id/userCount   controllers.VenuesController.usersInterested(id: Long)
 GET     /api/venues/count           controllers.VenuesController.venuesAddedSince(since ?= null)
 
+# list resource
+# todo: ver si listid1 y 2 pueden hacerse path bindables, para que de 1 tengas las listas
+GET     /api/lists/comparison/:listId1/:listId2     controllers.ListsController.compareLists(listId1: Long, listId2: Long)
+
 # Serve static assets under public directory
 GET     /*file                      controllers.FrontendController.assetOrDefault(file)
