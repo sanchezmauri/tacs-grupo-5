@@ -33,6 +33,8 @@ GET     /api/lists                      controllers.ListsController.list()
 POST    /api/lists                      controllers.ListsController.create(request: Request)
 DELETE  /api/lists/:listId              controllers.ListsController.delete(listId: Long)
 
+PATCH   /api/lists/:listId              controllers.ListsController.changeListName(listId: Long, request: Request)
+
 # todo:
 # agregar lugar en lista
 # POST    /api/lists/:listId/places      controllers.ListsController.addPlaceToList(listId: String, request: Request)
@@ -40,8 +42,6 @@ DELETE  /api/lists/:listId              controllers.ListsController.delete(listI
 # sacar lugar de lista
 # DELETE  /api/lists/:listId/places      controllers.ListsController.removePlaceFromList(listId: String, request: Request)
 
-# cambiar nombre en lista
-# PATCH /api/lists/:listId                  controllers.ListsController.changeListName(venueId: String, request: Request)
 
 # Marcar lugar como visitado
 # POST /api/lists/:listId/places/{placeId}/mark controllers.ListsController.visitPlace?

@@ -10,6 +10,7 @@ import play.mvc.Result;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ListsController extends Controller {
     private List<PlaceList> placeLists = new ArrayList() {{
@@ -17,6 +18,12 @@ public class ListsController extends Controller {
         add(new PlaceList(2L, "Cines"));
         add(new PlaceList(3L, "Paseo 1"));
     }};
+
+    private Optional<PlaceList> find(Long id) {
+        return placeLists.stream()
+                        .filter(l -> l.getId().equals(id))
+                        .findFirst();
+    }
 
     public Result list() {
         return ok(Json.toJson(placeLists));
@@ -50,8 +57,28 @@ public class ListsController extends Controller {
         if (didRemove) {
             return ok();
         } else {
-            return notFound(Utils.createErrorMessage("No list with id = " + listId.toString()));
+            return listNotFound(listId);
         }
+    }
+
+    public Result changeListName(Long listId, Http.Request request) {
+        Optional<PlaceList> maybeList =  find(listId);
+
+        if (!maybeList.isPresent()) {
+            return listNotFound(listId);
+        }
+
+        JsonNode changeJson = request.body().asJson();
+
+        if (!changeJson.has("name")) {
+            return badRequest(Utils.createErrorMessage("Missing field name."));
+        }
+
+        PlaceList list = maybeList.get();
+
+        list.setName(changeJson.get("name").asText());
+
+        return ok(Json.toJson(list));
     }
 
     public Result compareLists(Long listId1, Long listId2) {
@@ -60,5 +87,11 @@ public class ListsController extends Controller {
         commonVenues.add(new Venue(2L, "Verdulería"));
 
         return ok(Json.toJson(commonVenues));
+    }
+
+    private Result listNotFound(Long id) {
+        return notFound(
+            Utils.createErrorMessage("No list with id = " + id.toString())
+        );
     }
 }
