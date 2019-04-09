@@ -9,7 +9,7 @@ import repos.UserRepository;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class UsersController extends Controller {
     public Result list() {
@@ -46,12 +46,12 @@ public class UsersController extends Controller {
 
     public Result placesCount(User user, Optional<Boolean> visitedOpt) {
         // todo: mapear boolean visited a predicado visited
-        /*Function<Object, Boolean> predicate = visitedOpt.map(
+        /*Predicate<Object> predicate = visitedOpt.map(
             visited -> (Object place) -> place.visited.equals(visited)
         ).orElse(
-            (Object place) -> Boolean.TRUE
+            (Object place) -> true
         );*/
-        Function<Object, Boolean> predicate = (Object place) -> Boolean.TRUE;
+        Predicate<Object> predicate = (Object place) -> true;
 
         return ok(
             Json.newObject().put("placesCount", user.placesCount(predicate))

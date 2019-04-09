@@ -7,7 +7,7 @@ import play.mvc.PathBindable;
 import repos.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class User implements PathBindable<User> {
     private Long id;
@@ -45,7 +45,7 @@ public class User implements PathBindable<User> {
     }
 
     public int listsCount() { return 1; }
-    public int placesCount(Function<Object, Boolean> predicate) {
+    public int placesCount(Predicate<Object> predicate) {
         // todo: filtrar lugares de listas con predicado
         return 10;
     }
