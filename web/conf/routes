@@ -32,8 +32,20 @@ GET     /api/venues/count               controllers.VenuesController.venuesAdded
 GET     /api/lists                      controllers.ListsController.list()
 POST    /api/lists                      controllers.ListsController.create(request: Request)
 DELETE  /api/lists/:listId              controllers.ListsController.delete(listId: Long)
-#POST    /api/lists/:listId/places      controllers.ListsController.addPlaceToList(venueId: String)
-#DELETE  /api/lists/:listId/places      controllers.ListsController.removePlaceFromList(venueId: String)
+
+# todo:
+# agregar lugar en lista
+# POST    /api/lists/:listId/places      controllers.ListsController.addPlaceToList(listId: String, request: Request)
+
+# sacar lugar de lista
+# DELETE  /api/lists/:listId/places      controllers.ListsController.removePlaceFromList(listId: String, request: Request)
+
+# cambiar nombre en lista
+# PATCH /api/lists/:listId                  controllers.ListsController.changeListName(venueId: String, request: Request)
+
+# Marcar lugar como visitado
+# POST /api/lists/:listId/places/{placeId}/mark controllers.ListsController.visitPlace?
+# o PATCH /api/users/:id/places porque los lugares son del usuario y las listas los comparten
 
 
 # todo: ver si listid1 y 2 pueden hacerse path bindables, para que de 1 tengas las listas
