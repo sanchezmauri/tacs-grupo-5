@@ -24,11 +24,18 @@ GET     /api/users/:user/places/count   controllers.UsersController.placesCount(
 GET     /api/users/:user/lastAccess     controllers.UsersController.lastAccess(user: models.User)
 
 # venues resource
-GET     /api/venues                 controllers.VenuesController.search(request: Request)
-GET     /api/venues/:id/userCount   controllers.VenuesController.usersInterested(id: Long)
-GET     /api/venues/count           controllers.VenuesController.venuesAddedSince(since ?= null)
+GET     /api/venues                     controllers.VenuesController.search(request: Request)
+GET     /api/venues/:id/userCount       controllers.VenuesController.usersInterested(id: Long)
+GET     /api/venues/count               controllers.VenuesController.venuesAddedSince(since ?= null)
 
 # list resource
+GET     /api/lists                      controllers.ListsController.list()
+POST    /api/lists                      controllers.ListsController.create(request: Request)
+DELETE  /api/lists/:listId              controllers.ListsController.delete(listId: Long)
+#POST    /api/lists/:listId/places      controllers.ListsController.addPlaceToList(venueId: String)
+#DELETE  /api/lists/:listId/places      controllers.ListsController.removePlaceFromList(venueId: String)
+
+
 # todo: ver si listid1 y 2 pueden hacerse path bindables, para que de 1 tengas las listas
 GET     /api/lists/comparison/:listId1/:listId2     controllers.ListsController.compareLists(listId1: Long, listId2: Long)
 
