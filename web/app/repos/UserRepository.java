@@ -6,13 +6,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 public class UserRepository {
     private static List<User> users = new ArrayList<>(
         Arrays.asList(
-            new User(1L, "José", "jose"),
-            new User(2L, "Pepe", "pepe"),
-            new User(3L, "Otro", "orto")
+            new User(1L, "José", "jose@gmail.com", "jose"),
+            new User(2L, "Pepe", "pepe@yahoo.com", "pepe"),
+            new User(3L, "Otro", "otro@mail.com", "orto")
         )
     );
 
@@ -20,10 +21,18 @@ public class UserRepository {
         return users;
     }
 
-    public static Optional<User> find(Long id) {
+    private static Optional<User> find(Predicate<User> predicate) {
         return users.stream()
-                .filter(user -> user.getId().equals(id))
+                .filter(predicate)
                 .findFirst();
+    }
+
+    public static Optional<User> find(Long id) {
+        return find(user -> user.getId().equals(id));
+    }
+
+    public static Optional<User> findByEmail(String email) {
+        return find(user -> user.getEmail().equals(email));
     }
 
     public static void add(User newUser) {
