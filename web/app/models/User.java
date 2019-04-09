@@ -12,15 +12,17 @@ import java.util.function.Function;
 public class User implements PathBindable<User> {
     private Long id;
     private String name;
+    private String email;
 
     private String passwordHash;
 
     // todo: placeLists
     private LocalDateTime lastAccess;
 
-    public User(Long id, String name, String plaintextPassword) {
+    public User(Long id, String name, String email, String plaintextPassword) {
         this.id = id;
         this.name = name;
+        this.email = email;
         this.passwordHash = BCrypt.hashpw(plaintextPassword, BCrypt.gensalt());
         this.lastAccess = LocalDateTime.now();
     }
@@ -30,15 +32,15 @@ public class User implements PathBindable<User> {
     public User() {
         id = 0L;
         name = "";
+        email = "";
         lastAccess = LocalDateTime.now();
         passwordHash = "";
     }
 
 
     public Long getId() { return id; }
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
+    public String getEmail() { return email; }
 
     public boolean checkPassword(String plaintextPassword) {
         return BCrypt.checkpw(plaintextPassword, passwordHash);

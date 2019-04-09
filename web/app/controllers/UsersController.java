@@ -8,6 +8,7 @@ import play.mvc.*;
 import repos.UserRepository;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -21,12 +22,21 @@ public class UsersController extends Controller {
         JsonNode userToCreateJson = request.body().asJson();
 
         if (userToCreateJson == null) {
-            return badRequest("ill formatted json.");
+            return badRequest(Utils.createErrorMessage("Ill formatted json."));
+        }
+
+        for (String fieldName : Arrays.asList("name", "email", "password")) {
+            if (!userToCreateJson.has(fieldName)) {
+                return badRequest(
+                    Utils.createErrorMessage("Missing field: " + fieldName)
+                );
+            }
         }
 
         User newUser = new User(
             UserRepository.nextId(),
             userToCreateJson.get("name").asText(),
+            userToCreateJson.get("email").asText(),
             userToCreateJson.get("password").asText()
         );
 
