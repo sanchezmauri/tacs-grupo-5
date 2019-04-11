@@ -5,8 +5,8 @@ import java.text.ParsePosition;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import javax.inject.Inject;
+import com.typesafe.config.Config;
 import models.Venue;
 import play.libs.Json;
 import play.mvc.*;
@@ -20,6 +20,8 @@ public class VenuesController extends Controller {
                     new Venue(3L, "Ye Ole Generic Palermitan Craft Beer")
             )
     );
+
+    private final Config config;
 
     protected class VenueListed extends Venue {
 
@@ -49,6 +51,11 @@ public class VenuesController extends Controller {
         public Long getUsersInterested() { return usersInterested; }
     }
 
+    @Inject
+    public VenuesController(Config config) {
+        this.config = config;
+    }
+
     public Result usersInterested(Long venueId) {
         return venues.stream()
                 .filter(x -> x.getId().equals(venueId))
@@ -67,7 +74,7 @@ public class VenuesController extends Controller {
     }};
 
     private Integer parseSince(String since) {
-        if (since == null || since == "forever")
+        if (since == null || since.equals("forever"))
             return Integer.MAX_VALUE;
 
         NumberFormat formatter = NumberFormat.getInstance();
