@@ -22,4 +22,5 @@ testOptions in Test := Seq(Tests.Argument(TestFrameworks.JUnit, "-a", "-v"))
 
 // My framewords
 libraryDependencies += "com.auth0" % "java-jwt" % "2.2.1"
-libraryDependencies += "org.mindrot" % "jbcrypt" % "0.4"
+libraryDependencies += "org.mindrot" % "jbcrypt" % "0.4" // password hash
+libraryDependencies += ws // foursquare search request (https://www.playframework.com/documentation/2.7.x/JavaWS)
