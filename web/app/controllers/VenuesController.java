@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.typesafe.config.Config;
 import play.libs.Json;
 import play.mvc.*;
@@ -28,6 +29,10 @@ public class VenuesController extends Controller {
 
     private final Config config;
     private final WSClient ws;
+    private String foursquareURL;
+    private String foursquareVersion;
+    private String clientSecret;
+    private String clientId;
 
     protected class VenueListed extends Venue {
 
@@ -61,6 +66,11 @@ public class VenuesController extends Controller {
     public VenuesController(Config config, WSClient ws) {
         this.config = config;
         this.ws = ws;
+
+        foursquareURL = config.getString("foursquare.url");
+        foursquareVersion = config.getString("foursquare.version");
+        clientSecret = config.getString("foursquare.clientSecret");
+        clientId = config.getString("foursquare.clientId");
     }
 
     public Result usersInterested(Long venueId) {
@@ -131,11 +141,6 @@ public class VenuesController extends Controller {
 
         }
 
-        String foursquareURL = config.getString("foursquare.url");
-        String foursquareVersion = config.getString("foursquare.version");
-        String clientSecret = config.getString("foursquare.clientSecret");
-        String clientId = config.getString("foursquare.clientId");
-
         return ws.url(foursquareURL)
             .addQueryParameter("client_id", clientId)
             .addQueryParameter("client_secret", clientSecret)
@@ -144,7 +149,25 @@ public class VenuesController extends Controller {
             .addQueryParameter("near", "Buenos Aires, Argentina") // todo: esto varia
             .addQueryParameter("intent", "checkin")
             .get()
-            .thenApply(response -> ok(response.asJson()));
+            .thenApply(this::proccessFoursquareResponse);
+    }
+
+
+    private Result proccessFoursquareResponse(WSResponse foursquareResp) {
+        JsonNode responseJson = foursquareResp.asJson();
+        JsonNode meta = responseJson.get("meta");
+        int statusCode = meta.get("code").asInt();
+
+        if (statusCode == 200) {
+            JsonNode venuesJson = responseJson.at("/response/venues");
+            return ok(venuesJson);
+        } else {
+            JsonNode errorType = meta.get("errorType");
+            JsonNode errorDetail = meta.get("errorDetail");
+            String errorMessage = errorType.asText() + " " + errorDetail.asText();
+
+            return badRequest(Utils.createErrorMessage(errorMessage));
+        }
     }
 
 }
