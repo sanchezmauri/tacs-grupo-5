@@ -18,6 +18,15 @@ import models.Venue;
 
 
 public class VenuesController extends Controller {
+    private static final String NEAR_PARAM = "near";
+    private static final String LAT_LONG_PARAM = "ll";
+
+    private final Config config;
+    private final WSClient ws;
+    private String foursquareURL;
+    private String foursquareVersion;
+    private String clientSecret;
+    private String clientId;
 
     private List<Venue> venues = new ArrayList<>(
             Arrays.asList(
@@ -26,13 +35,6 @@ public class VenuesController extends Controller {
                     new Venue(3L, "Ye Ole Generic Palermitan Craft Beer")
             )
     );
-
-    private final Config config;
-    private final WSClient ws;
-    private String foursquareURL;
-    private String foursquareVersion;
-    private String clientSecret;
-    private String clientId;
 
     protected class VenueListed extends Venue {
 
@@ -115,38 +117,53 @@ public class VenuesController extends Controller {
                 .count())).as("application/json");
     }
 
+    private String[] parsePositionParam(Http.Request request) {
+        if(request.queryString().containsKey(NEAR_PARAM)) {
+            return new String[]{
+                NEAR_PARAM,
+                request.getQueryString(NEAR_PARAM)
+            };
+        } else if (request.queryString().containsKey("latitude") &&
+                   request.queryString().containsKey("longitude"))  {
+            String latitude = request.getQueryString("latitude");
+            String longitude = request.getQueryString("longitude");
+
+            return new String[]{
+                LAT_LONG_PARAM,
+                latitude + "," + longitude
+            };
+        }
+
+        return null;
+    }
 
     public CompletionStage<Result> search(Http.Request request) {
-
+        // check query param
         if (!request.queryString().containsKey("query")){
             return CompletableFuture.completedFuture(badRequest("Query is required"));
         }
+
         String query = request.getQueryString("query");
 
+        // get position param
+        String[] positionParams = parsePositionParam(request);
 
-
-        if(request.queryString().containsKey("near")) {
-            String near = request.getQueryString("near");
-        } else {
-            if (request.queryString().containsKey("latitude") &&
-                    request.queryString().containsKey("longitude"))  {
-                String longitude = request.getQueryString("longitude");
-                String latitude = request.getQueryString("latitude");
-
-            } else {
-                return CompletableFuture.completedFuture(
-                    badRequest("Either a geo-codable \"near\" parameter or longitude and latitude must be provided")
-                );
-            }
-
+        if (positionParams == null) {
+            return CompletableFuture.completedFuture(
+                badRequest("Either a geo-codable \"near\" parameter or longitude and latitude must be provided")
+            );
         }
 
+        String positionParamKey = positionParams[0];
+        String positionParamVal = positionParams[1];
+
+        // make request to foursquare
         return ws.url(foursquareURL)
             .addQueryParameter("client_id", clientId)
             .addQueryParameter("client_secret", clientSecret)
             .addQueryParameter("v", foursquareVersion)
             .addQueryParameter("query", query)
-            .addQueryParameter("near", "Buenos Aires, Argentina") // todo: esto varia
+            .addQueryParameter(positionParamKey, positionParamVal)
             .addQueryParameter("intent", "checkin")
             .get()
             .thenApply(this::proccessFoursquareResponse);
