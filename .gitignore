@@ -22,3 +22,6 @@ dist
 /.vscode
 /build
 /logs
+/target
+target
+logs
