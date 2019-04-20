@@ -1,0 +1,4 @@
+[0m[[0m[0mdebug[0m] [0m[0mCopy resource mappings: [0m
+[0m[[0m[0mdebug[0m] [0m[0m	(C:\Users\nicox\Workspace\tacs-2019c1\conf\application.conf,C:\Users\nicox\Workspace\tacs-2019c1\target\scala-2.12\classes\application.conf)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	(C:\Users\nicox\Workspace\tacs-2019c1\conf\logback.xml,C:\Users\nicox\Workspace\tacs-2019c1\target\scala-2.12\classes\logback.xml)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	(C:\Users\nicox\Workspace\tacs-2019c1\conf\routes,C:\Users\nicox\Workspace\tacs-2019c1\target\scala-2.12\classes\routes)[0m
