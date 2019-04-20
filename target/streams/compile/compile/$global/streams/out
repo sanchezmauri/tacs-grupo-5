@@ -1,10 +1,2 @@
-[0m[[0m[31merror[0m] [0m[0mC:\Users\nicox\Workspace\tacs-2019c1\app\views\main.scala.html:14:61: value Assets is not a member of object controllers.routes[0m
-[0m[[0m[31merror[0m] [0m[0m        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">[0m
-[0m[[0m[31merror[0m] [0m[0m                                                            ^[0m
-[0m[[0m[31merror[0m] [0m[0mC:\Users\nicox\Workspace\tacs-2019c1\app\views\main.scala.html:15:66: value Assets is not a member of object controllers.routes[0m
-[0m[[0m[31merror[0m] [0m[0m        <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">[0m
-[0m[[0m[31merror[0m] [0m[0m                                                                 ^[0m
-[0m[[0m[31merror[0m] [0m[0mC:\Users\nicox\Workspace\tacs-2019c1\app\views\main.scala.html:22:30: value Assets is not a member of object controllers.routes[0m
-[0m[[0m[31merror[0m] [0m[0m        <script src="@routes.Assets.versioned("javascripts/main.js")" type="text/javascript"></script>[0m
-[0m[[0m[31merror[0m] [0m[0m                             ^[0m
-[0m[[0m[31merror[0m] [0m[0mthree errors found[0m
+[0m[[0m[0minfo[0m] [0m[0mC:\Users\nicox\Workspace\tacs-grupo-5\app\controllers\VenuesController.java: C:\Users\nicox\Workspace\tacs-grupo-5\app\controllers\VenuesController.java uses or overrides a deprecated API.[0m
+[0m[[0m[0minfo[0m] [0m[0mC:\Users\nicox\Workspace\tacs-grupo-5\app\controllers\VenuesController.java: Recompile with -Xlint:deprecation for details.[0m
