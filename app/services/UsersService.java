@@ -19,6 +19,10 @@ public class UsersService {
             throw new UserException("email ya existente.");
         }
     }
+    public static void index()
+    {
+        UserRepository.all();
+    }
 
     public static void update(User user)
     {
