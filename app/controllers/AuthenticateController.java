@@ -39,7 +39,7 @@ public class AuthenticateController extends Controller {
     }
     @Authenticate(types = {"ROOT","SYSUSER"})
     public Result logout() {
-        return ok().withNewSession();
+        return ok("Deslogueo correcto").withNewSession();
     }
 
 }
