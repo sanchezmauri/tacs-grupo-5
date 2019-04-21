@@ -1,5 +1,7 @@
 logs
 target
+/target
+/logs
 project/project
 project/target
 tmp
