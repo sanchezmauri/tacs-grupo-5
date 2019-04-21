@@ -23,7 +23,6 @@ public class UsersController extends Controller {
     @Authenticate(types = {"ROOT"})
     public Result create(Http.Request request) {
         JsonNode userToCreateJson = request.body().asJson();
-
         if (userToCreateJson == null) {
             return badRequest("ill formatted json.");
         }
