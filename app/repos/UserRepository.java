@@ -10,9 +10,9 @@ import java.util.Optional;
 public class UserRepository {
     private static List<User> users = new ArrayList<>(
         Arrays.asList(
-            new User(1L, "José", "jose"),
-            new User(2L, "Pepe", "pepe"),
-            new User(3L, "Otro", "orto")
+            new User(1L, "José", "root@root.com", "root", User.Rol.ROOT),
+            new User(2L, "Pepe","sysuser@sysuser.com" ,"sysuser", User.Rol.SYSUSER),
+            new User(3L, "Otro","otro@gmail.com", "orto", User.Rol.SYSUSER)
         )
     );
 
@@ -23,6 +23,12 @@ public class UserRepository {
     public static Optional<User> find(Long id) {
         return users.stream()
                 .filter(user -> user.getId().equals(id))
+                .findFirst();
+    }
+
+    public static Optional<User> findByEmail(String email){
+        return users.stream()
+                .filter(user -> user.getEmail().equals(email))
                 .findFirst();
     }
 

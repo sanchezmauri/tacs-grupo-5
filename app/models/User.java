@@ -10,19 +10,28 @@ import java.time.LocalDateTime;
 import java.util.function.Function;
 
 public class User implements PathBindable<User> {
+
+    public enum Rol{
+        ROOT,SYSUSER
+    }
+
+
+    private Rol rol;
     private Long id;
     private String name;
-
+    private String email;
     private String passwordHash;
 
     // todo: placeLists
     private LocalDateTime lastAccess;
 
-    public User(Long id, String name, String plaintextPassword) {
+    public User(Long id, String name, String email, String plaintextPassword, Rol rol) {
         this.id = id;
+        this.email = email;
         this.name = name;
         this.passwordHash = BCrypt.hashpw(plaintextPassword, BCrypt.gensalt());
         this.lastAccess = LocalDateTime.now();
+        this.rol = rol;
     }
 
     // este ctor está porque el pathBindable necesita una instancia
@@ -38,6 +47,16 @@ public class User implements PathBindable<User> {
     public Long getId() { return id; }
     public String getName() {
         return name;
+    }
+    public Rol getRol() {
+        return rol;
+    }
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
     public boolean checkPassword(String plaintextPassword) {

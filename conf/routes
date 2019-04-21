@@ -4,7 +4,7 @@
 
 #Auth
 POST    /api/security/login                  controllers.AuthenticateController.authenticate(request: Request)
-POST    /api/security/logout                 controllers.AuthenticateController.logout()
+POST    /api/security/logout                 controllers.AuthenticateController.logout
 
 
 # users resource
