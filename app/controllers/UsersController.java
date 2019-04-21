@@ -4,9 +4,11 @@ import annotations.Authenticate;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import models.User;
+import models.exceptions.UserException;
 import play.libs.Json;
 import play.mvc.*;
 import repos.UserRepository;
+import services.UsersService;
 
 import java.lang.reflect.Type;
 import java.time.format.DateTimeFormatter;
@@ -22,22 +24,29 @@ public class UsersController extends Controller {
 
     @Authenticate(types = {"ROOT"})
     public Result create(Http.Request request) {
-        JsonNode userToCreateJson = request.body().asJson();
+        try {
+            JsonNode userToCreateJson = request.body().asJson();
+            if (userToCreateJson == null) {
+                return badRequest("ill formatted json.");
+            }
 
-        if (userToCreateJson == null) {
-            return badRequest("ill formatted json.");
+            User newUser = new User(
+                    UserRepository.nextId(),
+                    userToCreateJson.get("name").asText(),
+                    userToCreateJson.get("email").asText(),
+                    userToCreateJson.get("password").asText(),
+                    User.Rol.valueOf(userToCreateJson.get("rol").asText())
+            );
+            UsersService.create(newUser);
+            return created(Json.toJson(newUser));
+        } catch (UserException e) {
+            return badRequest(Utils.createErrorMessage(e.getMessage()));
+        }catch (Exception e)
+        {
+            return internalServerError(Utils.createErrorMessage(e.getMessage()));
+
         }
 
-        User newUser = new User(
-            UserRepository.nextId(),
-            userToCreateJson.get("name").asText(),
-                userToCreateJson.get("name").asText(),
-            userToCreateJson.get("password").asText(),
-                User.Rol.valueOf(userToCreateJson.get("rol").asText())
-        );
-
-        UserRepository.add(newUser);
-        return created(Json.toJson(newUser));
     }
 
     @Authenticate(types = {"ROOT"})
