@@ -1,5 +1,6 @@
 package controllers;
 
+import annotations.Authenticate;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import models.User;
@@ -7,11 +8,13 @@ import play.libs.Json;
 import play.mvc.*;
 import repos.UserRepository;
 
+import java.lang.reflect.Type;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.function.Function;
 
 public class UsersController extends Controller {
+    @Authenticate(types = {"ROOT"})
     public Result list() {
         JsonNode usersJson = Json.toJson(UserRepository.all());
         return ok(usersJson);
@@ -27,7 +30,9 @@ public class UsersController extends Controller {
         User newUser = new User(
             UserRepository.nextId(),
             userToCreateJson.get("name").asText(),
-            userToCreateJson.get("password").asText()
+                userToCreateJson.get("name").asText(),
+            userToCreateJson.get("password").asText(),
+                User.Rol.valueOf(userToCreateJson.get("rol").asText())
         );
 
         UserRepository.add(newUser);

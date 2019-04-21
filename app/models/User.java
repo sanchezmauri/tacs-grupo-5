@@ -19,14 +19,15 @@ public class User implements PathBindable<User> {
     private Rol rol;
     private Long id;
     private String name;
-
+    private String email;
     private String passwordHash;
 
     // todo: placeLists
     private LocalDateTime lastAccess;
 
-    public User(Long id, String name, String plaintextPassword, Rol rol) {
+    public User(Long id, String name, String email, String plaintextPassword, Rol rol) {
         this.id = id;
+        this.email = email;
         this.name = name;
         this.passwordHash = BCrypt.hashpw(plaintextPassword, BCrypt.gensalt());
         this.lastAccess = LocalDateTime.now();
@@ -47,9 +48,15 @@ public class User implements PathBindable<User> {
     public String getName() {
         return name;
     }
-
     public Rol getRol() {
         return rol;
+    }
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
     public boolean checkPassword(String plaintextPassword) {

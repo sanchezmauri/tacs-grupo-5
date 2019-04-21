@@ -27,7 +27,7 @@ public class AuthenticateAction extends Action<Authenticate> {
             }
             Map<String, Object> map = CodesService.decodeMapFromToken(token);
 //            ;
-            Optional<User> user = UserRepository.find(Long.parseLong(map.get("id").toString())); //Aca deberia buscar el usuario segun id y traerlo con los PERMISOS QUE TIENE;
+            Optional<User> user = UserRepository.find(Long.parseLong(map.get("userId").toString())); //Aca deberia buscar el usuario segun id y traerlo con los PERMISOS QUE TIENE;
             if (user == null) {
                 CompletableFuture.completedFuture(authenticator.onUnauthorized(req));
             }
