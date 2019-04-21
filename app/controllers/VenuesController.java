@@ -5,6 +5,7 @@ import java.text.ParsePosition;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import annotations.Authenticate;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import models.Venue;
@@ -49,6 +50,7 @@ public class VenuesController extends Controller {
         public Long getUsersInterested() { return usersInterested; }
     }
 
+    @Authenticate(types = {"ROOT","SYSUSER"})
     public Result usersInterested(Long venueId) {
         return venues.stream()
                 .filter(x -> x.getId().equals(venueId))
@@ -92,6 +94,7 @@ public class VenuesController extends Controller {
     }
 
 
+    @Authenticate(types = {"ROOT","SYSUSER"})
     public Result search(Http.Request request) {
 
         if (!request.queryString().containsKey("query")){

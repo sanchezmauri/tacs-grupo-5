@@ -20,6 +20,7 @@ public class UsersController extends Controller {
         return ok(usersJson);
     }
 
+    @Authenticate(types = {"ROOT"})
     public Result create(Http.Request request) {
         JsonNode userToCreateJson = request.body().asJson();
 
@@ -39,16 +40,19 @@ public class UsersController extends Controller {
         return created(Json.toJson(newUser));
     }
 
+    @Authenticate(types = {"ROOT"})
     public Result user(User user) {
         return ok(Json.toJson(user));
     }
 
+    @Authenticate(types = {"ROOT","SYSUSER"})
     public Result listsCount(User user) {
         return ok(
             Json.newObject().put("listsCount", user.listsCount())
         );
     }
 
+    @Authenticate(types = {"ROOT","SYSUSER"})
     public Result placesCount(User user, Optional<Boolean> visitedOpt) {
         // todo: mapear boolean visited a predicado visited
         /*Function<Object, Boolean> predicate = visitedOpt.map(
@@ -63,6 +67,7 @@ public class UsersController extends Controller {
         );
     }
 
+    @Authenticate(types = {"ROOT","SYSUSER"})
     public Result lastAccess(User user) {
         String lastAccessFormatted = user.getLastAccess().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
