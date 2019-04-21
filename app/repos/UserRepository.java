@@ -10,9 +10,9 @@ import java.util.Optional;
 public class UserRepository {
     private static List<User> users = new ArrayList<>(
         Arrays.asList(
-            new User(1L, "José", "jose"),
-            new User(2L, "Pepe", "pepe"),
-            new User(3L, "Otro", "orto")
+            new User(1L, "José", "jose", User.Rol.ROOT),
+            new User(2L, "Pepe", "pepe", User.Rol.SYSUSER),
+            new User(3L, "Otro", "orto", User.Rol.SYSUSER)
         )
     );
 
