@@ -11,7 +11,7 @@ import java.util.Map;
 public class UsersService {
 
     public static void create(User user) throws UserException {
-        if (UserRepository.findByEmail(user.getEmail())==null)
+        if (!UserRepository.findByEmail(user.getEmail()).isPresent())
         {
             UserRepository.add(user);
         }else
