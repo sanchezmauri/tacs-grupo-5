@@ -1,5 +1,6 @@
 package controllers;
 
+import annotations.Authenticate;
 import com.fasterxml.jackson.databind.JsonNode;
 import models.User;
 import org.mindrot.jbcrypt.BCrypt;
@@ -36,6 +37,7 @@ public class AuthenticateController extends Controller {
 
 
     }
+    @Authenticate(types = {"ROOT","SYSUSER"})
     public Result logout() {
         return ok().withNewSession();
     }
