@@ -22,18 +22,20 @@ public class AuthenticateController extends Controller {
         if (email == null || password == null) {
             return badRequest(Utils.createErrorMessage("Por favor ingrese mail y contraseña para ingresar al sistema."));
         }
-        if(email != null && password != null)
+
+        Optional<User> user = UserRepository.findByEmail(email.textValue());
+
+        if (!user.isPresent()) {
+            return badRequest(Utils.createErrorMessage("Usuario inexistente."));
+        }
+
+        if (BCrypt.checkpw(password.asText(),user.get().getPasswordHash()))
         {
-            Optional<User> user = UserRepository.findByEmail(email.textValue());
-            if (BCrypt.checkpw(password.asText(),user.get().getPasswordHash()))
-            {
-                Map<String, Object> token = new HashMap<>();
-                token.put("userId",user.get().getId());
-                return ok("Ingreso correctamente.").addingToSession(request, "token", CodesService.generateTokenFromMap(token));
-            }else
-                return unauthorized(Utils.createErrorMessage("Credenciales invalidas."));
+            Map<String, Object> token = new HashMap<>();
+            token.put("userId",user.get().getId());
+            return ok("Ingreso correctamente.").addingToSession(request, "token", CodesService.generateTokenFromMap(token));
         }else
-            return badRequest(Utils.createErrorMessage("Ningun campo puede estar vacio."));
+            return unauthorized(Utils.createErrorMessage("Credenciales invalidas."));
 
 
     }
