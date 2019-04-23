@@ -84,4 +84,9 @@ public class User implements PathBindable<User> {
         return id.toString();
     }
     public String javascriptUnbind() { return null; }
+
+    @Override
+    public String toString() {
+        return this.name + " (" + this.email +")";
+    }
 }
