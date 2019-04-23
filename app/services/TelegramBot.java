@@ -2,10 +2,12 @@ package services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.typesafe.config.Config;
+import controllers.VenuesController;
 import models.telegram.Message;
 import models.telegram.Update;
 import play.libs.ws.*;
 import play.libs.Json;
+import repos.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,8 +22,12 @@ public final class TelegramBot implements Runnable {
 
     private final WSClient ws;
 
+    //TODO: Refactor this, due to time connstraints we couldnt extract the logic from this controller onto a proper business layer
+    private final VenuesController vc;
+
     public TelegramBot(Config config, WSClient ws) {
         this.ws = ws;
+        this.vc = new VenuesController(config,ws);
     }
 
     private CompletionStage<Optional<Message>> sendMessage(Integer chatId, String text) {
@@ -63,16 +69,22 @@ public final class TelegramBot implements Runnable {
                         last_update_id = updates.get().stream().mapToInt(x -> x.updateId).max().orElse(last_update_id) + 1;
 
                         updates.get().parallelStream().forEach(update -> {
-                            if (update.getMessageText().contains("/start")) {
-                                String reply = "Hi, this is an example bot\n" +
-                                        "Your chat_id is " + update.getChatId() + "\n" +
-                                        "Your username is " + update.getUsername();
+                            if (update.getMessageText().contains("/users")) {
+                                String reply = UserRepository.all().toString();
                                 sendMessage(update.getChatId(), reply);
-                            } else if (update.getMessageText().contains("/echo")) {
-                                sendMessage(update.getChatId(), "Received " + update.getMessageText());
-                            } else if (update.getMessageText().contains("/toupper")) {
-                                String param = update.getMessageText().substring("/toupper".length(), update.getMessageText().length());
-                                sendMessage(update.getChatId(), param.toUpperCase());
+                            } else if (update.getMessageText().contains("/getUser")) {
+                                Long param = Long.parseLong(update.getMessageText().substring("/getUser".length(), update.getMessageText().length()));
+
+                                String reply = UserRepository.find(param).toString();
+
+                                sendMessage(update.getChatId(), reply);
+                            } else if (update.getMessageText().contains("/venuesSince")) {
+                                String param = update.getMessageText().substring("/venuesSince".length(), update.getMessageText().length());
+
+                                String reply = vc.countVenuesAddedSince(param).toString();
+
+
+                                sendMessage(update.getChatId(), reply);
                             }
                         });
                     }
