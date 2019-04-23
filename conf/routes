@@ -22,3 +22,18 @@ GET     /api/venues                 controllers.VenuesController.search(request:
 GET     /api/venues/:id/userCount   controllers.VenuesController.usersInterested(id: Long)
 GET     /api/venues/count           controllers.VenuesController.venuesAddedSince(since ?= null)
 
+# list resource
+GET     /api/lists                      controllers.ListsController.list()
+POST    /api/lists                      controllers.ListsController.create(request: Request)
+DELETE  /api/lists/:listId              controllers.ListsController.delete(listId: Long)
+PATCH   /api/lists/:listId              controllers.ListsController.changeListName(listId: Long, request: Request)
+
+# todo:
+# agregar lugar en lista
+# POST    /api/lists/:listId/places      controllers.ListsController.addPlaceToList(listId: String, request: Request)
+
+# sacar lugar de lista
+# DELETE  /api/lists/:listId/places      controllers.ListsController.removePlaceFromList(listId: String, request: Request)
+
+# Marcar lugar como visitado
+# POST /api/lists/:listId/places/{placeId}/mark controllers.ListsController.visitPlace?

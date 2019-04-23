@@ -37,10 +37,7 @@ public class User implements PathBindable<User> {
     // este ctor está porque el pathBindable necesita una instancia
     // para hacer el bindeo path -> objeto
     public User() {
-        id = 0L;
-        name = "";
-        lastAccess = LocalDateTime.now();
-        passwordHash = "";
+        this(0L, "", "", "password", Rol.SYSUSER);
     }
 
 
