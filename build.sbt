@@ -9,7 +9,6 @@ scalaVersion := "2.12.8"
 
 libraryDependencies += guice
 
-libraryDependencies += "org.mindrot" % "jbcrypt" % "0.4"
 
 // Test Database
 libraryDependencies += "com.h2database" % "h2" % "1.4.194"
@@ -20,5 +19,6 @@ libraryDependencies += "org.awaitility" % "awaitility" % "2.0.0" % Test
 
 
 // My framewords
-
+libraryDependencies += "org.mindrot" % "jbcrypt" % "0.4"
 libraryDependencies += "com.auth0" % "java-jwt" % "2.2.1"
+libraryDependencies += ws

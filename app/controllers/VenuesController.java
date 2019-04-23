@@ -4,15 +4,32 @@ import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import annotations.Authenticate;
+
+import javax.inject.Inject;
+import com.typesafe.config.Config;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import models.Venue;
 import play.libs.Json;
 import play.mvc.*;
+import play.libs.ws.*;
+
 
 public class VenuesController extends Controller {
+    private static final String NEAR_PARAM = "near";
+    private static final String LAT_LONG_PARAM = "ll";
+
+    private final Config config;
+    private final WSClient ws;
+
+    private final String foursquareURL;
+    private final String foursquareVersion;
+    private final String clientSecret;
+    private final String clientId;
 
     private List<Venue> venues = new ArrayList<>(
             Arrays.asList(
@@ -21,6 +38,17 @@ public class VenuesController extends Controller {
                     new Venue(3L, "Ye Ole Generic Palermitan Craft Beer")
             )
     );
+
+    @Inject
+    public VenuesController(Config config, WSClient ws) {
+        this.config = config;
+        this.ws = ws;
+
+        foursquareURL = this.config.getString("foursquare.url");
+        foursquareVersion = this.config.getString("foursquare.version");
+        clientSecret = this.config.getString("foursquare.clientSecret");
+        clientId = this.config.getString("foursquare.clientId");
+    }
 
     protected class VenueListed extends Venue {
 
@@ -69,7 +97,7 @@ public class VenuesController extends Controller {
     }};
 
     private Integer parseSince(String since) {
-        if (since == null || since == "forever")
+        if (since == null || since.equals("forever"))
             return Integer.MAX_VALUE;
 
         NumberFormat formatter = NumberFormat.getInstance();
@@ -93,32 +121,75 @@ public class VenuesController extends Controller {
                 .count())).as("application/json");
     }
 
+    private String[] parsePositionParam(Http.Request request) {
+        if(request.queryString().containsKey(NEAR_PARAM)) {
+            return new String[]{
+                    NEAR_PARAM,
+                    request.getQueryString(NEAR_PARAM)
+            };
+        } else if (request.queryString().containsKey("latitude") &&
+                request.queryString().containsKey("longitude"))  {
+            String latitude = request.getQueryString("latitude");
+            String longitude = request.getQueryString("longitude");
+
+            return new String[]{
+                    LAT_LONG_PARAM,
+                    latitude + "," + longitude
+            };
+        }
+
+        return null;
+    }
 
     @Authenticate(types = {"ROOT","SYSUSER"})
-    public Result search(Http.Request request) {
-
+    public CompletionStage<Result> search(Http.Request request) {
+        // check query param
         if (!request.queryString().containsKey("query")){
-            return badRequest("Query is required");
+            return CompletableFuture.completedFuture(
+                badRequest("Query is required")
+            );
         }
         String query = request.getQueryString("query");
 
 
+        // get position param
+        String[] positionParams = parsePositionParam(request);
 
-        if(request.queryString().containsKey("near")) {
-            String near = request.getQueryString("near");
-        } else {
-            if (request.queryString().containsKey("latitude") &&
-                    request.queryString().containsKey("longitude"))  {
-                String longitude = request.getQueryString("longitude");
-                String latitude = request.getQueryString("latitude");
-
-            } else {
-                return badRequest("Either a geo-codable \"near\" parameter or longitude and latitude must be provided");
-            }
-
+        if (positionParams == null) {
+            return CompletableFuture.completedFuture(
+                    badRequest("Either a geo-codable \"near\" parameter or longitude and latitude must be provided")
+            );
         }
 
-        return ok(Json.toJson(venues)).as("application/json");
+        String positionParamKey = positionParams[0];
+        String positionParamVal = positionParams[1];
+
+        // make request to foursquare
+        return ws.url(foursquareURL)
+                .addQueryParameter("client_id", clientId)
+                .addQueryParameter("client_secret", clientSecret)
+                .addQueryParameter("v", foursquareVersion)
+                .addQueryParameter("query", query)
+                .addQueryParameter(positionParamKey, positionParamVal)
+                .addQueryParameter("intent", "checkin")
+                .get()
+                .thenApply(this::proccessFoursquareResponse);
     }
 
+    private Result proccessFoursquareResponse(WSResponse foursquareResp) {
+        JsonNode responseJson = foursquareResp.asJson();
+        JsonNode meta = responseJson.get("meta");
+        int statusCode = meta.get("code").asInt();
+
+        if (statusCode == 200) {
+            JsonNode venuesJson = responseJson.at("/response/venues");
+            return ok(venuesJson);
+        } else {
+            JsonNode errorType = meta.get("errorType");
+            JsonNode errorDetail = meta.get("errorDetail");
+            String errorMessage = errorType.asText() + " " + errorDetail.asText();
+
+            return badRequest(Utils.createErrorMessage(errorMessage));
+        }
+    }
 }
