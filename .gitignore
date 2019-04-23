@@ -15,3 +15,7 @@ dist
 /RUNNING_PID
 /public
 /project
+
+\.bloop/
+
+\.metals/
