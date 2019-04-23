@@ -7,7 +7,11 @@ import play.mvc.PathBindable;
 import repos.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class User implements PathBindable<User> {
 
@@ -22,7 +26,7 @@ public class User implements PathBindable<User> {
     private String email;
     private String passwordHash;
 
-    // todo: placeLists
+    private List<VenueList> venueslists;
     private LocalDateTime lastAccess;
 
     public User(Long id, String name, String email, String plaintextPassword, Rol rol) {
@@ -32,15 +36,13 @@ public class User implements PathBindable<User> {
         this.passwordHash = BCrypt.hashpw(plaintextPassword, BCrypt.gensalt());
         this.lastAccess = LocalDateTime.now();
         this.rol = rol;
+        this.venueslists = new ArrayList<>();
     }
 
     // este ctor está porque el pathBindable necesita una instancia
     // para hacer el bindeo path -> objeto
     public User() {
-        id = 0L;
-        name = "";
-        lastAccess = LocalDateTime.now();
-        passwordHash = "";
+        this(0L, "", "", "password", Rol.SYSUSER);
     }
 
 
@@ -63,10 +65,32 @@ public class User implements PathBindable<User> {
         return BCrypt.checkpw(plaintextPassword, passwordHash);
     }
 
-    public int listsCount() { return 1; }
+    // venue lists methods
+    public List<VenueList> getAllLists() {
+        return venueslists;
+    }
+
+    public Optional<VenueList> getList(Long listId) {
+        return venueslists.stream()
+                .filter(list -> list.getId().equals(listId))
+                .findFirst();
+    }
+
+    public void addList(VenueList newList) {
+        venueslists.add(newList);
+    }
+
+    public boolean removeList(Long id) {
+        return venueslists.removeIf(list -> list.getId().equals(id));
+    }
+
+    public int listsCount() { return venueslists.size(); }
+
     public int placesCount(Function<Object, Boolean> predicate) {
-        // todo: filtrar lugares de listas con predicado
-        return 10;
+        return venueslists.stream()
+                .flatMap(venueList -> venueList.getVenues().stream())
+                .collect(Collectors.toSet())
+                .size();
     }
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
