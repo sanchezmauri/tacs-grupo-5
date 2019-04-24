@@ -11,7 +11,6 @@ public class TelegramSetupRunnable implements Runnable {
     private final String endpoint;
     private final String token;
     private final WSClient ws;
-
     private final String webhookEndpoint;
 
     public TelegramSetupRunnable(Config config, WSClient ws) {
@@ -24,8 +23,6 @@ public class TelegramSetupRunnable implements Runnable {
     @Override
     public void run() {
 
-        // Setup Webhook
-
         JsonNode body = Json.newObject()
                 .put("url", webhookEndpoint)
                 .put("max_connections", 1);
@@ -34,12 +31,10 @@ public class TelegramSetupRunnable implements Runnable {
                 .post(body)
                 .thenApply(this::webhookResponse);
 
+
     }
 
     private Boolean webhookResponse(WSResponse wsResponse) {
-
-
-
         return true;
     }
 }
