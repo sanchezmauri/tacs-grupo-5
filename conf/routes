@@ -6,6 +6,8 @@
 POST    /api/security/login                  controllers.AuthenticateController.authenticate(request: Request)
 POST    /api/security/logout                 controllers.AuthenticateController.logout
 
+#Telegram (Routes include the
+POST    /api/telegram/:token/receiveUpdate  controllers.TelegramController.receiveUpdate(token: String, request: Request)
 
 # users resource
 POST    /api/users                      controllers.UsersController.create(request: Request)
