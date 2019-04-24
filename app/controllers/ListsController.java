@@ -26,12 +26,18 @@ public class ListsController extends Controller {
 
     @Authenticate(types = {"ROOT", "SYSUSER"})
     public Result list(Http.Request request) {
-        // todo: ver si es admin mandar todas, si no solo las del user
-        List<VenueList> allLists = UserRepository
-                .all()
-                .stream()
-                .flatMap(user -> user.getAllLists().stream())
-                .collect(Collectors.toList());
+        User user = request.attrs().get(RequestAttrs.USER);
+        List<VenueList> allLists;
+
+        if (user.getRol().equals(User.Rol.ROOT)) {
+            allLists = UserRepository
+                    .all()
+                    .stream()
+                    .flatMap(u -> u.getAllLists().stream())
+                    .collect(Collectors.toList());
+        } else {
+            allLists = user.getAllLists();
+        }
 
         return ok(Json.toJson(allLists));
     }
@@ -68,7 +74,7 @@ public class ListsController extends Controller {
         if (user.removeList(listId)) {
             return ok();
         } else {
-            return listNotFound(listId);
+            return listNotFound(user, listId);
         }
     }
 
@@ -88,7 +94,7 @@ public class ListsController extends Controller {
             l.setName(newName);
             return ok(Json.toJson(l));
         }).orElseGet(
-            () -> listNotFound(listId)
+            () -> listNotFound(user, listId)
         );
     }
 
@@ -106,11 +112,7 @@ public class ListsController extends Controller {
         Optional<VenueList> maybeList = user.getList(listId);
 
         if (!maybeList.isPresent()) {
-            String errMessage = String.format("User %d doesn't have List %d", user.getId(), listId);
-
-            return badRequest(
-                    Utils.createErrorMessage(errMessage)
-            );
+            return listNotFound(user, listId);
         }
 
         venueListOperation.accept(maybeList.get(), venueId);
@@ -129,9 +131,9 @@ public class ListsController extends Controller {
         return venueListHandler(listId, request, VenueList::removeVenue);
     }
 
-    private Result listNotFound(Long id) {
+    private Result listNotFound(User user, Long id) {
         return notFound(
-                Utils.createErrorMessage("No list with id = " + id.toString())
+                Utils.createErrorMessage("User [" + user.getId().toString() + "] hasn't list [" + id.toString() + "]")
         );
     }
 
