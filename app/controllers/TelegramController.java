@@ -29,9 +29,7 @@ public class TelegramController extends Controller {
 
                 Update update = Update.fromJson(request.body().asJson());
 
-                bot.handleUpdate(update);
-
-                return noContent();
+                return bot.handleUpdate(update, request);
 
             } catch (JsonProcessingException ex) {
                 System.out.println("Error processing Update for Telegram bot");
