@@ -51,7 +51,7 @@ public class Update {
         }
     }
 
-    private static Update fromJson(JsonNode jsonNode) throws JsonProcessingException {
+    public static Update fromJson(JsonNode jsonNode) throws JsonProcessingException {
        return new ObjectMapper().treeToValue(jsonNode,Update.class);
     }
 

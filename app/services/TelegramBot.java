@@ -16,9 +16,9 @@ import java.util.concurrent.ExecutionException;
 
 import static play.mvc.Results.badRequest;
 
-public final class TelegramBot implements Runnable {
+public final class TelegramBot {
     private final String endpoint;
-    private final String token;
+    public final String token;
 
     private final WSClient ws;
 
@@ -43,64 +43,25 @@ public final class TelegramBot implements Runnable {
                     .thenApply(Message::fromWSResponse);
     }
 
-    private CompletionStage<Optional<List<Update>>> getUpdates(Integer offset) {
+    public void handleUpdate(Update update) {
+        if (update.getMessageText().contains("/users")) {
+            String reply = UserRepository.all().toString();
+            sendMessage(update.getChatId(), reply);
+        } else if (update.getMessageText().contains("/getUser")) {
+            Long param = Long.parseLong(update.getMessageText().substring("/getUser".length(), update.getMessageText().length()));
 
-        JsonNode body = Json.newObject()
-                .put("offset", offset);
+            String reply = UserRepository.find(param).toString();
 
-        return ws.url(endpoint + token + "/getUpdates")
-                .setContentType("application/json")
-                .post(body)
-                .thenApply(Update::arrayFromWSResponse);
-    }
+            sendMessage(update.getChatId(), reply);
+        } else if (update.getMessageText().contains("/venuesSince")) {
+            String param = update.getMessageText().substring("/venuesSince".length(), update.getMessageText().length());
 
-    public void run() {
-        int last_update_id = 0; // last processed command
-        CompletionStage<Optional<List<Update>>> fetchingRequest;
-        while (true) {
-
-            fetchingRequest = getUpdates(last_update_id);
-
-            try {
-
-                Optional<List<Update>> updates = fetchingRequest.toCompletableFuture().get();
-
-                if (updates.isPresent()) {
-
-                    if (updates.get().size() > 0) {
-                        last_update_id = updates.get().stream().mapToInt(x -> x.updateId).max().orElse(last_update_id) + 1;
-
-                        updates.get().parallelStream().forEach(update -> {
-                            if (update.getMessageText().contains("/users")) {
-                                String reply = UserRepository.all().toString();
-                                sendMessage(update.getChatId(), reply);
-                            } else if (update.getMessageText().contains("/getUser")) {
-                                Long param = Long.parseLong(update.getMessageText().substring("/getUser".length(), update.getMessageText().length()));
-
-                                String reply = UserRepository.find(param).toString();
-
-                                sendMessage(update.getChatId(), reply);
-                            } else if (update.getMessageText().contains("/venuesSince")) {
-                                String param = update.getMessageText().substring("/venuesSince".length(), update.getMessageText().length());
-
-                                String reply = vc.countVenuesAddedSince(param).toString();
+            String reply = vc.countVenuesAddedSince(param).toString();
 
 
-                                sendMessage(update.getChatId(), reply);
-                            }
-                        });
-                    }
-
-
-                }
-
-            }
-            catch (InterruptedException | ExecutionException ignored)
-            {
-
-            }
-
-
+            sendMessage(update.getChatId(), reply);
         }
     }
+
+
 }
