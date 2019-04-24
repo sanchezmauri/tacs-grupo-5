@@ -15,9 +15,6 @@ import java.util.stream.Collectors;
 
 public class User implements PathBindable<User> {
 
-    public enum Rol{
-        ROOT,SYSUSER
-    }
 
 
     private Rol rol;

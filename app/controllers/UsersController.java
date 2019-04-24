@@ -3,6 +3,7 @@ package controllers;
 import annotations.Authenticate;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import models.Rol;
 import models.User;
 import models.exceptions.UserException;
 import play.libs.Json;
@@ -35,7 +36,7 @@ public class UsersController extends Controller {
                     userToCreateJson.get("name").asText(),
                     userToCreateJson.get("email").asText(),
                     userToCreateJson.get("password").asText(),
-                    User.Rol.valueOf(userToCreateJson.get("rol").asText())
+                    Rol.valueOf(userToCreateJson.get("rol").asText())
             );
             UsersService.create(newUser);
             return created(Json.toJson(newUser));

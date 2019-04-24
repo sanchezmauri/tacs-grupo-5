@@ -17,17 +17,19 @@ import java.util.concurrent.ExecutionException;
 import static play.mvc.Results.badRequest;
 
 public final class TelegramBot implements Runnable {
-    private final String endpoint = "https://api.telegram.org/bot";
-    private final String token = "804708943:AAHDX6vi8DJw-ZGUTA-wyTnfbThsYtdJ7eY";
+    private final String endpoint;
+    private final String token;
 
     private final WSClient ws;
 
-    //TODO: Refactor this, due to time connstraints we couldnt extract the logic from this controller onto a proper business layer
+    //TODO: Refactor this, due to time constraints we couldn't extract the logic from this controller onto a proper business layer
     private final VenuesController vc;
 
     public TelegramBot(Config config, WSClient ws) {
         this.ws = ws;
         this.vc = new VenuesController(config,ws);
+        this.endpoint = config.getString("telegram.url");
+        this.token = config.getString("telegram.token");
     }
 
     private CompletionStage<Optional<Message>> sendMessage(Integer chatId, String text) {
