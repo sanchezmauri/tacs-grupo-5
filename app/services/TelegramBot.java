@@ -11,17 +11,11 @@ import play.libs.ws.*;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
+import play.mvc.Results;
 import repos.UserRepository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
-import static play.mvc.Results.*;
 
 public final class TelegramBot {
     private final String endpoint;
@@ -61,27 +55,20 @@ public final class TelegramBot {
                 .post(body);
     }
 
-
-    private static Pattern commandPattern = Pattern.compile( "^ */[A-z]* ?[A-z]* *$");
     public Result handleUpdate(Update update, Http.Request request) {
 
         String message = update.getMessageText();
 
         if (message.length() <= 0) {
             System.out.println("Empty message received on Telegram Update "+update.updateId);
-            return noContent();
+            return Results.noContent();
         }
 
-        String command = commandPattern.
-                matcher(message).
-                results().
-                findFirst().
-                map(x -> message.substring(x.start(),x.end())).
-                orElse("");
+        String command = Utils.getCommandFrom(message);
 
         if (command.length() <= 0) {
             System.out.println("No command found on Telegram Update "+update.updateId);
-            return noContent();
+            return Results.noContent();
         }
 
         String parameters = message.substring(command.length(),message.length()).trim();
@@ -99,10 +86,10 @@ public final class TelegramBot {
 
                 if (result.success()) {
                     this.maskMessage(update, "Logged in successfully");
-                    return ok().addingToSession(request,"token",result.token);
+                    return Results.ok().addingToSession(request,"token",result.token);
                 } else {
                     this.maskMessage(update, "There was an error :C");
-                    return unauthorized(Utils.createErrorMessage("Credenciales invalidas."));
+                    return Results.unauthorized(Utils.createErrorMessage("Credenciales invalidas."));
                 }
             case "/start":
                 reply = request.session().getOptional("token")
@@ -129,7 +116,7 @@ public final class TelegramBot {
                 break;
         }
 
-        return ok();
+        return Results.ok();
 
     }
 

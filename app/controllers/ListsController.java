@@ -2,10 +2,7 @@ package controllers;
 
 import annotations.Authenticate;
 import com.fasterxml.jackson.databind.JsonNode;
-import models.User;
-import models.UserVenue;
-import models.VenueList;
-import models.Venue;
+import models.*;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -30,7 +27,7 @@ public class ListsController extends Controller {
         User user = request.attrs().get(RequestAttrs.USER);
         List<VenueList> allLists;
 
-        if (user.getRol().equals(User.Rol.ROOT)) {
+        if (user.getRol().equals(Rol.ROOT)) {
             allLists = UserRepository
                     .all()
                     .stream()
