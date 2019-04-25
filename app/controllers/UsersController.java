@@ -67,13 +67,13 @@ public class UsersController extends Controller {
     }
 
     @Authenticate(types = {"ROOT","SYSUSER"})
-    public Result placesCount(User user, Optional<Boolean> visitedOpt) {
+    public Result venuesCount(User user, Optional<Boolean> visitedOpt) {
         Predicate<UserVenue> visitedPred = visitedOpt
                 .map(this::makeVisitedPred)
                 .orElse(ANY_VENUE);
 
         return ok(
-            Json.newObject().put("placesCount", user.placesCount(visitedPred))
+            Json.newObject().put("venuesCount", user.venuesCount(visitedPred))
         );
     }
 

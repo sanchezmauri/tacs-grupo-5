@@ -107,7 +107,7 @@ public class User implements PathBindable<User> {
 
     public int listsCount() { return venueslists.size(); }
 
-    public int placesCount(Predicate<UserVenue> predicate) {
+    public int venuesCount(Predicate<UserVenue> predicate) {
         return venueslists.stream()
                 .flatMap(venueList -> venueList.getVenues().stream())
                 .filter(predicate)

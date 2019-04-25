@@ -8,28 +8,28 @@ POST    /api/security/logout                 controllers.AuthenticateController.
 
 
 # users resource
-POST    /api/users                      controllers.UsersController.create(request: Request)
+POST    /api/users                           controllers.UsersController.create(request: Request)
 
 #users (for admins)
-GET     /api/users                      controllers.UsersController.list
-GET     /api/users/:user                controllers.UsersController.user(user: models.User)
-GET     /api/users/:user/lists/count    controllers.UsersController.listsCount(user: models.User)
-GET     /api/users/:user/places/count   controllers.UsersController.placesCount(user: models.User, visited: java.util.Optional[java.lang.Boolean])
-GET     /api/users/:user/lastAccess     controllers.UsersController.lastAccess(user: models.User)
+GET     /api/users                          controllers.UsersController.list
+GET     /api/users/:user                    controllers.UsersController.user(user: models.User)
+GET     /api/users/:user/lists/count        controllers.UsersController.listsCount(user: models.User)
+GET     /api/users/:user/venues/count       controllers.UsersController.venuesCount(user: models.User, visited: java.util.Optional[java.lang.Boolean])
+GET     /api/users/:user/lastAccess         controllers.UsersController.lastAccess(user: models.User)
 
 # venues resource
-GET     /api/venues                 controllers.VenuesController.search(request: Request)
-GET     /api/venues/:id/userCount   controllers.VenuesController.usersInterested(id: Long)
-GET     /api/venues/count           controllers.VenuesController.venuesAddedSince(since ?= null)
+GET     /api/venues                         controllers.VenuesController.search(request: Request)
+GET     /api/venues/:id/userCount           controllers.VenuesController.usersInterested(id: Long)
+GET     /api/venues/count                   controllers.VenuesController.venuesAddedSince(since ?= null)
 
 # list resource
-GET     /api/lists                      controllers.ListsController.list(request: Request)
-POST    /api/lists                      controllers.ListsController.create(request: Request)
-DELETE  /api/lists/:listId              controllers.ListsController.delete(listId: Long, request: Request)
-PATCH   /api/lists/:listId              controllers.ListsController.changeListName(listId: Long, request: Request)
+GET     /api/lists                          controllers.ListsController.list(request: Request)
+POST    /api/lists                          controllers.ListsController.create(request: Request)
+DELETE  /api/lists/:listId                  controllers.ListsController.delete(listId: Long, request: Request)
+PATCH   /api/lists/:listId                  controllers.ListsController.changeListName(listId: Long, request: Request)
 
-POST    /api/lists/:listId/venues       controllers.ListsController.addPlaceToList(listId: Long, request: Request)
-DELETE  /api/lists/:listId/venues       controllers.ListsController.removePlaceFromList(listId: Long, request: Request)
+POST    /api/lists/:listId/venues           controllers.ListsController.addPlaceToList(listId: Long, request: Request)
+DELETE  /api/lists/:listId/venues           controllers.ListsController.removePlaceFromList(listId: Long, request: Request)
 
 # Marcar lugar como visitado
 # POST /api/lists/:listId/places/{placeId}/mark controllers.ListsController.visitPlace?
