@@ -2,6 +2,7 @@ package controllers;
 
 import annotations.Authenticate;
 import com.fasterxml.jackson.databind.JsonNode;
+import controllers.actions.VenueListAction;
 import models.User;
 import models.UserVenue;
 import models.VenueList;
