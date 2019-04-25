@@ -10,6 +10,7 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
+import play.mvc.With;
 import repos.UserRepository;
 
 import java.util.*;
@@ -26,12 +27,18 @@ public class ListsController extends Controller {
 
     @Authenticate(types = {"ROOT", "SYSUSER"})
     public Result list(Http.Request request) {
-        // todo: ver si es admin mandar todas, si no solo las del user
-        List<VenueList> allLists = UserRepository
-                .all()
-                .stream()
-                .flatMap(user -> user.getAllLists().stream())
-                .collect(Collectors.toList());
+        User user = request.attrs().get(RequestAttrs.USER);
+        List<VenueList> allLists;
+
+        if (user.getRol().equals(User.Rol.ROOT)) {
+            allLists = UserRepository
+                    .all()
+                    .stream()
+                    .flatMap(u -> u.getAllLists().stream())
+                    .collect(Collectors.toList());
+        } else {
+            allLists = user.getAllLists();
+        }
 
         return ok(Json.toJson(allLists));
     }
@@ -62,17 +69,16 @@ public class ListsController extends Controller {
     }
 
     @Authenticate(types = {"SYSUSER"})
+    @With(VenueListAction.class)
     public Result delete(Long listId, Http.Request request) {
         User user = request.attrs().get(RequestAttrs.USER);
 
-        if (user.removeList(listId)) {
-            return ok();
-        } else {
-            return listNotFound(listId);
-        }
+        user.removeList(listId);
+        return ok();
     }
 
     @Authenticate(types = {"SYSUSER"})
+    @With(VenueListAction.class)
     public Result changeListName(Long listId, Http.Request request) {
         JsonNode changeJson = request.body().asJson();
 
@@ -80,16 +86,11 @@ public class ListsController extends Controller {
             return badRequest(Utils.createErrorMessage("Missing field: name."));
         }
 
-        User user = request.attrs().get(RequestAttrs.USER);
-        Optional<VenueList> list = user.getList(listId);
+        VenueList list = request.attrs().get(RequestAttrs.LIST);
 
-        return list.map(l -> {
-            String newName = changeJson.get("name").asText();
-            l.setName(newName);
-            return ok(Json.toJson(l));
-        }).orElseGet(
-            () -> listNotFound(listId)
-        );
+        String newName = changeJson.get("name").asText();
+        list.setName(newName);
+        return ok(Json.toJson(list));
     }
 
     // usado por addPlaceToList y removePlaceFromList
@@ -101,38 +102,25 @@ public class ListsController extends Controller {
         }
 
         long venueId = venueIdJson.get("venueId").asLong();
-        User user = request.attrs().get(RequestAttrs.USER);
 
-        Optional<VenueList> maybeList = user.getList(listId);
+        VenueList list = request.attrs().get(RequestAttrs.LIST);
 
-        if (!maybeList.isPresent()) {
-            String errMessage = String.format("User %d doesn't have List %d", user.getId(), listId);
-
-            return badRequest(
-                    Utils.createErrorMessage(errMessage)
-            );
-        }
-
-        venueListOperation.accept(maybeList.get(), venueId);
+        venueListOperation.accept(list, venueId);
 
         return ok();
     }
 
     // acá dejo solo users porque necesito agregarle al user un
     @Authenticate(types = {"SYSUSER"})
+    @With(VenueListAction.class)
     public Result addPlaceToList(Long listId, Http.Request request) {
         return venueListHandler(listId, request, (list, venueId) -> list.addVenue(new UserVenue(venueId, "", false)));
     }
 
     @Authenticate(types = {"SYSUSER"})
+    @With(VenueListAction.class)
     public Result removePlaceFromList(Long listId, Http.Request request) {
         return venueListHandler(listId, request, VenueList::removeVenue);
-    }
-
-    private Result listNotFound(Long id) {
-        return notFound(
-                Utils.createErrorMessage("No list with id = " + id.toString())
-        );
     }
 
     public Result compareLists(Long listId1, Long listId2) {
