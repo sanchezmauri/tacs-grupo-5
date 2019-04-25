@@ -61,11 +61,10 @@ public class UsersController extends Controller {
         );
     }
 
+    private static Predicate<UserVenue> ANY_VENUE = venue -> true;
     private Predicate<UserVenue> makeVisitedPred(Boolean visited) {
         return venue -> venue.wasVisited() == visited;
     }
-
-    private static Predicate<UserVenue> ANY_VENUE = venue -> true;
 
     @Authenticate(types = {"ROOT","SYSUSER"})
     public Result placesCount(User user, Optional<Boolean> visitedOpt) {

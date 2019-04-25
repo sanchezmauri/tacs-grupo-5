@@ -101,6 +101,10 @@ public class User implements PathBindable<User> {
                 .findAny();
     }
 
+    public boolean hasVenue(Long venueId) {
+        return getVenue(venueId).isPresent();
+    }
+
     public int listsCount() { return venueslists.size(); }
 
     public int placesCount(Predicate<UserVenue> predicate) {
