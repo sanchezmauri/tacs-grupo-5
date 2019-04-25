@@ -2,19 +2,26 @@ package services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.typesafe.config.Config;
+import controllers.Utils;
 import controllers.VenuesController;
+import models.communication.LoginResult;
 import models.telegram.Message;
 import models.telegram.Update;
 import play.libs.ws.*;
 import play.libs.Json;
+import play.mvc.Http;
+import play.mvc.Result;
 import repos.UserRepository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Pattern;
 
-import static play.mvc.Results.badRequest;
+import static play.mvc.Results.*;
 
 public final class TelegramBot {
     private final String endpoint;
@@ -32,35 +39,98 @@ public final class TelegramBot {
         this.token = config.getString("telegram.token");
     }
 
-    private CompletionStage<Optional<Message>> sendMessage(Integer chatId, String text) {
+    private void sendMessage(Integer chatId, String text) {
 
         JsonNode body = Json.newObject()
                 .put("chat_id", chatId)
                 .put("text", text);
 
-            return ws.url(endpoint + token + "/sendMessage")
+        ws.url(endpoint + token + "/sendMessage")
                     .post(body)
                     .thenApply(Message::fromWSResponse);
     }
 
-    public void handleUpdate(Update update) {
-        if (update.getMessageText().contains("/users")) {
-            String reply = UserRepository.all().toString();
-            sendMessage(update.getChatId(), reply);
-        } else if (update.getMessageText().contains("/getUser")) {
-            Long param = Long.parseLong(update.getMessageText().substring("/getUser".length(), update.getMessageText().length()));
+    private void maskMessage(Update update, String newText) {
 
-            String reply = UserRepository.find(param).toString();
+        JsonNode body = Json.newObject()
+                .put("chat_id", update.getChatId())
+                .put("message_id",update.getMessageId())
+                .put("text", newText);
 
-            sendMessage(update.getChatId(), reply);
-        } else if (update.getMessageText().contains("/venuesSince")) {
-            String param = update.getMessageText().substring("/venuesSince".length(), update.getMessageText().length());
-
-            String reply = vc.countVenuesAddedSince(param).toString();
+        ws.url(endpoint + token + "/editMessageText")
+                .post(body);
+    }
 
 
-            sendMessage(update.getChatId(), reply);
+    private static Pattern commandPattern = Pattern.compile( "^ */[A-z]* ?[A-z]* *$");
+    public Result handleUpdate(Update update, Http.Request request) {
+
+        String message = update.getMessageText();
+
+        if (message.length() <= 0) {
+            System.out.println("Empty message received on Telegram Update "+update.updateId);
+            return noContent();
         }
+
+        String command = commandPattern.
+                matcher(message).
+                results().
+                findFirst().
+                map(x -> message.substring(x.start(),x.end())).
+                orElse("");
+
+        if (command.length() <= 0) {
+            System.out.println("No command found on Telegram Update "+update.updateId);
+            return noContent();
+        }
+
+        String parameters = message.substring(command.length(),message.length()).trim();
+
+        String reply;
+        switch(command) {
+            case "/login":
+
+                this.maskMessage(update, "Thanks!, processing request");
+
+                String email = parameters.split(" ")[0];
+                String password = parameters.split(" ")[1];
+
+                LoginResult result = UsersService.login(email,password);
+
+                if (result.success()) {
+                    this.maskMessage(update, "Logged in successfully");
+                    return ok().addingToSession(request,"token",result.token);
+                } else {
+                    this.maskMessage(update, "There was an error :C");
+                    return unauthorized(Utils.createErrorMessage("Credenciales invalidas."));
+                }
+            case "/start":
+                reply = request.session().getOptional("token")
+                        .map(s -> "Hey you!, you are logged in and your token is " + s)
+                        .orElse("Who are you, do we know each other? Introduce yourself using /login {email} {password}");
+
+                this.sendMessage(update.getChatId(), reply);
+            case "/users":
+                reply = UserRepository.all().toString();
+                this.sendMessage(update.getChatId(), reply);
+                break;
+            case "/getUser":
+                Long paramLong = Long.parseLong(parameters);
+                reply = UserRepository.find(paramLong).toString();
+
+                sendMessage(update.getChatId(), reply);
+                break;
+            case "/venuesSince":
+                reply = vc.countVenuesAddedSince(parameters).toString();
+
+                sendMessage(update.getChatId(), reply);
+                break;
+            default:
+                break;
+        }
+
+        return ok();
+
     }
 
 
