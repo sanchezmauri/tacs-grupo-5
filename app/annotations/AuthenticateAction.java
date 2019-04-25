@@ -1,5 +1,7 @@
 package annotations;
 
+import controllers.RequestAttrs;
+import models.Rol;
 import models.User;
 import play.mvc.Action;
 import play.mvc.Http;
@@ -27,13 +29,23 @@ public class AuthenticateAction extends Action<Authenticate> {
             }
             Map<String, Object> map = CodesService.decodeMapFromToken(token);
             Optional<User> user = UserRepository.find(Long.parseLong(map.get("userId").toString())); //Aca deberia buscar el usuario segun id y traerlo con los PERMISOS QUE TIENE;
-            if (user == null) {
-                CompletableFuture.completedFuture(authenticator.onUnauthorized(req));
-            }
-            if (Arrays.stream(this.configuration.types()).anyMatch(r -> User.Rol.valueOf(r).equals(user.get().getRol())))
-                return delegate.call(req);
-            else
+
+            if (!user.isPresent()) {
                 return CompletableFuture.completedFuture(authenticator.onUnauthorized(req));
+            }
+
+            boolean hasRole = Arrays.stream(this.configuration.types())
+                    .anyMatch(r -> Rol.valueOf(r).equals(user.get().getRol()));
+
+            if (hasRole) {
+                req = req.addAttr(RequestAttrs.USER, user.get());
+
+                // todo: meter try acá que me tiraba unauthorized cuando crasheaba otra cosa
+                return delegate.call(req);
+            }
+            else {
+                return CompletableFuture.completedFuture(authenticator.onUnauthorized(req));
+            }
 
         } catch (Exception e) {
             return CompletableFuture.completedFuture(authenticator.onUnauthorized(req));

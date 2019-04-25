@@ -2,103 +2,123 @@ package services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.typesafe.config.Config;
+import controllers.Utils;
 import controllers.VenuesController;
+import models.communication.LoginResult;
 import models.telegram.Message;
 import models.telegram.Update;
 import play.libs.ws.*;
 import play.libs.Json;
+import play.mvc.Http;
+import play.mvc.Result;
+import play.mvc.Results;
 import repos.UserRepository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
+import java.util.regex.Pattern;
 
-import static play.mvc.Results.badRequest;
 
-public final class TelegramBot implements Runnable {
-    private final String endpoint = "https://api.telegram.org/bot";
-    private final String token = "804708943:AAHDX6vi8DJw-ZGUTA-wyTnfbThsYtdJ7eY";
+public final class TelegramBot {
+    private final String endpoint;
+    public final String token;
 
     private final WSClient ws;
 
-    //TODO: Refactor this, due to time connstraints we couldnt extract the logic from this controller onto a proper business layer
+    //TODO: Refactor this, due to time constraints we couldn't extract the logic from this controller onto a proper business layer
     private final VenuesController vc;
 
     public TelegramBot(Config config, WSClient ws) {
         this.ws = ws;
         this.vc = new VenuesController(config,ws);
+        this.endpoint = config.getString("telegram.url");
+        this.token = config.getString("telegram.token");
     }
 
-    private CompletionStage<Optional<Message>> sendMessage(Integer chatId, String text) {
+    private void sendMessage(Integer chatId, String text) {
 
         JsonNode body = Json.newObject()
                 .put("chat_id", chatId)
                 .put("text", text);
 
-            return ws.url(endpoint + token + "/sendMessage")
+        ws.url(endpoint + token + "/sendMessage")
                     .post(body)
                     .thenApply(Message::fromWSResponse);
     }
 
-    private CompletionStage<Optional<List<Update>>> getUpdates(Integer offset) {
+    private void maskMessage(Update update, String newText) {
 
         JsonNode body = Json.newObject()
-                .put("offset", offset);
+                .put("chat_id", update.getChatId())
+                .put("message_id",update.getMessageId())
+                .put("text", newText);
 
-        return ws.url(endpoint + token + "/getUpdates")
-                .setContentType("application/json")
-                .post(body)
-                .thenApply(Update::arrayFromWSResponse);
+        ws.url(endpoint + token + "/editMessageText")
+                .post(body);
     }
 
-    public void run() {
-        int last_update_id = 0; // last processed command
-        CompletionStage<Optional<List<Update>>> fetchingRequest;
-        while (true) {
+    public Result handleUpdate(Update update, Http.Request request) {
 
-            fetchingRequest = getUpdates(last_update_id);
+        String message = update.getMessageText();
 
-            try {
-
-                Optional<List<Update>> updates = fetchingRequest.toCompletableFuture().get();
-
-                if (updates.isPresent()) {
-
-                    if (updates.get().size() > 0) {
-                        last_update_id = updates.get().stream().mapToInt(x -> x.updateId).max().orElse(last_update_id) + 1;
-
-                        updates.get().parallelStream().forEach(update -> {
-                            if (update.getMessageText().contains("/users")) {
-                                String reply = UserRepository.all().toString();
-                                sendMessage(update.getChatId(), reply);
-                            } else if (update.getMessageText().contains("/getUser")) {
-                                Long param = Long.parseLong(update.getMessageText().substring("/getUser".length(), update.getMessageText().length()));
-
-                                String reply = UserRepository.find(param).toString();
-
-                                sendMessage(update.getChatId(), reply);
-                            } else if (update.getMessageText().contains("/venuesSince")) {
-                                String param = update.getMessageText().substring("/venuesSince".length(), update.getMessageText().length());
-
-                                String reply = vc.countVenuesAddedSince(param).toString();
-
-
-                                sendMessage(update.getChatId(), reply);
-                            }
-                        });
-                    }
-
-
-                }
-
-            }
-            catch (InterruptedException | ExecutionException ignored)
-            {
-
-            }
-
-
+        if (message.length() <= 0) {
+            System.out.println("Empty message received on Telegram Update "+update.updateId);
+            return Results.noContent();
         }
+
+        String command = Utils.getCommandFrom(message);
+
+        if (command.length() <= 0) {
+            System.out.println("No command found on Telegram Update "+update.updateId);
+            return Results.noContent();
+        }
+
+        String parameters = message.substring(command.length(),message.length()).trim();
+
+        String reply;
+        switch(command) {
+            case "/login":
+
+                this.maskMessage(update, "Thanks!, processing request");
+
+                String email = parameters.split(" ")[0];
+                String password = parameters.split(" ")[1];
+
+                LoginResult result = UsersService.login(email,password);
+
+                if (result.success()) {
+                    this.maskMessage(update, "Logged in successfully");
+                    return Results.ok().addingToSession(request,"token",result.token);
+                } else {
+                    this.maskMessage(update, "There was an error :C");
+                    return Results.unauthorized(Utils.createErrorMessage("Credenciales invalidas."));
+                }
+            case "/start":
+                reply = request.session().getOptional("token")
+                        .map(s -> "Hey you!, you are logged in and your token is " + s)
+                        .orElse("Who are you, do we know each other? Introduce yourself using /login {email} {password}");
+
+                this.sendMessage(update.getChatId(), reply);
+            case "/users":
+                reply = UserRepository.all().toString();
+                this.sendMessage(update.getChatId(), reply);
+                break;
+            case "/getUser":
+                Long paramLong = Long.parseLong(parameters);
+                reply = UserRepository.find(paramLong).toString();
+
+                sendMessage(update.getChatId(), reply);
+                break;
+            case "/venuesSince":
+                reply = vc.countVenuesAddedSince(parameters).toString();
+
+                sendMessage(update.getChatId(), reply);
+                break;
+            default:
+                break;
+        }
+
+        return Results.ok();
+
     }
+
+
 }

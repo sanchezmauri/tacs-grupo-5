@@ -33,6 +33,10 @@ public class Update {
         return message != null ? message.chat.id : editedMessage.chat.id;
     }
 
+    public Integer getMessageId() {
+        return message != null ? message.messageId : editedMessage.messageId;
+    }
+
     public String getUsername() {
         return message != null ? message.chat.username : editedMessage.chat.username;
     }
@@ -51,7 +55,7 @@ public class Update {
         }
     }
 
-    private static Update fromJson(JsonNode jsonNode) throws JsonProcessingException {
+    public static Update fromJson(JsonNode jsonNode) throws JsonProcessingException {
        return new ObjectMapper().treeToValue(jsonNode,Update.class);
     }
 

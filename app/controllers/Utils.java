@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,4 +24,13 @@ public class Utils {
         return JsonNodeFactory.instance.objectNode().put("message", message);
     }
 
+    private static Pattern commandPattern = Pattern.compile( "^ */[A-z]* ?[A-z]* *$");
+    public static String getCommandFrom(String text) {
+        return commandPattern.
+                matcher(text).
+                results().
+                findFirst().
+                map(x -> text.substring(x.start(),x.end())).
+                orElse("");
+    }
 }

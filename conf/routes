@@ -6,6 +6,8 @@
 POST    /api/security/login                  controllers.AuthenticateController.authenticate(request: Request)
 POST    /api/security/logout                 controllers.AuthenticateController.logout
 
+#Telegram (Routes include the
+POST    /api/telegram/:token/receiveUpdate  controllers.TelegramController.receiveUpdate(token: String, request: Request)
 
 # users resource
 POST    /api/users                      controllers.UsersController.create(request: Request)
@@ -22,3 +24,14 @@ GET     /api/venues                 controllers.VenuesController.search(request:
 GET     /api/venues/:id/userCount   controllers.VenuesController.usersInterested(id: Long)
 GET     /api/venues/count           controllers.VenuesController.venuesAddedSince(since ?= null)
 
+# list resource
+GET     /api/lists                      controllers.ListsController.list(request: Request)
+POST    /api/lists                      controllers.ListsController.create(request: Request)
+DELETE  /api/lists/:listId              controllers.ListsController.delete(listId: Long, request: Request)
+PATCH   /api/lists/:listId              controllers.ListsController.changeListName(listId: Long, request: Request)
+
+POST    /api/lists/:listId/venues       controllers.ListsController.addPlaceToList(listId: Long, request: Request)
+DELETE  /api/lists/:listId/venues       controllers.ListsController.removePlaceFromList(listId: Long, request: Request)
+
+# Marcar lugar como visitado
+# POST /api/lists/:listId/places/{placeId}/mark controllers.ListsController.visitPlace?
