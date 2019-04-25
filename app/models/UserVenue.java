@@ -1,5 +1,7 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+
 public class UserVenue extends Venue{
     private boolean visited;
 
@@ -8,6 +10,7 @@ public class UserVenue extends Venue{
         this.visited = visited;
     }
 
+    @JsonGetter("visited")
     public boolean wasVisited() { return visited; }
 
     public void visit() { visited = true; }

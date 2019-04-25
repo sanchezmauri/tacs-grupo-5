@@ -2,6 +2,7 @@ package models;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class VenueList {
     private Long id;
@@ -23,7 +24,13 @@ public class VenueList {
     }
 
     public boolean hasVenue(Long venueId) {
-        return venues.stream().anyMatch(venue -> venue.getId().equals(venueId));
+        return getVenue(venueId).isPresent();
+    }
+
+    public Optional<UserVenue> getVenue(Long venueId) {
+        return venues.stream()
+            .filter(venue -> venue.getId().equals(venueId))
+            .findAny();
     }
 
     public Long getId() { return id; }

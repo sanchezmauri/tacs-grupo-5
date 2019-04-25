@@ -65,6 +65,7 @@ public class User implements PathBindable<User> {
         return BCrypt.checkpw(plaintextPassword, passwordHash);
     }
 
+
     // venue lists methods
     public List<VenueList> getAllLists() {
         return venueslists;
@@ -84,6 +85,8 @@ public class User implements PathBindable<User> {
         return venueslists.removeIf(list -> list.getId().equals(id));
     }
 
+    public int listsCount() { return venueslists.size(); }
+
     public void addVenueToList(VenueList list, Long venueId, String venueName) {
         if (!list.hasVenue(venueId)) {
             Optional<UserVenue> existingVenue = getVenue(venueId);
@@ -96,16 +99,15 @@ public class User implements PathBindable<User> {
 
     public Optional<UserVenue> getVenue(Long venueId) {
         return venueslists.stream()
-                .flatMap(list -> list.getVenues().stream())
-                .filter(venue -> venue.getId().equals(venueId))
+                .map(list -> list.getVenue(venueId))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .findAny();
     }
 
     public boolean hasVenue(Long venueId) {
         return getVenue(venueId).isPresent();
     }
-
-    public int listsCount() { return venueslists.size(); }
 
     public int venuesCount(Predicate<UserVenue> predicate) {
         return venueslists.stream()
@@ -114,6 +116,8 @@ public class User implements PathBindable<User> {
                 .collect(Collectors.toSet())
                 .size();
     }
+    // venues list methods end
+
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     public LocalDateTime getLastAccess() { return lastAccess; }

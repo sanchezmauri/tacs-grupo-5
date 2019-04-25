@@ -99,7 +99,7 @@ public class ListsController extends Controller {
 
     @Authenticate(types = {"SYSUSER"})
     @With(VenueListAction.class)
-    public Result addPlaceToList(Long listId, Http.Request request) {
+    public Result addVenueToList(Long listId, Http.Request request) {
         // todo: extraer parseo de json a algún lugar
         // esto de decir missing field y toda la gilada
         JsonNode venueIdJson = request.body().asJson();
@@ -124,7 +124,7 @@ public class ListsController extends Controller {
 
     @Authenticate(types = {"SYSUSER"})
     @With(VenueListAction.class)
-    public Result removePlaceFromList(Long listId, Http.Request request) {
+    public Result removeVenueFromList(Long listId, Http.Request request) {
         JsonNode venueIdJson = request.body().asJson();
 
         if (!venueIdJson.has("id"))
@@ -140,6 +140,21 @@ public class ListsController extends Controller {
             return ok(Json.toJson(list));
         else
             return badRequest(Utils.createErrorMessage("No venue with id " + venueId.toString()));
+    }
+
+    @Authenticate(types = {"SYSUSER"})
+    @With(VenueListAction.class)
+    public Result visitVenue(Long listId, Long venueId, Http.Request request) {
+        VenueList venueList = request.attrs().get(RequestAttrs.LIST);
+
+        return venueList.getVenue(venueId)
+                .map(venue -> {
+                    venue.visit();
+                    return ok(Json.toJson(venue));
+                })
+                .orElse(
+                    badRequest(Utils.createErrorMessage("No venue with id = " + venueId.toString()))
+                );
     }
 
     public Result compareLists(Long listId1, Long listId2) {

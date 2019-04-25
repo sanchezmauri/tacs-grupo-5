@@ -26,10 +26,14 @@ GET     /api/venues/count                   controllers.VenuesController.venuesA
 GET     /api/lists                          controllers.ListsController.list(request: Request)
 POST    /api/lists                          controllers.ListsController.create(request: Request)
 DELETE  /api/lists/:listId                  controllers.ListsController.delete(listId: Long, request: Request)
+
+# cambiar nombre de lista
 PATCH   /api/lists/:listId                  controllers.ListsController.changeListName(listId: Long, request: Request)
 
-POST    /api/lists/:listId/venues           controllers.ListsController.addPlaceToList(listId: Long, request: Request)
-DELETE  /api/lists/:listId/venues           controllers.ListsController.removePlaceFromList(listId: Long, request: Request)
+# agregar/sacar venue a lista
+POST    /api/lists/:listId/venues           controllers.ListsController.addVenueToList(listId: Long, request: Request)
+DELETE  /api/lists/:listId/venues           controllers.ListsController.removeVenueFromList(listId: Long, request: Request)
 
 # Marcar lugar como visitado
-# POST /api/lists/:listId/places/{placeId}/mark controllers.ListsController.visitPlace?
+# podría ser algo como: PATCH /api/user/venues
+PATCH /api/lists/:listId/venues/:venueId    controllers.ListsController.visitVenue(listId: Long, venueId: Long, request: Request)
