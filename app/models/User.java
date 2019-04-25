@@ -84,6 +84,23 @@ public class User implements PathBindable<User> {
         return venueslists.removeIf(list -> list.getId().equals(id));
     }
 
+    public void addVenueToList(VenueList list, Long venueId, String venueName) {
+        if (!list.hasVenue(venueId)) {
+            Optional<UserVenue> existingVenue = getVenue(venueId);
+
+            list.addVenue(
+                existingVenue.orElse(new UserVenue(venueId, venueName, false))
+            );
+        }
+    }
+
+    public Optional<UserVenue> getVenue(Long venueId) {
+        return venueslists.stream()
+                .flatMap(list -> list.getVenues().stream())
+                .filter(venue -> venue.getId().equals(venueId))
+                .findAny();
+    }
+
     public int listsCount() { return venueslists.size(); }
 
     public int placesCount(Function<Object, Boolean> predicate) {

@@ -4,7 +4,6 @@ import annotations.Authenticate;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.actions.VenueListAction;
 import models.User;
-import models.UserVenue;
 import models.VenueList;
 import models.Venue;
 import play.libs.Json;
@@ -15,7 +14,6 @@ import play.mvc.With;
 import repos.UserRepository;
 
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 public class ListsController extends Controller {
@@ -44,6 +42,10 @@ public class ListsController extends Controller {
         return ok(Json.toJson(allLists));
     }
 
+    // acá dejo pasar solo users porque
+    // agrego el venue al user que está logueado
+    // por ahí si el admin quiere agregar a 1 user un lugar
+    // debería hacer: users/:userId/lists/:listId en vez de lists/:listId
     @Authenticate(types = {"SYSUSER"})
     public Result create(Http.Request request) {
         // extraer esto en algún lado tipo validar json o algo
@@ -75,6 +77,7 @@ public class ListsController extends Controller {
         User user = request.attrs().get(RequestAttrs.USER);
 
         user.removeList(listId);
+
         return ok();
     }
 
@@ -83,45 +86,60 @@ public class ListsController extends Controller {
     public Result changeListName(Long listId, Http.Request request) {
         JsonNode changeJson = request.body().asJson();
 
-        if (!changeJson.has("name")) {
+        if (!changeJson.has("name"))
             return badRequest(Utils.createErrorMessage("Missing field: name."));
-        }
 
         VenueList list = request.attrs().get(RequestAttrs.LIST);
-
         String newName = changeJson.get("name").asText();
+
         list.setName(newName);
+
         return ok(Json.toJson(list));
     }
 
-    // usado por addPlaceToList y removePlaceFromList
-    private Result venueListHandler(Long listId, Http.Request request, BiConsumer<VenueList, Long> venueListOperation) {
-        JsonNode venueIdJson = request.body().asJson();
-
-        if (!venueIdJson.has("venueId")) {
-            return badRequest("Missing field: venueId");
-        }
-
-        long venueId = venueIdJson.get("venueId").asLong();
-
-        VenueList list = request.attrs().get(RequestAttrs.LIST);
-
-        venueListOperation.accept(list, venueId);
-
-        return ok();
-    }
-
-    // acá dejo solo users porque necesito agregarle al user un
     @Authenticate(types = {"SYSUSER"})
     @With(VenueListAction.class)
     public Result addPlaceToList(Long listId, Http.Request request) {
-        return venueListHandler(listId, request, (list, venueId) -> list.addVenue(new UserVenue(venueId, "", false)));
+        // todo: extraer parseo de json a algún lugar
+        // esto de decir missing field y toda la gilada
+        JsonNode venueIdJson = request.body().asJson();
+
+        if (!venueIdJson.has("id"))
+            return badRequest("Missing field: id");
+
+        if  (!venueIdJson.has("name"))
+            return badRequest("Missing field: name");
+
+        long id = venueIdJson.get("id").asLong();
+        String name = venueIdJson.get("name").asText();
+
+
+        User user = request.attrs().get(RequestAttrs.USER);
+        VenueList list = request.attrs().get(RequestAttrs.LIST);
+
+
+        user.addVenueToList(list, id, name);
+        return ok(Json.toJson(list));
     }
 
     @Authenticate(types = {"SYSUSER"})
     @With(VenueListAction.class)
     public Result removePlaceFromList(Long listId, Http.Request request) {
-        return venueListHandler(listId, request, VenueList::removeVenue);
+        JsonNode venueIdJson = request.body().asJson();
+
+        if (!venueIdJson.has("id"))
+            return badRequest("Missing field: venueId");
+
+        Long venueId = venueIdJson.get("id").asLong();
+
+
+        VenueList list = request.attrs().get(RequestAttrs.LIST);
+
+
+        if (list.removeVenue(venueId))
+            return ok(Json.toJson(list));
+        else
+            return badRequest(Utils.createErrorMessage("No venue with id " + venueId.toString()));
     }
 
     public Result compareLists(Long listId1, Long listId2) {

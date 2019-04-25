@@ -18,8 +18,12 @@ public class VenueList {
         venues.add(venue);
     }
 
-    public void removeVenue(Long venueId) {
-        venues.removeIf(venue -> venue.getId().equals(venueId));
+    public boolean removeVenue(Long venueId) {
+        return venues.removeIf(venue -> venue.getId().equals(venueId));
+    }
+
+    public boolean hasVenue(Long venueId) {
+        return venues.stream().anyMatch(venue -> venue.getId().equals(venueId));
     }
 
     public Long getId() { return id; }
