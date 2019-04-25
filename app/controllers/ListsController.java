@@ -10,6 +10,7 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
+import play.mvc.With;
 import repos.UserRepository;
 
 import java.util.*;
@@ -68,17 +69,16 @@ public class ListsController extends Controller {
     }
 
     @Authenticate(types = {"SYSUSER"})
+    @With(VenueListAction.class)
     public Result delete(Long listId, Http.Request request) {
         User user = request.attrs().get(RequestAttrs.USER);
 
-        if (user.removeList(listId)) {
-            return ok();
-        } else {
-            return listNotFound(user, listId);
-        }
+        user.removeList(listId);
+        return ok();
     }
 
     @Authenticate(types = {"SYSUSER"})
+    @With(VenueListAction.class)
     public Result changeListName(Long listId, Http.Request request) {
         JsonNode changeJson = request.body().asJson();
 
@@ -86,16 +86,11 @@ public class ListsController extends Controller {
             return badRequest(Utils.createErrorMessage("Missing field: name."));
         }
 
-        User user = request.attrs().get(RequestAttrs.USER);
-        Optional<VenueList> list = user.getList(listId);
+        VenueList list = request.attrs().get(RequestAttrs.LIST);
 
-        return list.map(l -> {
-            String newName = changeJson.get("name").asText();
-            l.setName(newName);
-            return ok(Json.toJson(l));
-        }).orElseGet(
-            () -> listNotFound(user, listId)
-        );
+        String newName = changeJson.get("name").asText();
+        list.setName(newName);
+        return ok(Json.toJson(list));
     }
 
     // usado por addPlaceToList y removePlaceFromList
@@ -107,34 +102,25 @@ public class ListsController extends Controller {
         }
 
         long venueId = venueIdJson.get("venueId").asLong();
-        User user = request.attrs().get(RequestAttrs.USER);
 
-        Optional<VenueList> maybeList = user.getList(listId);
+        VenueList list = request.attrs().get(RequestAttrs.LIST);
 
-        if (!maybeList.isPresent()) {
-            return listNotFound(user, listId);
-        }
-
-        venueListOperation.accept(maybeList.get(), venueId);
+        venueListOperation.accept(list, venueId);
 
         return ok();
     }
 
     // acá dejo solo users porque necesito agregarle al user un
     @Authenticate(types = {"SYSUSER"})
+    @With(VenueListAction.class)
     public Result addPlaceToList(Long listId, Http.Request request) {
         return venueListHandler(listId, request, (list, venueId) -> list.addVenue(new UserVenue(venueId, "", false)));
     }
 
     @Authenticate(types = {"SYSUSER"})
+    @With(VenueListAction.class)
     public Result removePlaceFromList(Long listId, Http.Request request) {
         return venueListHandler(listId, request, VenueList::removeVenue);
-    }
-
-    private Result listNotFound(User user, Long id) {
-        return notFound(
-                Utils.createErrorMessage("User [" + user.getId().toString() + "] hasn't list [" + id.toString() + "]")
-        );
     }
 
     public Result compareLists(Long listId1, Long listId2) {
