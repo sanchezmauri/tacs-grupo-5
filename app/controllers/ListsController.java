@@ -4,8 +4,9 @@ import annotations.Authenticate;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.actions.VenueListAction;
 import models.User;
+import models.UserVenue;
 import models.VenueList;
-import models.Venue;
+import play.libs.F;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -157,10 +158,75 @@ public class ListsController extends Controller {
                 );
     }
 
-    public Result compareLists(Long listId1, Long listId2) {
-        List<Venue> commonVenues = new ArrayList<>();
-        commonVenues.add(new Venue(1L, "Maxi Kiosco"));
-        commonVenues.add(new Venue(2L, "Verdulería"));
+    @Authenticate(types = {"ROOT"})
+    public Result compareUsersLists(Http.Request request) {
+        // requerir query params user1, list1, user2, list2
+        Map<String, Long> requiredQueryParams = new HashMap<>();
+        requiredQueryParams.put("user1", null);
+        requiredQueryParams.put("list1", null);
+        requiredQueryParams.put("user2", null);
+        requiredQueryParams.put("list2", null);
+
+        for (Map.Entry<String, Long> requiredParamName : requiredQueryParams.entrySet()) {
+            F.Either<String, Long> result = Utils.parseLongQueryParam(request, requiredParamName.getKey());
+
+            if (result.left.isPresent()) {
+                return badRequest(
+                    Utils.createErrorMessage(result.left.get())
+                );
+            }
+
+            requiredQueryParams.put(
+                requiredParamName.getKey(),
+                result.right.get()
+            );
+        }
+
+        Long userId1 = requiredQueryParams.get("user1");
+        Long userId2 = requiredQueryParams.get("user2");
+        Long listId1 = requiredQueryParams.get("list1");
+        Long listId2 = requiredQueryParams.get("list2");
+
+        F.Either<Result, VenueList> errOrlist1 = getListFromUser(userId1, listId1);
+
+        if (errOrlist1.left.isPresent())
+            return errOrlist1.left.get();
+
+        F.Either<Result, VenueList> errOrlist2 = getListFromUser(userId2, listId2);
+
+        if (errOrlist2.left.isPresent())
+            return errOrlist2.left.get();
+
+
+        Set<Long> list2VenuesIds = errOrlist2.right.get().getVenues().stream()
+                .map(UserVenue::getId)
+                .collect(Collectors.toSet());
+
+        Set<Long> commonVenues = errOrlist1.right.get().getVenues().stream()
+                .map(UserVenue::getId)
+                .filter(list2VenuesIds::contains)
+                .collect(Collectors.toSet());
+
+
         return ok(Json.toJson(commonVenues));
+    }
+
+    private F.Either<Result, VenueList> getListFromUser(Long userId, Long listId) {
+        // obtener usuarios y listas
+        Optional<User> user = UserRepository.find(userId);
+
+        if (!user.isPresent())
+            return F.Either.Left(
+                badRequest("No user with id = " + userId.toString())
+            );
+
+        Optional<VenueList> list = user.get().getList(listId);
+
+        if (!list.isPresent())
+            return F.Either.Left(
+                badRequest("No list with id = " + listId.toString())
+            );
+
+        return F.Either.Right(list.get());
     }
 }

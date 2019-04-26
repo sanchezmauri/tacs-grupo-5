@@ -37,3 +37,6 @@ DELETE  /api/lists/:listId/venues           controllers.ListsController.removeVe
 # Marcar lugar como visitado
 # podría ser algo como: PATCH /api/user/venues
 PATCH /api/lists/:listId/venues/:venueId    controllers.ListsController.visitVenue(listId: Long, venueId: Long, request: Request)
+
+# por query str deberían venir: user1, list1, user2, list2
+GET /api/lists/common-venues                controllers.ListsController.compareUsersLists(request: Request)

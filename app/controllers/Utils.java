@@ -1,21 +1,9 @@
 package controllers;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import play.libs.F;
+import play.mvc.Http;
 
 public class Utils {
 
@@ -23,4 +11,14 @@ public class Utils {
         return JsonNodeFactory.instance.objectNode().put("message", message);
     }
 
+
+    public static F.Either<String, Long> parseLongQueryParam(Http.Request request, String name) {
+        String queryParam = request.getQueryString(name);
+
+        if (queryParam == null || queryParam.isEmpty()) {
+            return F.Either.Left("Missing query param: " + name);
+        }
+
+        return F.Either.Right(Long.parseLong(queryParam));
+    }
 }
