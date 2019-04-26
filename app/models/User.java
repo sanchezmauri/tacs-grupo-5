@@ -15,9 +15,6 @@ import java.util.stream.Collectors;
 
 public class User implements PathBindable<User> {
 
-    public enum Rol{
-        ROOT,SYSUSER
-    }
 
 
     private Rol rol;
@@ -134,4 +131,9 @@ public class User implements PathBindable<User> {
         return id.toString();
     }
     public String javascriptUnbind() { return null; }
+
+    @Override
+    public String toString() {
+        return this.name + " (" + this.email +")";
+    }
 }

@@ -102,13 +102,18 @@ public class VenuesController extends Controller {
     }
 
     public Result venuesAddedSince(String since) {
+        return ok(Json.toJson(countVenuesAddedSince(since))).as("application/json");
+    }
+
+
+    public Long countVenuesAddedSince(String since) {
         Integer sinceDays = parseSince(since);
 
         Date current = new Date();
-        return ok(Json.toJson(venues.stream()
+        return venues.stream()
                 .map(x -> new VenueListed(x, new Random().nextBoolean(), new Date(2019,Calendar.MARCH,new Random().nextInt(25))))
                 .filter(x -> (TimeUnit.DAYS.convert(current.getTime() - x.getDateAdded().getTime(), TimeUnit.MILLISECONDS)) <= sinceDays.longValue())
-                .count())).as("application/json");
+                .count();
     }
 
     private String[] parsePositionParam(Http.Request request) {

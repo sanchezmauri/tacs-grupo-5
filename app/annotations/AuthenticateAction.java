@@ -1,6 +1,7 @@
 package annotations;
 
 import controllers.RequestAttrs;
+import models.Rol;
 import models.User;
 import play.mvc.Action;
 import play.mvc.Http;
@@ -34,7 +35,7 @@ public class AuthenticateAction extends Action<Authenticate> {
             }
 
             boolean hasRole = Arrays.stream(this.configuration.types())
-                    .anyMatch(r -> User.Rol.valueOf(r).equals(user.get().getRol()));
+                    .anyMatch(r -> Rol.valueOf(r).equals(user.get().getRol()));
 
             if (hasRole) {
                 req = req.addAttr(RequestAttrs.USER, user.get());

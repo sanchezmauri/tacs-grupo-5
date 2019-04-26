@@ -1,5 +1,6 @@
 package repos;
 
+import models.Rol;
 import models.User;
 
 import java.util.ArrayList;
@@ -10,9 +11,9 @@ import java.util.Optional;
 public class UserRepository {
     private static List<User> users = new ArrayList<>(
         Arrays.asList(
-            new User(1L, "José", "root@root.com", "root", User.Rol.ROOT),
-            new User(2L, "Pepe","sysuser@sysuser.com" ,"sysuser", User.Rol.SYSUSER),
-            new User(3L, "Otro","otro@gmail.com", "orto", User.Rol.SYSUSER)
+            new User(1L, "José", "root@root.com", "root", Rol.ROOT),
+            new User(2L, "Pepe","sysuser@sysuser.com" ,"sysuser", Rol.SYSUSER),
+            new User(3L, "Otro","otro@gmail.com", "orto", Rol.SYSUSER)
         )
     );
 

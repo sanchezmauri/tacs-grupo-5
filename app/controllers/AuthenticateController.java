@@ -3,12 +3,14 @@ package controllers;
 import annotations.Authenticate;
 import com.fasterxml.jackson.databind.JsonNode;
 import models.User;
+import models.communication.LoginResult;
 import org.mindrot.jbcrypt.BCrypt;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import repos.UserRepository;
 import services.CodesService;
+import services.UsersService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,20 +25,13 @@ public class AuthenticateController extends Controller {
             return badRequest(Utils.createErrorMessage("Por favor ingrese mail y contraseña para ingresar al sistema."));
         }
 
-        Optional<User> user = UserRepository.findByEmail(email.textValue());
+        LoginResult result = UsersService.login(email.textValue(),password.textValue());
 
-        if (!user.isPresent()) {
-            return badRequest(Utils.createErrorMessage("Usuario inexistente."));
-        }
-
-        if (BCrypt.checkpw(password.asText(),user.get().getPasswordHash()))
-        {
-            Map<String, Object> token = new HashMap<>();
-            token.put("userId",user.get().getId());
-            return ok("Ingreso correctamente.").addingToSession(request, "token", CodesService.generateTokenFromMap(token));
-        }else
+        if (result.success()) {
+            return ok("Ingreso correctamente.").addingToSession(request, "token", result.token);
+        } else {
             return unauthorized(Utils.createErrorMessage("Credenciales invalidas."));
-
+        }
 
     }
     @Authenticate(types = {"ROOT","SYSUSER"})

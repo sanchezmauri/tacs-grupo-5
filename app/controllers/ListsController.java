@@ -3,10 +3,8 @@ package controllers;
 import annotations.Authenticate;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.actions.VenueListAction;
-import models.User;
-import models.UserVenue;
-import models.VenueList;
 import play.libs.F;
+import models.*;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -30,7 +28,7 @@ public class ListsController extends Controller {
         User user = request.attrs().get(RequestAttrs.USER);
         List<VenueList> allLists;
 
-        if (user.getRol().equals(User.Rol.ROOT)) {
+        if (user.getRol().equals(Rol.ROOT)) {
             allLists = UserRepository
                     .all()
                     .stream()
@@ -215,14 +213,14 @@ public class ListsController extends Controller {
         // obtener usuarios y listas
         Optional<User> user = UserRepository.find(userId);
 
-        if (!user.isPresent())
+        if (user.isEmpty())
             return F.Either.Left(
                 badRequest("No user with id = " + userId.toString())
             );
 
         Optional<VenueList> list = user.get().getList(listId);
 
-        if (!list.isPresent())
+        if (list.isEmpty())
             return F.Either.Left(
                 badRequest("No list with id = " + listId.toString())
             );
