@@ -1,5 +1,6 @@
-package controllers;
+package controllers.actions;
 
+import controllers.RequestAttrs;
 import models.User;
 import play.mvc.Result;
 import play.mvc.Http;

@@ -5,16 +5,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import models.Rol;
 import models.User;
+import models.UserVenue;
 import models.exceptions.UserException;
 import play.libs.Json;
 import play.mvc.*;
 import repos.UserRepository;
 import services.UsersService;
 
-import java.lang.reflect.Type;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class UsersController extends Controller {
     @Authenticate(types = {"ROOT"})
@@ -62,18 +62,19 @@ public class UsersController extends Controller {
         );
     }
 
+    private static Predicate<UserVenue> ANY_VENUE = venue -> true;
+    private Predicate<UserVenue> makeVisitedPred(Boolean visited) {
+        return venue -> venue.wasVisited() == visited;
+    }
+
     @Authenticate(types = {"ROOT","SYSUSER"})
-    public Result placesCount(User user, Optional<Boolean> visitedOpt) {
-        // todo: mapear boolean visited a predicado visited
-        /*Function<Object, Boolean> predicate = visitedOpt.map(
-            visited -> (Object place) -> place.visited.equals(visited)
-        ).orElse(
-            (Object place) -> Boolean.TRUE
-        );*/
-        Function<Object, Boolean> predicate = (Object place) -> Boolean.TRUE;
+    public Result venuesCount(User user, Optional<Boolean> visitedOpt) {
+        Predicate<UserVenue> visitedPred = visitedOpt
+                .map(this::makeVisitedPred)
+                .orElse(ANY_VENUE);
 
         return ok(
-            Json.newObject().put("placesCount", user.placesCount(predicate))
+            Json.newObject().put("venuesCount", user.venuesCount(visitedPred))
         );
     }
 

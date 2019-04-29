@@ -17,6 +17,7 @@ import models.Venue;
 import play.libs.Json;
 import play.mvc.*;
 import play.libs.ws.*;
+import repos.UserRepository;
 
 
 public class VenuesController extends Controller {
@@ -66,28 +67,17 @@ public class VenuesController extends Controller {
         public Date getDateAdded() { return dateAdded; }
     }
 
-    protected class VenueInterested extends Venue {
-
-        private Long usersInterested;
-
-        public VenueInterested(Venue base,Long usersInterested) {
-            super(base.getId(), base.getName());
-            this.usersInterested = usersInterested;
-        }
-
-        public Long getUsersInterested() { return usersInterested; }
-    }
-
     @Authenticate(types = {"ROOT","SYSUSER"})
     public Result usersInterested(Long venueId) {
-        return venues.stream()
-                .filter(x -> x.getId().equals(venueId))
-                .findFirst()
-                .map(x -> new VenueInterested(x, new Random().nextLong()))
-                .map(x -> ok(Json.toJson(x)).as("application/json"))
-                .orElse(noContent());
-    }
+        long interestedCount = UserRepository.all()
+                .stream()
+                .filter(user -> user.hasVenue(venueId))
+                .count();
 
+        return ok(
+            Json.newObject().put("usersInterested", interestedCount)
+        );
+    }
 
 
     private Map<String, Integer> periodToDays = new HashMap<String, Integer>() {{
