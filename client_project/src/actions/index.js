@@ -1,7 +1,7 @@
 import * as types from './types';
 import {login as loginRequest, logout as logoutRequest} from '../api';
 import history from '../routes/history';
-import {HOME as HOME_ROUTE} from '../routes/paths';
+import {HOME as HOME_ROUTE, LOGIN as LOGIN_ROUTE} from '../routes/paths';
 import statusCodes from 'http-status-codes'
 
 export const login = (email, password) =>
@@ -24,6 +24,7 @@ export const logout = () =>
     (dispatch) => {
         logoutRequest().then(response => {
             dispatch({ type: types.LOGOUT });
+            history.push(LOGIN_ROUTE);
         }).catch(error => {
             console.log("Error login out", error);
         })
