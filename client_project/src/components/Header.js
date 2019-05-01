@@ -1,18 +1,50 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 
-import * as urls from '../routes/urls';
+import * as paths from '../routes/paths';
+import { logout } from '../actions';
+import history from '../routes/history'
 
-const Header = () => {
-    return (
-        <nav>
-            <ul>
-            <li>
-                <Link to={urls.HOME}>Home</Link>
-            </li>
-            </ul>
-        </nav>
-    );
+
+class Header extends React.Component {
+    renderLogin() {
+        let text = '';
+        let clickAction = null;
+
+        if (this.props.loggedIn) {
+            text = 'log out';
+            clickAction = click => this.props.logout();
+        } else {
+            text = 'log in';
+            clickAction = click => history.push(paths.LOGIN);
+        }
+
+        return <button onClick={clickAction}>{text}</button>;
+    }
+
+    render() {
+        return (
+            <nav>
+                <ul>
+                    <li>
+                        <Link to={paths.HOME}>Home</Link>
+                    </li>
+
+                    <li>
+                        {this.renderLogin()}
+                    </li>
+                </ul>
+            </nav>
+        );
+    }
 }
 
-export default Header;
+const mapStateToProps = state => ({
+    loggedIn: state.loggedIn
+})
+
+export default connect(
+    mapStateToProps,
+    { logout }
+)(Header);
