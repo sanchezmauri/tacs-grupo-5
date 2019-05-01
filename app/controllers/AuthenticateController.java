@@ -28,7 +28,7 @@ public class AuthenticateController extends Controller {
         LoginResult result = UsersService.login(email.textValue(),password.textValue());
 
         if (result.success()) {
-            return ok("Ingreso correctamente.").addingToSession(request, "token", result.token);
+            return ok().addingToSession(request, "token", result.token);
         } else {
             return unauthorized(Utils.createErrorMessage("Credenciales invalidas."));
         }
@@ -36,7 +36,7 @@ public class AuthenticateController extends Controller {
     }
     @Authenticate(types = {"ROOT","SYSUSER"})
     public Result logout() {
-        return ok("Deslogueo correcto").withNewSession();
+        return ok().withNewSession();
     }
 
 }

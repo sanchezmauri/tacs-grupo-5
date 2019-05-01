@@ -6,11 +6,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import play.libs.F;
 import play.mvc.Http;
+import play.mvc.Result;
+
+import static play.mvc.Results.unauthorized;
 
 public class Utils {
 
     public static JsonNode createErrorMessage(String message) {
         return JsonNodeFactory.instance.objectNode().put("message", message);
+    }
+
+    public static Result unauthorizedErrorJson(String errorMessage) {
+        return unauthorized(createErrorMessage(errorMessage));
     }
 
     private static Pattern commandPattern = Pattern.compile( "^ */[A-z]* ?[A-z]* *$");
