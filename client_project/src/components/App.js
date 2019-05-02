@@ -6,8 +6,9 @@ import * as paths from '../routes/paths'
 
 import Header from './Header'
 import Login from './Login'
-import VenueSuggestions from './VenueSuggestions'
-import VenueList from './VenueList'
+import SearchVenues from './venues/SearchVenues'
+// import VenueSuggestions from './venues/VenueSuggestions'
+import VenueList from './lists/VenueList'
 
 
 const App = () => {
@@ -16,7 +17,7 @@ const App = () => {
             <Router history={history}>
                 <Header />
                 
-                <Route path={paths.HOME} exact component={VenueSuggestions} />
+                <Route path={paths.HOME} exact component={SearchVenues} />
                 <Route path={paths.LOGIN} component={Login} />
                 <Route path={paths.VENUE_LIST} component={VenueList} />
             </Router>
