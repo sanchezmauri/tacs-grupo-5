@@ -26,3 +26,17 @@ export const searchVenues = (latitude, longitude, query) => {
         '/venues', { params }
     );
 } 
+
+export const fetchLists = () =>
+    axios.get('/lists');
+
+export const createList = (name) =>
+    axios.post('/lists', { name });
+
+export const deleteList = (id) =>
+    axios.delete(`/lists/${id}`);
+
+export const changeName = (id, name) =>
+    axios.patch(`/lists/${id}`, { name });
+
+

@@ -1,3 +1,7 @@
 export const LOGIN = '/login';
 export const HOME = '/';
-export const VENUE_LIST = '/lists/:id';
+export const SEARCH = '/venues/search';
+
+// lists paths
+export const LISTS = '/lists';
+export const LIST = '/lists/:id';

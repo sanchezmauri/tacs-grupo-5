@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import * as paths from '../routes/paths';
-import { logout } from '../actions';
+import { logout } from '../actions/auth';
 import history from '../routes/history'
 
 
@@ -28,7 +28,11 @@ class Header extends React.Component {
             <nav>
                 <ul>
                     <li>
-                        <Link to={paths.HOME}>Home</Link>
+                        <Link to={paths.SEARCH}>Buscar Lugares</Link>
+                    </li>
+                    
+                    <li>
+                        <Link to={paths.LISTS}>Mis Listas</Link>
                     </li>
 
                     <li>

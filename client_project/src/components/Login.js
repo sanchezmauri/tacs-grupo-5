@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 
-import { login } from '../actions'
+import { login } from '../actions/auth'
 
 class Login extends React.Component {
     constructor(props) {
@@ -17,8 +17,7 @@ class Login extends React.Component {
 
     onSubmit(submissionEvent) {
         submissionEvent.preventDefault();
-        console.log(this.state.email);
-        console.log(this.state.password);
+
         this.props.login(
             this.state.email,
             this.state.password

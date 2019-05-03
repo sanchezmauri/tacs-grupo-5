@@ -6,6 +6,7 @@ import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 
 import reducers from './reducers'
+import Modal from 'react-modal'
 
 // esto es para que ande una tool de chrome para redux
 const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -26,3 +27,5 @@ ReactDOM.render(
     </Provider>,
     document.getElementById('root')
 );
+
+Modal.setAppElement('#root');

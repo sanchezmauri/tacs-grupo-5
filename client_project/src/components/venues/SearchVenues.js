@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { searchVenues, findCoords } from '../../actions';
+import { searchVenues, findCoords } from '../../actions/venues';
 import SearchBar from './SearchBar';
 import VenueSearchResult from './VenueSearchResult'
 
