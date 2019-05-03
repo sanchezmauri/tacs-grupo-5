@@ -24,7 +24,7 @@ const App = () => {
                 
                 <Route path={paths.HOME} exact component={SearchVenues} />
                 <Route path={paths.LOGIN} component={Login} />
-                <Route path={paths.LISTS} component={ListsHome} />
+                <Route path={paths.LISTS} exact component={ListsHome} />
                 <Route path={paths.LIST} component={VenueList} />
             </Router>
         </div>

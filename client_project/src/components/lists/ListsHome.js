@@ -4,6 +4,8 @@ import Modal from 'react-modal';
 
 import {createList as createListRequest} from '../../api';
 import { fetchListsRequest, createList as createListAction } from '../../actions/lists';
+import history from '../../routes/history';
+import {linkToList} from '../../routes/paths';
 import ListNamePopup from './ListNamePopup';
 import ListsList from './ListsList';
 
@@ -19,6 +21,11 @@ class ListsHome extends React.Component {
         this.hideModal = this.hideModal.bind(this);
         this.showModal = this.showModal.bind(this);
         this.receiveNewListName = this.receiveNewListName.bind(this);
+        this.deleteList = this.deleteList.bind(this);
+    }
+    
+    componentDidMount() {
+        this.props.fetchListsRequest();
     }
 
     hideModal() {
@@ -29,6 +36,8 @@ class ListsHome extends React.Component {
         this.setState({showModal: true});
     }
 
+    // event handlers of children
+    // handles modal create popup
     receiveNewListName(name, listNamePopup) {        
         createListRequest(name).then(response => {
             this.props.createListAction(response.data);
@@ -38,8 +47,13 @@ class ListsHome extends React.Component {
         })
     }
 
-    componentDidMount() {
-        this.props.fetchListsRequest();
+    // handles listslist edit callback
+    editList(list) {
+        history.push(linkToList(list.id));
+    }
+
+    deleteList(list) {
+        console.log("todo: delete ", list.id);
     }
 
     renderCreate() {
@@ -74,7 +88,11 @@ class ListsHome extends React.Component {
         return (
             <div>
                 <h1>Tus listas de lugares</h1>
-                <ListsList lists={this.props.lists} />
+                <ListsList
+                    lists={this.props.lists}
+                    editList={this.editList}
+                    deleteList={this.deleteList}
+                />
                 {this.renderCreate()}
                 {this.renderModal()}
             </div>

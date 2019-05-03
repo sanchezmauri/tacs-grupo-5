@@ -1,11 +1,29 @@
 import React from 'react'
+import { connect } from 'react-redux';
 
-const VenueList = () => {
-    return (
-        <div>
-            VenueList
-        </div>
-    );
+
+class VenueList extends React.Component {
+    render() {
+        if (!this.props.list) {
+            console.log("got no list");
+            return <div>Loading...</div>;
+        }
+
+        const { list } = this.props;
+        return (
+            <div>
+                {list.name}
+            </div>
+        );
+    }
 }
 
-export default VenueList;
+const mapStateToProps = (state, ownProps) => {
+    const listId = ownProps.match.params.id;
+    
+    return {
+        list: state.lists[listId]
+    }
+}
+
+export default connect(mapStateToProps)(VenueList);
