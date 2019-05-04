@@ -2,25 +2,27 @@ import React from 'react';
 import { connect } from 'react-redux';
 import Modal from 'react-modal';
 
-import {createList as createListRequest} from '../../api';
-import { fetchListsRequest, createList as createListAction } from '../../actions/lists';
+import {createList as createListRequest, deleteList as deleteListRequest} from '../../api';
+import { fetchListsRequest, createList as createListAction, deleteList as deleteListAction } from '../../actions/lists';
 import history from '../../routes/history';
 import {linkToList} from '../../routes/paths';
 import ListNamePopup from './ListNamePopup';
 import ListsList from './ListsList';
+import ConfirmationPopup from '../ConfirmationPopup';
 
 class ListsHome extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            showModal: false,
+            popupToShow: null,
             creatingList: false
         };
 
-        this.hideModal = this.hideModal.bind(this);
-        this.showModal = this.showModal.bind(this);
+        this.hidePopup = this.hidePopup.bind(this);
+        this.showPopup = this.showPopup.bind(this);
         this.receiveNewListName = this.receiveNewListName.bind(this);
+        this.showDeleteListPopup = this.showDeleteListPopup.bind(this);
         this.deleteList = this.deleteList.bind(this);
     }
     
@@ -28,12 +30,12 @@ class ListsHome extends React.Component {
         this.props.fetchListsRequest();
     }
 
-    hideModal() {
-        this.setState({showModal: false});
+    hidePopup() {
+        this.setState({popupToShow: null});
     }
     
-    showModal() {
-        this.setState({showModal: true});
+    showPopup(popup) {
+        this.setState({popupToShow: popup});
     }
 
     // event handlers of children
@@ -41,7 +43,7 @@ class ListsHome extends React.Component {
     receiveNewListName(name, listNamePopup) {        
         createListRequest(name).then(response => {
             this.props.createListAction(response.data);
-            this.hideModal();
+            this.hidePopup();
         }).catch(error => {
             listNamePopup.showError(error);
         })
@@ -52,15 +54,53 @@ class ListsHome extends React.Component {
         history.push(linkToList(list.id));
     }
 
-    deleteList(list) {
-        console.log("todo: delete ", list.id);
+    deleteList(listId) {
+        deleteListRequest(listId).then(response => {
+            this.props.deleteListAction(listId);
+        }).catch(error => {
+            this.state.setState({error});
+        }).then(
+            this.hidePopup
+        );
+    }
+
+    showDeleteListPopup(list) {
+        const left = {
+            text: 'Borrar',
+            class: 'ui negative button',
+            callback: () => this.deleteList(list.id)
+        };
+
+        const right = {
+            text: 'Cancelar',
+            class: 'ui button',
+            callback: () => {
+                this.hidePopup();
+            }
+        };
+
+        const deleteConfirmation = <ConfirmationPopup
+            title={`Eliminar Lista`}
+            message={`Estás seguro de eliminar la lista ${list.name}?`}
+            left={left}
+            right={right}
+        />;
+
+        this.showPopup(deleteConfirmation);
     }
 
     renderCreate() {
+        const createListPopup = <ListNamePopup
+            title="Crear lista"
+            name="Nueva Lista"
+            nameHandler={this.receiveNewListName}
+            cancelHandler={this.hidePopup}
+        />;
+
         return (
             <button
                 className="ui basic button"
-                onClick={this.showModal}>
+                onClick={click => this.showPopup(createListPopup)}>
                 <i className="icon plus"></i>
                 Nueva Lista de Lugares
             </button>
@@ -70,16 +110,11 @@ class ListsHome extends React.Component {
     renderModal() {
         return (
             <Modal
-                isOpen={this.state.showModal}
-                onRequestClose={this.hideModal}
+                isOpen={this.state.popupToShow !== null}
+                onRequestClose={this.hidePopup}
                 shouldCloseOnOverlayClick={true}
             >
-                <ListNamePopup
-                    title="Crear lista"
-                    name="Nueva Lista"
-                    nameHandler={this.receiveNewListName}
-                    cancelHandler={this.hideModal}
-                />
+                {this.state.popupToShow}
             </Modal>
         );
     }
@@ -91,7 +126,7 @@ class ListsHome extends React.Component {
                 <ListsList
                     lists={this.props.lists}
                     editList={this.editList}
-                    deleteList={this.deleteList}
+                    deleteList={this.showDeleteListPopup}
                 />
                 {this.renderCreate()}
                 {this.renderModal()}
@@ -108,6 +143,7 @@ export default connect(
     mapStateToProps,
     {
         fetchListsRequest,
-        createListAction
+        createListAction,
+        deleteListAction
     }
 )(ListsHome);

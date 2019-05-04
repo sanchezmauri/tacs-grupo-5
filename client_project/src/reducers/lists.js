@@ -1,4 +1,5 @@
-import { CREATE_LIST, CHANGE_LIST_NAME, FETCH_LISTS } from '../actions/types';
+import { CREATE_LIST, CHANGE_LIST_NAME, FETCH_LISTS, DELETE_LIST } from '../actions/types';
+import { omit } from 'lodash';
 
 export default (state = {}, action) => {
     switch (action.type) {
@@ -18,6 +19,10 @@ export default (state = {}, action) => {
                 ...state,
                 [action.payload.id]: action.payload
             }
+        
+        case DELETE_LIST:
+            console.log('del list reducer');
+            return omit(state, action.payload);
         
         case CHANGE_LIST_NAME:
             let newLists = { ...state };

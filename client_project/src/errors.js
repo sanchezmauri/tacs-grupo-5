@@ -1,5 +1,3 @@
-import httpStatusCodes from 'http-status-codes';
-
 export const stringifyRequestError = error => {
     let title = 'Error';
     let message = '';
