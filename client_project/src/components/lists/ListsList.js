@@ -14,7 +14,7 @@ const ListsList = props => {
                                         onClick={click => props.editList(list)}>
                                         <i className="edit icon"></i>
                                     </button>
-                                    <button className="ui mini negative button"
+                                    <button className={`ui mini negative ${!props.deleteEnabled ? "loading" : ""} button`}
                                             onClick={click => props.deleteList(list)}>
                                         <i className="trash alternate icon"></i>
                                     </button>

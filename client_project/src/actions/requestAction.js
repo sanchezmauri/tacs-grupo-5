@@ -1,6 +1,7 @@
 import history from '../routes/history';
 import * as paths from '../routes/paths';
 import statusCodes from 'http-status-codes'
+import { REQUEST, DONE, FETCH, ERROR } from './types';
 
 export const requestAction = (requestPromise, actionType, navigateTo) =>
     dispatch => 
@@ -22,3 +23,45 @@ export const requestAction = (requestPromise, actionType, navigateTo) =>
                 }
             }
         })
+
+
+export const requestActionWithState = (requestPromise, actionType, overrideResponseDataPayload = null) =>
+    dispatch => {
+        let requestAction = {
+            type: REQUEST,
+            payload: {
+                state: FETCH,
+                subaction: {
+                    type: actionType
+                }
+            }
+        };
+
+        // first, dispatch loading
+        dispatch(requestAction);
+
+        requestPromise.then(response => {
+            requestAction.payload.state = DONE;
+
+            const payload = overrideResponseDataPayload ? overrideResponseDataPayload : response.data;
+            requestAction.payload.subaction.payload = payload;
+
+            dispatch(requestAction);
+        }).catch(error => {
+            console.log("Error with request", requestPromise, "action type:", actionType);
+            requestAction.payload.state = ERROR;
+            requestAction.payload.error = error;
+
+            dispatch(requestAction);
+        })
+    }
+
+export const getCompletedRequestAction = action => {
+    if (action.type === REQUEST && action.payload.state === DONE) {
+        return action.payload.subaction;
+    }
+
+    return null;
+}
+    
+    

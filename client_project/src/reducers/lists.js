@@ -1,7 +1,12 @@
 import { CREATE_LIST, CHANGE_LIST_NAME, FETCH_LISTS, DELETE_LIST } from '../actions/types';
 import { omit } from 'lodash';
+import { getCompletedRequestAction } from '../actions/requestAction';
 
 export default (state = {}, action) => {
+    action = getCompletedRequestAction(action);
+
+    if (!action) return state;
+
     switch (action.type) {
         case FETCH_LISTS:
             const count = action.payload.length;
@@ -21,7 +26,6 @@ export default (state = {}, action) => {
             }
         
         case DELETE_LIST:
-            console.log('del list reducer');
             return omit(state, action.payload);
         
         case CHANGE_LIST_NAME:
