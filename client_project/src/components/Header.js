@@ -20,26 +20,26 @@ class Header extends React.Component {
             clickAction = click => history.push(paths.LOGIN);
         }
 
-        return <button onClick={clickAction}>{text}</button>;
+        return <button className="ui button" onClick={clickAction}>{text}</button>;
     }
 
     render() {
         return (
-            <nav>
-                <ul>
-                    <li>
-                        <Link to={paths.SEARCH}>Buscar Lugares</Link>
-                    </li>
-                    
-                    <li>
-                        <Link to={paths.LISTS}>Mis Listas</Link>
-                    </li>
+            <div className="ui secondary menu">
+                <Link to={paths.HOME}
+                    className="item">
+                    Buscar Lugares
+                </Link>
 
-                    <li>
-                        {this.renderLogin()}
-                    </li>
-                </ul>
-            </nav>
+                <Link to={paths.LISTS}
+                    className="item">
+                    Mis Listas
+                </Link>
+                
+                <div className="right menu">
+                    {this.renderLogin()}
+                </div>
+            </div>
         );
     }
 }
