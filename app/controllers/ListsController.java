@@ -98,26 +98,41 @@ public class ListsController extends Controller {
 
     @Authenticate(types = {"SYSUSER"})
     @With(VenueListAction.class)
-    public Result addVenueToList(Long listId, Http.Request request) {
+    public Result addVenuesToList(Long listId, Http.Request request) {
         // todo: extraer parseo de json a algún lugar
         // esto de decir missing field y toda la gilada
-        JsonNode venueIdJson = request.body().asJson();
+        JsonNode venuesJson = request.body().asJson();
 
-        if (!venueIdJson.has("id"))
-            return badRequest("Missing field: id");
-
-        if  (!venueIdJson.has("name"))
-            return badRequest("Missing field: name");
-
-        long id = venueIdJson.get("id").asLong();
-        String name = venueIdJson.get("name").asText();
-
+        if (venuesJson.isObject()) {
+            venuesJson = Json.newArray().add(venuesJson);
+        }
 
         User user = request.attrs().get(RequestAttrs.USER);
         VenueList list = request.attrs().get(RequestAttrs.LIST);
 
 
-        user.addVenueToList(list, id, name);
+        // chequeo que esten todos bien o no hago nada.
+        // todo: acumular todos los errores
+        Iterator<JsonNode> venuesIter = venuesJson.elements();
+
+        while (venuesIter.hasNext()) {
+            JsonNode venueJson = venuesIter.next();
+
+            if (!venueJson.has("id"))
+                return badRequest(Utils.createErrorMessage("Missing field: id"));
+
+            if (!venueJson.has("name"))
+                return badRequest(Utils.createErrorMessage("Missing field: name"));
+        }
+
+        venuesJson.forEach((venueJson) -> {
+            long id = venueJson.get("id").asLong();
+            String name = venueJson.get("name").asText();
+
+            user.addVenueToList(list, id, name);
+        });
+
+
         return ok(Json.toJson(list));
     }
 

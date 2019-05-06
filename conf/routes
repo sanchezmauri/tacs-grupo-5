@@ -33,7 +33,7 @@ DELETE  /api/lists/:listId                  controllers.ListsController.delete(l
 PATCH   /api/lists/:listId                  controllers.ListsController.changeListName(listId: Long, request: Request)
 
 # agregar/sacar venue a lista
-POST    /api/lists/:listId/venues           controllers.ListsController.addVenueToList(listId: Long, request: Request)
+POST    /api/lists/:listId/venues           controllers.ListsController.addVenuesToList(listId: Long, request: Request)
 DELETE  /api/lists/:listId/venues           controllers.ListsController.removeVenueFromList(listId: Long, request: Request)
 
 # Marcar lugar como visitado
