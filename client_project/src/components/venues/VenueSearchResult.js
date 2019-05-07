@@ -8,6 +8,7 @@ import { addVenuesToList } from '../../actions/lists';
 import SelectableVenue from './SelectableVenue';
 import { ADD_VENUES_TO_LIST } from '../../actions/types';
 
+
 class VenueSearchResult extends React.Component {
     constructor(props) {
         super(props);
@@ -95,7 +96,7 @@ class VenueSearchResult extends React.Component {
             venueId => _.find(this.props.venues, venue => venue.id === venueId)
         );
 
-        this.props.addVenuesToList(this.props.listId, selectedVenues);
+        this.props.addVenuesToList(this.props.listId, selectedVenues, null);
     }
 
     renderAddVenuesButton() {

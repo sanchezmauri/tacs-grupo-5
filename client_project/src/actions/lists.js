@@ -1,6 +1,8 @@
 import * as api from '../api';
 import { requestActionWithState } from './requestAction';
 import { CREATE_LIST, CHANGE_LIST_NAME, FETCH_LISTS, DELETE_LIST, ADD_VENUES_TO_LIST, REMOVE_VENUE_FROM_LIST } from './types';
+import history from '../routes/history';
+import { linkWithId, LIST } from '../routes/paths';
 
 export const fetchLists = () =>
     requestActionWithState(api.fetchLists(), FETCH_LISTS)
@@ -18,7 +20,8 @@ export const addVenuesToList = (listId, venues) =>
     requestActionWithState(
         api.addVenuesToList(listId, venues),
         ADD_VENUES_TO_LIST,
-        { listId, venues }
+        { listId, venues },
+        responseData => history.push(linkWithId(LIST, listId))
     )
 
 export const removeVenueFromList = (listId, venueId) =>

@@ -25,7 +25,7 @@ export const requestAction = (requestPromise, actionType, navigateTo) =>
         })
 
 
-export const requestActionWithState = (requestPromise, actionType, payload = null) =>
+export const requestActionWithState = (requestPromise, actionType, payload = null, successSideEffect = null) =>
     dispatch => {
         let requestAction = {
             type: REQUEST,
@@ -46,6 +46,9 @@ export const requestActionWithState = (requestPromise, actionType, payload = nul
             requestAction.payload.subaction.payload = payload ? payload : response.data;
 
             dispatch(requestAction);
+
+            if (successSideEffect)
+                successSideEffect(response.data);
         }).catch(error => {
             console.log("Error with request", requestPromise, "action type:", actionType);
             requestAction.payload.state = ERROR;
