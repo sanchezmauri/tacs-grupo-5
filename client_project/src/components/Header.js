@@ -26,11 +26,6 @@ class Header extends React.Component {
     render() {
         return (
             <div className="ui secondary menu">
-                <Link to={paths.HOME}
-                    className="item">
-                    Buscar Lugares
-                </Link>
-
                 <Link to={paths.LISTS}
                     className="item">
                     Mis Listas
