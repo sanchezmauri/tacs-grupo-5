@@ -6,6 +6,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import play.mvc.PathBindable;
 import repos.UserRepository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,17 +85,23 @@ public class User implements PathBindable<User> {
 
     public int listsCount() { return venueslists.size(); }
 
-    public void addVenueToList(VenueList list, Long venueId, String venueName) {
+    public void addVenueToList(VenueList list, String venueId, String venueName, String venueAddress) {
+        // todo: buscar en un repositorio de lugares foursquare a ver si ya existe,
+        // esto para cumplir el requerimiento de agregados desde
         if (!list.hasVenue(venueId)) {
             Optional<UserVenue> existingVenue = getVenue(venueId);
 
             list.addVenue(
-                existingVenue.orElse(new UserVenue(venueId, venueName, false))
+                existingVenue.orElse(
+                    new UserVenue(
+                        new FoursquareVenue(venueId, venueName, venueAddress, LocalDate.now()),
+                        false)
+                )
             );
         }
     }
 
-    public Optional<UserVenue> getVenue(Long venueId) {
+    public Optional<UserVenue> getVenue(String venueId) {
         return venueslists.stream()
                 .map(list -> list.getVenue(venueId))
                 .filter(Optional::isPresent)
@@ -102,7 +109,7 @@ public class User implements PathBindable<User> {
                 .findAny();
     }
 
-    public boolean hasVenue(Long venueId) {
+    public boolean hasVenue(String venueId) {
         return getVenue(venueId).isPresent();
     }
 

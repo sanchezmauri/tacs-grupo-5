@@ -19,15 +19,15 @@ public class VenueList {
         venues.add(venue);
     }
 
-    public boolean removeVenue(Long venueId) {
+    public boolean removeVenue(String venueId) {
         return venues.removeIf(venue -> venue.getId().equals(venueId));
     }
 
-    public boolean hasVenue(Long venueId) {
+    public boolean hasVenue(String venueId) {
         return getVenue(venueId).isPresent();
     }
 
-    public Optional<UserVenue> getVenue(Long venueId) {
+    public Optional<UserVenue> getVenue(String venueId) {
         return venues.stream()
             .filter(venue -> venue.getId().equals(venueId))
             .findAny();

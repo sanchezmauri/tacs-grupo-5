@@ -34,9 +34,9 @@ public class VenuesController extends Controller {
 
     private List<Venue> venues = new ArrayList<>(
             Arrays.asList(
-                    new Venue(1L, "Jason's Bar"),
-                    new Venue(2L, "Chimichangas Car"),
-                    new Venue(3L, "Ye Ole Generic Palermitan Craft Beer")
+                    new Venue("1", "Jason's Bar", "Corrientes 123"),
+                    new Venue("2", "Chimichangas Car", "Córdoba 456"),
+                    new Venue("3", "Ye Ole Generic Palermitan Craft Beer", "sta fé 789")
             )
     );
 
@@ -56,8 +56,8 @@ public class VenuesController extends Controller {
         private Boolean visited;
         private Date dateAdded;
 
-        public VenueListed(Venue base,Boolean visited, Date dateAdded) {
-            super(base.getId(), base.getName());
+        public VenueListed(Venue base, Boolean visited, Date dateAdded) {
+            super(base.getId(), base.getName(), base.getAddress());
             this.visited = visited;
             this.dateAdded = dateAdded;
         }
@@ -68,7 +68,7 @@ public class VenuesController extends Controller {
     }
 
     @Authenticate(types = {"ROOT","SYSUSER"})
-    public Result usersInterested(Long venueId) {
+    public Result usersInterested(String venueId) {
         long interestedCount = UserRepository.all()
                 .stream()
                 .filter(user -> user.hasVenue(venueId))
@@ -80,7 +80,7 @@ public class VenuesController extends Controller {
     }
 
 
-    private Map<String, Integer> periodToDays = new HashMap<String, Integer>() {{
+    private Map<String, Integer> periodToDays = new HashMap<>() {{
         put("week", 7);
         put("month", 30);
         put("year", 365);

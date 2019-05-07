@@ -28,6 +28,8 @@ public class ListsController extends Controller {
         User user = request.attrs().get(RequestAttrs.USER);
         List<VenueList> allLists;
 
+        // si es admin, mandarle todas las listas
+        // si es user, solo las de el
         if (user.getRol().equals(Rol.ROOT)) {
             allLists = UserRepository
                     .all()
@@ -114,24 +116,43 @@ public class ListsController extends Controller {
         // chequeo que esten todos bien o no hago nada.
         // todo: acumular todos los errores
         Iterator<JsonNode> venuesIter = venuesJson.elements();
+        StringBuilder errorBuilder = new StringBuilder();
 
         while (venuesIter.hasNext()) {
             JsonNode venueJson = venuesIter.next();
 
-            if (!venueJson.has("id"))
-                return badRequest(Utils.createErrorMessage("Missing field: id"));
+            if (!venueJson.has("id")) {
+                errorBuilder.append("Missing id in ");
+                errorBuilder.append(venueJson.toString());
+                errorBuilder.append('\n');
+                continue;
+            }
 
-            if (!venueJson.has("name"))
-                return badRequest(Utils.createErrorMessage("Missing field: name"));
+            if (!venueJson.has("name")) {
+                errorBuilder.append("Missing name in ");
+                errorBuilder.append(venueJson.toString());
+                errorBuilder.append('\n');
+                continue;
+            }
+
+            if (!venueJson.has("location") || !venueJson.get("location").has("address")) {
+                errorBuilder.append("Missing name location.address");
+                errorBuilder.append(venueJson.toString());
+                errorBuilder.append('\n');
+                continue;
+            }
+        }
+
+        if (!errorBuilder.toString().isEmpty()) {
+            return badRequest(Utils.createErrorMessage(errorBuilder.toString()));
         }
 
         venuesJson.forEach((venueJson) -> {
-            long id = venueJson.get("id").asLong();
+            String id = venueJson.get("id").asText();
             String name = venueJson.get("name").asText();
-
-            user.addVenueToList(list, id, name);
+            String address = venueJson.get("location").get("address").asText();
+            user.addVenueToList(list, id, name, address);
         });
-
 
         return ok(Json.toJson(list));
     }
@@ -144,7 +165,7 @@ public class ListsController extends Controller {
         if (!venueIdJson.has("id"))
             return badRequest("Missing field: venueId");
 
-        Long venueId = venueIdJson.get("id").asLong();
+        String venueId = venueIdJson.get("id").asText();
 
 
         VenueList list = request.attrs().get(RequestAttrs.LIST);
@@ -153,12 +174,12 @@ public class ListsController extends Controller {
         if (list.removeVenue(venueId))
             return ok(Json.toJson(list));
         else
-            return badRequest(Utils.createErrorMessage("No venue with id " + venueId.toString()));
+            return badRequest(Utils.createErrorMessage("No venue with id " + venueId));
     }
 
     @Authenticate(types = {"SYSUSER"})
     @With(VenueListAction.class)
-    public Result visitVenue(Long listId, Long venueId, Http.Request request) {
+    public Result visitVenue(Long listId, String venueId, Http.Request request) {
         VenueList venueList = request.attrs().get(RequestAttrs.LIST);
 
         return venueList.getVenue(venueId)
@@ -167,7 +188,7 @@ public class ListsController extends Controller {
                     return ok(Json.toJson(venue));
                 })
                 .orElse(
-                    badRequest(Utils.createErrorMessage("No venue with id = " + venueId.toString()))
+                    badRequest(Utils.createErrorMessage("No venue with id = " + venueId))
                 );
     }
 
@@ -211,11 +232,11 @@ public class ListsController extends Controller {
             return errOrlist2.left.get();
 
 
-        Set<Long> list2VenuesIds = errOrlist2.right.get().getVenues().stream()
+        Set<String> list2VenuesIds = errOrlist2.right.get().getVenues().stream()
                 .map(UserVenue::getId)
                 .collect(Collectors.toSet());
 
-        Set<Long> commonVenues = errOrlist1.right.get().getVenues().stream()
+        Set<String> commonVenues = errOrlist1.right.get().getVenues().stream()
                 .map(UserVenue::getId)
                 .filter(list2VenuesIds::contains)
                 .collect(Collectors.toSet());
