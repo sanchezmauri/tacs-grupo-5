@@ -18,6 +18,8 @@
 
 ## TODOs
 - Página crear usuario
+- Visitar lugar
+- Eliminar lugar de lista
 - Redirigir cuando no tiene permiso (ver react-router cómo implementa PrivateRoute)
 - Páginas admin
 
