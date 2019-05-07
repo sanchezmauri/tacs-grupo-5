@@ -13,7 +13,13 @@
     password: "orto"
  }
  ```
- (nos falta implementar crear usuario).
+(nos falta implementar crear usuario).
+
+
+## TODOs
+- Página crear usuario
+- Redirigir cuando no tiene permiso (ver react-router cómo implementa PrivateRoute)
+- Páginas admin
 
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
