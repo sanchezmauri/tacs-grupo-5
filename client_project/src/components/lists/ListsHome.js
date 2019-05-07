@@ -8,9 +8,9 @@ import {
     deleteList as deleteListAction
 } from '../../actions/lists';
 import history from '../../routes/history';
-import {requestErrorMessage, isUnauthorizedError} from '../../errors';
+import {requestErrorMessage} from '../../errors';
 
-import {linkToList} from '../../routes/paths';
+import {linkWithId, LIST} from '../../routes/paths';
 import ListNamePopup from './ListNamePopup';
 import ListsList from './ListsList';
 import ConfirmationPopup from '../ConfirmationPopup';
@@ -55,7 +55,7 @@ class ListsHome extends React.Component {
 
     // handles listslist edit callback
     editList(list) {
-        history.push(linkToList(list.id));
+        history.push(linkWithId(LIST, list.id));
     }
 
     deleteList(listId) {

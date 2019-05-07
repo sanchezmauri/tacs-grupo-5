@@ -8,7 +8,7 @@ const ListsList = props => {
                     list =>
                         <div className="item" key={list.id}>
                             <div className="content">
-                            <div className="ui right floated icon buttons">
+                                <div className="ui right floated icon buttons">
                                     <button
                                         className="ui mini yellow button"
                                         onClick={click => props.editList(list)}>
@@ -21,7 +21,7 @@ const ListsList = props => {
                                 </div>  
                                 <div className="header">{list.name}</div>
                                 <div className="description">
-                                    <p>list.location.formattedAddress iria aca, otra cosa que habria que guardar en server</p>
+                                    <p>todo: la lista podría tener una descripción</p>
                                 </div>
                                 
                             </div>

@@ -25,7 +25,7 @@ export const requestAction = (requestPromise, actionType, navigateTo) =>
         })
 
 
-export const requestActionWithState = (requestPromise, actionType, overrideResponseDataPayload = null) =>
+export const requestActionWithState = (requestPromise, actionType, payload = null) =>
     dispatch => {
         let requestAction = {
             type: REQUEST,
@@ -43,8 +43,7 @@ export const requestActionWithState = (requestPromise, actionType, overrideRespo
         requestPromise.then(response => {
             requestAction.payload.state = DONE;
 
-            const payload = overrideResponseDataPayload ? overrideResponseDataPayload : response.data;
-            requestAction.payload.subaction.payload = payload;
+            requestAction.payload.subaction.payload = payload ? payload : response.data;
 
             dispatch(requestAction);
         }).catch(error => {

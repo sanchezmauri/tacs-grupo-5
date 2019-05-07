@@ -1,29 +1,44 @@
-import React from 'react'
-import { connect } from 'react-redux';
+import React from 'react';
+import { isEmpty } from 'lodash';
 
+const VenuesList = props => {
+    if (isEmpty(props.venues))
+        return <div>No tenés venues</div>;
 
-class VenueList extends React.Component {
-    render() {
-        if (!this.props.list) {
-            console.log("got no list");
-            return <div>Loading...</div>;
-        }
+    const venuesElements = props.venues.map(venue => {
+        const visitedElement =  venue.visited ?
+                                <div class="ui label">Visited</div> :
+                                (<div class="ui right floated primary button">
+                                    Visitar
+                                    <i class="right chevron icon"></i>
+                                </div>);
 
-        const { list } = this.props;
-        return (
-            <div>
-                {list.name}
+        return (<div key={venue.id} className="item">
+
+            <div className="content">
+                <div className="header">
+                    {venue.name}
+                </div>
+
+                <div className="description">
+                    <p>{venue.address}</p>
+                </div>
+
+                <div class="extra">
+                    {visitedElement}
+                </div>
             </div>
-        );
-    }
+        </div>);
+    });
+
+    return (
+        <React.Fragment>
+            <h2 className="ui header">Lugares de la lista</h2>
+            <div className="ui divided items">
+                {venuesElements}
+            </div>
+        </React.Fragment>
+    );
 }
 
-const mapStateToProps = (state, ownProps) => {
-    const listId = ownProps.match.params.id;
-    
-    return {
-        list: state.lists[listId]
-    }
-}
-
-export default connect(mapStateToProps)(VenueList);
+export default VenuesList;

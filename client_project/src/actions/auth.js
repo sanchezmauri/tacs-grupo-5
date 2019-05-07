@@ -27,7 +27,7 @@ export const login = (email, password) =>
     dispatch => {
         api.login(email, password).then((response) => {
             dispatch({type: types.LOGIN});
-            history.push(paths.SEARCH);
+            history.push(paths.HOME);
         }).catch((error) => {
             console.log("login error: ", error);
             if (error.response) {

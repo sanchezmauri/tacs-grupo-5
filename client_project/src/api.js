@@ -39,4 +39,9 @@ export const deleteList = (id) =>
 export const changeName = (id, name) =>
     axios.patch(`/lists/${id}`, { name });
 
+export const addVenuesToList = (listId, venues) => {
+    return axios.post(`/lists/${listId}/venues`, venues)
+}
 
+export const removeVenueFromList = (listId, venueId) =>
+    axios.delete(`/lists/${listId}/venues`, { id: venueId })

@@ -16,7 +16,6 @@ export const findCoords = () =>
         if (!location) {
             window.navigator.geolocation.getCurrentPosition(
                 position => {
-                    console.log("got position ok:", position.coords);
 
                     dispatch({
                         type: types.FIND_COORDS,
@@ -27,3 +26,18 @@ export const findCoords = () =>
             );
         }
     }
+
+export const selectVenue = venue => ({
+    type: types.SELECT_VENUE,
+    payload: venue
+})
+
+export const deselectVenue = venue => ({
+    type: types.DESELECT_VENUE,
+    payload: venue
+})
+
+export const clearVenueSelection = () => ({
+    type: types.CLEAR_VENUE_SELECTION
+})
+

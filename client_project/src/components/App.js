@@ -6,10 +6,10 @@ import * as paths from '../routes/paths'
 
 import Header from './Header'
 import Login from './Login'
-import SearchVenues from './venues/SearchVenues'
+import ListVenueSearch from './venues/ListVenueSearch'
 // import VenueSuggestions from './venues/VenueSuggestions'
-import VenueList from './lists/VenueList'
 import ListsHome from './lists/ListsHome';
+import ListHome from './lists/ListHome'
 
 
 const App = () => {
@@ -22,10 +22,11 @@ const App = () => {
             <Router history={history}>
                 <Header />
                 
-                <Route path={paths.HOME} exact component={SearchVenues} />
                 <Route path={paths.LOGIN} component={Login} />
+                <Route path={paths.HOME} exact component={ListsHome} />
                 <Route path={paths.LISTS} exact component={ListsHome} />
-                <Route path={paths.LIST} component={VenueList} />
+                <Route path={paths.LIST} exact component={ListHome} />
+                <Route path={paths.LIST_VENUES_SEARCH} component={ListVenueSearch} />
             </Router>
         </div>
     );
