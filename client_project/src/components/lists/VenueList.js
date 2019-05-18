@@ -8,14 +8,15 @@ class UserVenueItem extends React.Component {
     render() {
         const { listId, venue, visitVenue } = this.props;
 
-        const visitedElement =  venue.visited ?
-                                <div className="ui label">Visited</div> :
-                                (<button
-                                    className="ui right floated primary button"
-                                    onClick={click => visitVenue(listId, venue.id)}>
-                                    Visitar
-                                    <i className="right chevron icon"></i>
-                                </button>);
+        let visitedText, visitedState;
+        
+        if (venue.visited) {
+            visitedText = 'visitado';
+            visitedState = 'disabled';
+        } else {
+            visitedText = 'visitar';
+            visitedState = 'active';
+        }
 
         return (<div key={venue.id} className="item">
             <div className="content">
@@ -28,7 +29,12 @@ class UserVenueItem extends React.Component {
                 </div>
 
                 <div className="extra">
-                    {visitedElement}
+                        <button
+                            className={`ui left floated primary ${visitedState} button`}
+                            onClick={click => visitVenue(listId, venue.id)}>
+                            {visitedText}
+                            <i className="right map pin icon"></i>
+                        </button>
                 </div>
             </div>
         </div>);
