@@ -10,6 +10,7 @@ import VenueList from './VenueList';
 import { FETCH_LISTS } from '../../actions/types';
 
 
+
 class ListHome extends React.Component {
     componentDidMount() {
         if (!this.props.list) {
@@ -20,7 +21,7 @@ class ListHome extends React.Component {
     render() {
         const { list, loading, error } = this.props;
         
-        if (loading || !list)
+        if (!list)
             return <div>Loading list...</div>;
         
         if (error)
@@ -30,7 +31,7 @@ class ListHome extends React.Component {
             <div>
                 <h1 className="ui header">{list.name}</h1>
 
-                <VenueList venues={list.venues} />
+                <VenueList list={list}/>
                 
                 <div>
                     <button
@@ -47,7 +48,7 @@ class ListHome extends React.Component {
 
 const mapStateToProps = (state, ownProps) => {
     const listId = ownProps.match.params.id;
-    
+
     return {
         list: state.lists[listId],
         loading: state.loading[FETCH_LISTS],
