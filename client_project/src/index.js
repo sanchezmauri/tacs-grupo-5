@@ -23,7 +23,7 @@ ReactDOM.render(
     // este provider hace algo para que
     // a los componentes les pueda llegar cosas del store
     <Provider store={store}>
-        <App />
+        <App store={store} />
     </Provider>,
     document.getElementById('root')
 );
