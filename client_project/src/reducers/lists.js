@@ -53,7 +53,7 @@ export default (state = {}, action) => {
             let {listId, venueId} = action.payload;
             let rmList = state[listId];
             rmList.venues = rmList.venues.filter(venue => venue.id !== venueId);
-            return { ...state };
+            return { ...state, [listId]: _.clone(rmList) };
 
         case VISIT_VENUE:
             let listId2 = action.payload.listId;

@@ -44,7 +44,8 @@ export const addVenuesToList = (listId, venues) => {
 }
 
 export const removeVenueFromList = (listId, venueId) =>
-    axios.delete(`/lists/${listId}/venues`, { id: venueId })
+    axios.delete(`/lists/${listId}/venues`, { data: { id: venueId }  })
+    
 
 export const visitVenue = (listId, venueId) =>
     axios.patch(`/lists/${listId}/venues/${venueId}`)
