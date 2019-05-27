@@ -16,6 +16,7 @@ public class UserRepository {
             new User(3L, "Otro","otro@gmail.com", "orto", Rol.SYSUSER)
         )
     );
+    private static long idGen = 0;
 
     public static List<User> all() {
         return users;
@@ -38,6 +39,6 @@ public class UserRepository {
     }
 
     public static Long nextId() {
-        return users.get(users.size() - 1).getId() + 1;
+        return idGen++;
     }
 }

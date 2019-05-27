@@ -2,7 +2,7 @@ import * as types from './types';
 import * as api from '../api';
 import history from '../routes/history';
 import * as paths from '../routes/paths';
-import statusCodes from 'http-status-codes'
+import { requestActionWithState } from './requestAction';
 
 /* 
     redux funciona despachando acciones,
@@ -23,27 +23,29 @@ import statusCodes from 'http-status-codes'
     En estas funciones medio que podes hacer lo que se te cante
     (según lo que vi).
 */
-export const login = (email, password) =>
-    dispatch => {
-        api.login(email, password).then((response) => {
-            dispatch({type: types.LOGIN});
-            history.push(paths.HOME);
-        }).catch((error) => {
-            console.log("login error: ", error);
-            if (error.response) {
-                if (error.response.status === statusCodes.UNAUTHORIZED) {
-                    console.log("mostrar error en login!? como? mandar error por accion?");
-                }
-            }
-        });
-    }
+export const login = (userData) =>
+    requestActionWithState(
+        api.login(userData),
+        types.LOGIN,
+        null,
+        discarded => history.push(paths.HOME)
+    )
 
-export const logout = () =>
-    dispatch => {
-        api.logout().then(response => {
-            dispatch({ type: types.LOGOUT });
+export const createUser = (userData) =>
+    requestActionWithState(
+        api.createUser(userData),
+        types.CREATE_USER,
+        null,
+        discarded => history.push(paths.LOGIN)
+    )
+
+export const logout = () => 
+    requestActionWithState(
+        api.logout(),
+        types.LOGOUT,
+        null,
+        (discarded, dispatch) => {
+            dispatch({type: types.CLEAR_ALL});
             history.push(paths.LOGIN);
-        }).catch(error => {
-            console.log("logout error", error);
-        })
-    }
+        }
+    )

@@ -6,7 +6,8 @@ import * as paths from '../routes/paths'
 
 import PrivateRoute from '../routes/PrivateRoute';
 import Header from './Header'
-import Login from './Login'
+import Login from './user/Login'
+import CreateUser from './user/CreateUser'
 import ListVenueSearch from './venues/ListVenueSearch'
 // import VenueSuggestions from './venues/VenueSuggestions'
 import ListsHome from './lists/ListsHome';
@@ -25,6 +26,8 @@ const App = props => {
                 <Header />
                 
                 <Route path={paths.LOGIN} component={Login} />
+                <Route path={paths.CREATE_USER} component={CreateUser} />
+                
                 <PrivateRoute path={paths.HOME} exact component={ListsHome} store={props.store} />
                 <PrivateRoute path={paths.LISTS} exact component={ListsHome} store={props.store}  />
                 <PrivateRoute path={paths.LIST} exact component={ListHome} store={props.store} />

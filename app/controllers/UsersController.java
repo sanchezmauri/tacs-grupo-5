@@ -23,7 +23,6 @@ public class UsersController extends Controller {
         return ok(usersJson);
     }
 
-    @Authenticate(types = {"ROOT"})
     public Result create(Http.Request request) {
         try {
             JsonNode userToCreateJson = request.body().asJson();
@@ -31,23 +30,25 @@ public class UsersController extends Controller {
                 return badRequest("ill formatted json.");
             }
 
+            Rol role = Optional.ofNullable(userToCreateJson.get("rol"))
+                        .map(jsonNode -> jsonNode.asText())
+                        .map(Rol::valueOf)
+                        .orElse(Rol.SYSUSER);
+
             User newUser = new User(
-                    UserRepository.nextId(),
-                    userToCreateJson.get("name").asText(),
-                    userToCreateJson.get("email").asText(),
-                    userToCreateJson.get("password").asText(),
-                    Rol.valueOf(userToCreateJson.get("rol").asText())
+                UserRepository.nextId(),
+                userToCreateJson.get("name").asText(),
+                userToCreateJson.get("email").asText(),
+                userToCreateJson.get("password").asText(),
+                role
             );
             UsersService.create(newUser);
             return created(Json.toJson(newUser));
         } catch (UserException e) {
             return badRequest(Utils.createErrorMessage(e.getMessage()));
-        }catch (Exception e)
-        {
+        } catch (Exception e) {
             return internalServerError(Utils.createErrorMessage(e.getMessage()));
-
         }
-
     }
 
     @Authenticate(types = {"ROOT"})

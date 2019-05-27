@@ -1,4 +1,4 @@
-import { CREATE_LIST, CHANGE_LIST_NAME, FETCH_LISTS, DELETE_LIST, ADD_VENUES_TO_LIST, REMOVE_VENUE_FROM_LIST, VISIT_VENUE } from '../actions/types';
+import { CLEAR_ALL, CREATE_LIST, CHANGE_LIST_NAME, FETCH_LISTS, DELETE_LIST, ADD_VENUES_TO_LIST, REMOVE_VENUE_FROM_LIST, VISIT_VENUE } from '../actions/types';
 import _ from 'lodash';
 import { getCompletedRequestAction } from '../actions/requestAction';
 
@@ -10,6 +10,9 @@ listObj is like
 { id, name, venues }
 */
 export default (state = {}, action) => {
+    if (action.type === CLEAR_ALL)
+        return {};
+
     action = getCompletedRequestAction(action);
 
     if (!action) return state;

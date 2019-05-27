@@ -2,6 +2,7 @@ export const FIND_COORDS = 'find_coords';
 
 export const LOGIN = 'login';
 export const LOGOUT = 'logout';
+export const CREATE_USER = 'create_user';
 
 export const SEARCH_VENUES = 'search_venues';
 
@@ -21,3 +22,5 @@ export const REQUEST = 'request';
 export const FETCH = 'fetch';
 export const DONE = 'done';
 export const ERROR = 'error';
+
+export const CLEAR_ALL = 'clear_all';

@@ -1,4 +1,4 @@
-import { SELECT_VENUE, DESELECT_VENUE, CLEAR_VENUE_SELECTION } from "../actions/types";
+import { SELECT_VENUE, DESELECT_VENUE, CLEAR_VENUE_SELECTION, CLEAR_ALL } from "../actions/types";
 
 export default (state = {}, action) => {
     switch (action.type) {
@@ -9,6 +9,7 @@ export default (state = {}, action) => {
             return { ...state, [action.payload.id]: false };
         
         case CLEAR_VENUE_SELECTION:
+        case CLEAR_ALL:
             return {};
         
         default:

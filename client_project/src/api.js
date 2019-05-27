@@ -4,16 +4,16 @@ axios.defaults.baseURL = 'http://localhost:9000/api';
 axios.defaults.headers['Content-Type'] ='application/json;charset=utf-8';
 axios.defaults.withCredentials = true;
 
-export const login = (email, password) => {
-    return axios.post('/security/login', {
-        email,
-        password
-    })
-}
+// userData = { email, password }
+export const login = (userData) =>
+    axios.post('/security/login', userData)
 
-export const logout = () => {
-    return axios.post('/security/logout');
-}
+export const logout = () =>
+    axios.post('/security/logout');
+
+// userData = { name, email, password }
+export const createUser = (userData) =>
+    axios.post('/users', userData)
 
 export const searchVenues = (latitude, longitude, query) => {
     const params = {

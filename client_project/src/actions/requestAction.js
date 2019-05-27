@@ -48,7 +48,7 @@ export const requestActionWithState = (requestPromise, actionType, payload = nul
             dispatch(requestAction);
 
             if (successSideEffect)
-                successSideEffect(response.data);
+                successSideEffect(response.data, dispatch);
         }).catch(error => {
             console.log("Error with request", requestPromise, "action type:", actionType);
             requestAction.payload.state = ERROR;
