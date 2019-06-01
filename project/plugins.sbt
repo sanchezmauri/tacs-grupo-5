@@ -5,3 +5,9 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.7.0")
 // http://www.foundweekends.org/giter8/scaffolding.html
 // sbt "g8Scaffold form"
 addSbtPlugin("org.foundweekends.giter8" % "sbt-giter8-scaffold" % "0.11.0")
+
+
+// MongoDb Conecction 
+
+addSbtPlugin("org.mongodb % "mongo-java-driver" % "2.12.3")
+
