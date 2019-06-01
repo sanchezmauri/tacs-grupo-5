@@ -16,7 +16,7 @@ public class UserRepository {
             new User(3L, "Otro","otro@gmail.com", "orto", Rol.SYSUSER)
         )
     );
-    private static long idGen = 0;
+    private static long idGen = users.size() + 1;
 
     public static List<User> all() {
         return users;
