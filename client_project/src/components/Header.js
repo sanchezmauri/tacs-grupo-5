@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import * as paths from '../routes/paths';
-import { logout } from '../actions/auth';
+import { logout } from '../actions/user';
 import history from '../routes/history'
 
 
@@ -40,7 +40,7 @@ class Header extends React.Component {
 }
 
 const mapStateToProps = state => ({
-    loggedIn: state.loggedIn
+    loggedIn: state.user.loggedIn
 })
 
 export default connect(

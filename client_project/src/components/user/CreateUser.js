@@ -1,11 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux'
 
-import { createUser } from '../../actions/auth';
+import { createUser } from '../../actions/user';
 import UserForm from './UserForm';
 import { LOGIN } from '../../routes/paths';
 
-class Login extends React.Component {
+class CreateUser extends React.Component {
     render() {
         return (
             <UserForm
@@ -26,4 +26,4 @@ class Login extends React.Component {
 export default connect(
     null,
     { createUser }
-)(Login);
+)(CreateUser);

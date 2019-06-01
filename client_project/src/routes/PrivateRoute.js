@@ -8,7 +8,7 @@ function PrivateRoute({ component: Component, store, ...rest }) {
             {...rest}
             render={props => {
                 return (
-                    store.getState().loggedIn ? (
+                    store.getState().user.loggedIn ? (
                         <Component {...props} />
                     ) : (
                         <Redirect

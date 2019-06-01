@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import login from './login';
+import user from './user';
 import search from './search';
 import coords from './coords';
 import lists from './lists';
@@ -8,7 +8,7 @@ import venueSelection from './venueSelection';
 import _ from 'lodash';
 
 export default combineReducers({
-    loggedIn: login,
+    user,
     searchVenues: search,
     coords,
     lists,

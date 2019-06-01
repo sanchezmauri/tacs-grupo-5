@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 
-import { login } from '../../actions/auth';
+import { login } from '../../actions/user';
 import UserForm from './UserForm';
 import { CREATE_USER } from '../../routes/paths';
 
