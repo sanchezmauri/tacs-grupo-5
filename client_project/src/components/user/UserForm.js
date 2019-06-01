@@ -74,8 +74,7 @@ class UserForm extends React.Component {
     renderAlternativeAction() {
         return (
             <div className="ui message">
-                {this.props.alternativeLink.pre} 
-                <Link to={this.props.alternativeLink.link}
+                {this.props.alternativeLink.pre} <Link to={this.props.alternativeLink.link}
                     className="item">
                     {this.props.alternativeLink.message}
                 </Link>
