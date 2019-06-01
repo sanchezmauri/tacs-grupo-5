@@ -9,5 +9,5 @@ addSbtPlugin("org.foundweekends.giter8" % "sbt-giter8-scaffold" % "0.11.0")
 
 // MongoDb Conecction 
 
-addSbtPlugin("org.mongodb % "mongo-java-driver" % "2.12.3")
+addSbtPlugin("org.mongodb" % "mongo-java-driver" % "2.12.3")
 
