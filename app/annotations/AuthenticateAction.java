@@ -44,7 +44,9 @@ public class AuthenticateAction extends Action<Authenticate> {
                 return delegate.call(req);
             }
             else {
-                return CompletableFuture.completedFuture(Utils.unauthorizedErrorJson("no permissions"));
+                return CompletableFuture.completedFuture(
+                    forbidden(Utils.createErrorMessage("no permissions"))
+                );
             }
 
         } catch (Exception e) {
