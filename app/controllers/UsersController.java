@@ -3,10 +3,12 @@ package controllers;
 import annotations.Authenticate;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import com.google.inject.Inject;
 import models.Rol;
 import models.User;
 import models.UserVenue;
 import models.exceptions.UserException;
+import play.api.libs.ws.WSClient;
 import play.libs.Json;
 import play.mvc.*;
 import repos.UserRepository;
@@ -23,7 +25,7 @@ public class UsersController extends Controller {
         return ok(usersJson);
     }
 
-    public Result create(Http.Request request) {
+    public Result create(Http.Request request)  {
         try {
             JsonNode userToCreateJson = request.body().asJson();
             if (userToCreateJson == null) {
