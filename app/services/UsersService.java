@@ -20,7 +20,7 @@ public class UsersService {
         if (!UserRepository.findByEmail(user.getEmail()).isPresent())
         {
             UserRepository.add(user);
-            MongoDbService.insert(MongoDbService.getCollection("user"),user);
+            MongoDbService.insertDocument(MongoDbService.getCollection("user"),user);
         }else
         {
             throw new UserException("email ya existente.");

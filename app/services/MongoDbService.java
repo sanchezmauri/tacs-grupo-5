@@ -2,13 +2,15 @@ package services;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import play.libs.Json;
 
 
-import javax.inject.*;
+import static com.mongodb.client.model.Filters.eq;
 
 public class MongoDbService {
 
@@ -22,9 +24,18 @@ public class MongoDbService {
         return collection;
     }
 
-    static void insert(MongoCollection<Document> collection, Object object){
+    static void insertDocument(MongoCollection<Document> collection, Object object){
         collection.insertOne(Document.parse(Json.toJson(object).toString()));
     }
+
+    static FindIterable<Document> getDocument(MongoCollection<Document> collection, String id){
+       return collection.find(eq("id", id));
+    }
+
+    static void deleteDocument(MongoCollection<Document> collection, FindIterable<Document> document){
+        collection.findOneAndDelete((Bson) document);
+    }
+
 
 
 
