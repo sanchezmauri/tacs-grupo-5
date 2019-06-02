@@ -23,4 +23,7 @@ export const FETCH = 'fetch';
 export const DONE = 'done';
 export const ERROR = 'error';
 
+// admin
+export const SEARCH_USER = 'search_user';
+
 export const CLEAR_ALL = 'clear_all';

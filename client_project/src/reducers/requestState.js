@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { REQUEST, FETCH, ERROR } from '../actions/types';
-import { isUnauthorizedError } from '../errors';
+import { isUnauthorizedError, isForbiddenError } from '../errors';
 
 export const loadingReducer = (state = {}, action) => {
     if (action.type === REQUEST) {
@@ -25,8 +25,7 @@ export const errorsReducer = (state = {}, action) => {
         if (action.payload.state === ERROR)
             return {
                 ...state,
-                [subActionType]: action.payload.error,
-                unauthorized: isUnauthorizedError(action.payload.error)
+                [subActionType]: action.payload.error
             };
         else
             return _.omit(state, subActionType);

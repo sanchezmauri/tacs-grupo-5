@@ -23,8 +23,8 @@ export const requestErrorMessage = error => {
     // console.log(error.config);
 }
 
-export const isUnauthorizedError = error => {
-    if (error.response === undefined) return false;
+export const errorStatusCode = error => {
+    if (error.response === undefined) return undefined;
     
-    return error.response.status === httpStatusCodes.UNAUTHORIZED;
+    return error.response.status;
 }

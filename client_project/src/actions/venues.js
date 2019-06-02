@@ -1,12 +1,16 @@
 import * as types from './types';
 import * as api from '../api';
-import { requestAction } from './requestAction';
+import { requestActionWithState } from './requestAction';
 
 
 export const searchVenues = (latitude, longitude, query) => {
     const request = api.searchVenues(latitude, longitude, query);
 
-    return requestAction(request, types.SEARCH_VENUES, null);
+    return requestActionWithState(
+        request,
+        types.SEARCH_VENUES,
+        null
+    );
 }
 
 export const findCoords = () =>

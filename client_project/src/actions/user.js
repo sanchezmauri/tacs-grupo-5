@@ -2,6 +2,7 @@ import * as types from './types';
 import * as api from '../api';
 import history from '../routes/history';
 import * as paths from '../routes/paths';
+import * as role from '../role';
 import { requestActionWithState } from './requestAction';
 
 /* 
@@ -28,7 +29,13 @@ export const login = (userData) =>
         api.login(userData),
         types.LOGIN,
         null,
-        discarded => history.push(paths.HOME)
+        respData => {
+            let path =  respData.role === role.SYSUSER ?
+                        paths.HOME :
+                        paths.SEARCH_USERS;
+            
+            history.push(path);
+        }
     )
 
 export const createUser = (userData) =>

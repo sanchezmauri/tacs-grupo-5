@@ -23,13 +23,19 @@ class Header extends React.Component {
         return <button className="ui button" onClick={clickAction}>{text}</button>;
     }
 
+    renderNav() {
+        return this.props.options.map(option =>
+            (<Link to={option.link}
+                className="item">
+                {option.text}
+            </Link>)
+        );
+    }
+
     render() {
         return (
             <div className="ui secondary menu">
-                <Link to={paths.LISTS}
-                    className="item">
-                    Mis Listas
-                </Link>
+                {this.renderNav()}
                 
                 <div className="right menu">
                     {this.renderLogin()}
@@ -39,8 +45,25 @@ class Header extends React.Component {
     }
 }
 
+Header.NONE_OPTIONS = [
+    {link: paths.CREATE_USER, text: 'Crear Usuario'},
+    {link: paths.LOGIN, text: 'Login'}
+];
+
+Header.SYSUSER_OPTIONS = [
+    {link: paths.LISTS, text: 'Mis Listas'}
+];
+
+Header.ROOT_OPTIONS = [
+    {link: paths.SEARCH_USERS, text: 'Inspeccionar Usuarios'},
+    {link: paths.VENUE_COUNT, text: 'Lugares'},
+];
+
+
+
 const mapStateToProps = state => ({
-    loggedIn: state.user.loggedIn
+    loggedIn: state.user.loggedIn,
+    options: Header[state.user.role + '_OPTIONS']
 })
 
 export default connect(

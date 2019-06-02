@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import { searchVenues, findCoords } from '../../actions/venues';
 import { SEARCH_VENUES } from '../../actions/types'
-import SearchBar from './SearchBar';
+import SearchBar from '../SearchBar';
 import VenueSearchResult from './VenueSearchResult'
 
 
@@ -43,6 +43,7 @@ class ListVenueSearch extends React.Component {
         return (
             <div className="ui container">
                 <SearchBar
+                    title={'Buscar Lugares'}
                     enabled={searchEnabled}
                     loading={this.props.loading[SEARCH_VENUES]}
                     onSubmit={this.onSearchSubmit.bind(this)}
