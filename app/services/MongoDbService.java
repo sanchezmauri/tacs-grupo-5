@@ -28,8 +28,8 @@ public class MongoDbService {
         collection.insertOne(Document.parse(Json.toJson(object).toString()));
     }
 
-    static FindIterable<Document> getDocument(MongoCollection<Document> collection, String id){
-       return collection.find(eq("id", id));
+    static FindIterable<Document> getDocument(MongoCollection<Document> collection, String key, Object value){
+       return collection.find(eq(key, value));
     }
 
     static void deleteDocument(MongoCollection<Document> collection, FindIterable<Document> document){
