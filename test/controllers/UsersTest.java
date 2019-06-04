@@ -2,6 +2,8 @@ package controllers;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -12,9 +14,18 @@ import static play.test.Helpers.POST;
 
 public class UsersTest {
 
+    @Before
+    public void startDbTestingMode(){
+        SetUp.startTestDataBase();
+    }
+
+    @After
+    public void stopDbTestingMode(){
+        SetUp.dropTestDataBase();
+    }
+
     @Test
     public void createUser(){
-        SetUp.startTestDataBase();
         try {
             ObjectNode user = JsonNodeFactory.instance.objectNode();
             user.put("name","test");
@@ -25,8 +36,6 @@ public class UsersTest {
         }catch (Exception e)
         {
             e.printStackTrace();
-        }finally {
-            SetUp.dropTestDataBase();
         }
 
     }
