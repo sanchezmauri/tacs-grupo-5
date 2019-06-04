@@ -20,7 +20,7 @@ public class SetUp {
 
     public static void startTestDataBase(){
         MongoDbService.setActualWorkingDataBaseName(MongoDbService.getTestDataBaseName());
-        MongoDbService.getDataBase(MongoDbService.getActualWorkingDataBaseName());
+        MongoDbService.getDataBase(MongoDbService.getActualWorkingDataBase());
     }
 
     public static void dropTestDataBase(){
@@ -32,8 +32,8 @@ public class SetUp {
         ObjectNode authNode = JsonNodeFactory.instance.objectNode();
         authNode.put("email", email);
         authNode.put("password", password);
-        Result result = route(fakeApplication(), fakeRequest(POST, "/api/authenticate"));
-        return result.cookies().getCookie("PLAY");
+        Result result = route(fakeApplication(), fakeRequest(POST, "/api/security/login").bodyJson(authNode));
+        return result.cookies().getCookie("token");
     }
 
     public static void initSystem() throws UserException {

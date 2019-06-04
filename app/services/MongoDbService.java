@@ -15,7 +15,7 @@ public class MongoDbService {
     static MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://localhost:27017"));
     static String actualWorkingDataBaseName = getProductionDataBaseName();
 
-    public static String getActualWorkingDataBaseName() {
+    public static String getActualWorkingDataBase() {
         return actualWorkingDataBaseName;
     }
 
@@ -48,8 +48,8 @@ public class MongoDbService {
         getCollection(dataBase, collectionName).insertOne(Document.parse(Json.toJson(object).toString()));
     }
 
-    public static FindIterable<Document> getDocument(String dataBase, String collectionName, String key, Object value) {
-        return getCollection(dataBase, collectionName).find(eq(key, value));
+    public static Document getDocument(String dataBase, String collectionName, String key, Object value) {
+        return getCollection(dataBase, collectionName).find(eq(key, value)).first();
     }
 
     public static FindIterable<Document> getAllDocuments(String dataBase, String collectionName) {

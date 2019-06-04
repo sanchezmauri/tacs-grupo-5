@@ -2,6 +2,7 @@ package services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.typesafe.config.Config;
+import controllers.AuthenticateController;
 import controllers.Utils;
 import controllers.VenuesController;
 import models.communication.LoginResult;
@@ -14,6 +15,7 @@ import play.mvc.Result;
 import play.mvc.Results;
 import repos.UserRepository;
 
+import java.io.IOException;
 import java.util.regex.Pattern;
 
 
@@ -55,7 +57,7 @@ public final class TelegramBot {
                 .post(body);
     }
 
-    public Result handleUpdate(Update update, Http.Request request) {
+    public Result handleUpdate(Update update, Http.Request request) throws IOException {
 
         String message = update.getMessageText();
 

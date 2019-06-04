@@ -2,6 +2,7 @@ package models;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import json.LocalDateTimeSerializer;
+import org.bson.types.ObjectId;
 import org.mindrot.jbcrypt.BCrypt;
 import play.mvc.PathBindable;
 import repos.UserRepository;
@@ -16,8 +17,7 @@ import java.util.stream.Collectors;
 
 public class User implements PathBindable<User> {
 
-
-
+    private ObjectId _id;
     private Rol rol;
     private Long id;
     private String name;
@@ -26,6 +26,7 @@ public class User implements PathBindable<User> {
 
     private List<VenueList> venueslists;
     private LocalDateTime lastAccess;
+
 
     public User(Long id, String name, String email, String plaintextPassword, Rol rol) {
         this.id = id;
@@ -37,12 +38,21 @@ public class User implements PathBindable<User> {
         this.venueslists = new ArrayList<>();
     }
 
+
     // este ctor está porque el pathBindable necesita una instancia
     // para hacer el bindeo path -> objeto
     public User() {
         this(0L, "", "", "password", Rol.SYSUSER);
     }
 
+
+    public ObjectId get_id() {
+        return _id;
+    }
+
+    public void set_id(ObjectId _id) {
+        this._id = _id;
+    }
 
     public Long getId() { return id; }
     public String getName() {

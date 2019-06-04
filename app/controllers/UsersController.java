@@ -3,15 +3,14 @@ package controllers;
 import annotations.Authenticate;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import com.google.inject.Inject;
 import models.Rol;
 import models.User;
 import models.UserVenue;
 import models.exceptions.UserException;
-import play.api.libs.ws.WSClient;
 import play.libs.Json;
 import play.mvc.*;
 import repos.UserRepository;
+import services.MongoDbService;
 import services.UsersService;
 
 import java.time.format.DateTimeFormatter;
@@ -21,7 +20,7 @@ import java.util.function.Predicate;
 public class UsersController extends Controller {
     @Authenticate(types = {"ROOT"})
     public Result list() {
-        JsonNode usersJson = Json.toJson(UserRepository.all());
+        JsonNode usersJson = Json.toJson(UsersService.index());
         return ok(usersJson);
     }
 

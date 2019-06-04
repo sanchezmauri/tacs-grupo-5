@@ -12,12 +12,13 @@ import repos.UserRepository;
 import services.CodesService;
 import services.UsersService;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 public class AuthenticateController extends Controller {
-    public Result authenticate(Http.Request request) {
+    public Result authenticate(Http.Request request) throws IOException {
         JsonNode json = request.body().asJson();
         JsonNode email = json.get("email");
         JsonNode password = json.get("password");
@@ -28,7 +29,7 @@ public class AuthenticateController extends Controller {
         LoginResult result = UsersService.login(email.textValue(),password.textValue());
 
         if (result.success()) {
-            return ok().addingToSession(request, "token", result.token);
+            return ok().addingToSession(request, "token", result.token).withCookies(Http.Cookie.builder("token", result.token).build());
         } else {
             return unauthorized(Utils.createErrorMessage("Credenciales invalidas."));
         }

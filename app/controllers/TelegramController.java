@@ -10,6 +10,7 @@ import play.mvc.Result;
 import services.TelegramBot;
 
 import javax.inject.Inject;
+import java.io.IOException;
 
 public class TelegramController extends Controller {
 
@@ -20,7 +21,7 @@ public class TelegramController extends Controller {
         this.bot = new TelegramBot(config,ws);
     }
 
-    public Result receiveUpdate(String token, Http.Request request) {
+    public Result receiveUpdate(String token, Http.Request request) throws IOException {
 
         Result result;
         if (token.equalsIgnoreCase(bot.token)) {
