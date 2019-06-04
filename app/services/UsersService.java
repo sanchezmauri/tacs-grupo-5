@@ -15,7 +15,7 @@ public class UsersService {
     public static void create(User user) throws UserException {
         if (!UserRepository.findByEmail(user.getEmail()).isPresent())
         {
-            UserRepository.add(user);
+            MongoDbConectionService.getDatastore().save(user);
         } else {
             throw new UserException("email ya existente.");
         }

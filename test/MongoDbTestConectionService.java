@@ -2,7 +2,7 @@ import com.mongodb.MongoClient;
 import dev.morphia.Datastore;
 import dev.morphia.Morphia;
 
-public class mongoDbTestConectionService {
+public class MongoDbTestConectionService {
 
 
         final static Morphia morphia = new Morphia();
