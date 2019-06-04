@@ -21,4 +21,10 @@ libraryDependencies += "org.awaitility" % "awaitility" % "2.0.0" % Test
 // My framewords
 libraryDependencies += "org.mindrot" % "jbcrypt" % "0.4"
 libraryDependencies += "com.auth0" % "java-jwt" % "2.2.1"
+
+libraryDependencies += "dev.morphia.morphia" % "core" % "1.5.3"
+
+
+
 libraryDependencies += ws
+

@@ -1,6 +1,8 @@
 package models;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import json.LocalDateTimeSerializer;
 import org.mindrot.jbcrypt.BCrypt;
 import play.mvc.PathBindable;
@@ -14,11 +16,14 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+
+@Entity("users")
 public class User implements PathBindable<User> {
 
 
 
     private Rol rol;
+    @Id
     private Long id;
     private String name;
     private String email;
