@@ -36,7 +36,6 @@ public class UsersController extends Controller {
                         .orElse(Rol.SYSUSER);
 
             User newUser = new User(
-                UserRepository.nextId(),
                 userToCreateJson.get("name").asText(),
                 userToCreateJson.get("email").asText(),
                 userToCreateJson.get("password").asText(),

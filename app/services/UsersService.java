@@ -1,5 +1,7 @@
 package services;
 
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import models.User;
 import models.communication.LoginResult;
 import models.exceptions.UserException;
@@ -29,7 +31,8 @@ public class UsersService {
 
     public static void update(User user)
     {
-
+        MongoDbConectionService.getDatastore().delete(user);
+        MongoDbConectionService.getDatastore().save(user);
     }
 
     public static LoginResult login(String email, String password) {

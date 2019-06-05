@@ -24,7 +24,7 @@ public class User implements PathBindable<User> {
 
     private Rol rol;
     @Id
-    private Long id;
+    private String id;
     private String name;
     private String email;
     private String passwordHash;
@@ -32,8 +32,7 @@ public class User implements PathBindable<User> {
     private List<VenueList> venueslists;
     private LocalDateTime lastAccess;
 
-    public User(Long id, String name, String email, String plaintextPassword, Rol rol) {
-        this.id = id;
+    public User(String name, String email, String plaintextPassword, Rol rol) {
         this.email = email;
         this.name = name;
         this.passwordHash = BCrypt.hashpw(plaintextPassword, BCrypt.gensalt());
@@ -45,11 +44,11 @@ public class User implements PathBindable<User> {
     // este ctor está porque el pathBindable necesita una instancia
     // para hacer el bindeo path -> objeto
     public User() {
-        this(0L, "", "", "password", Rol.SYSUSER);
+        this( "", "", "password", Rol.SYSUSER);
     }
 
 
-    public Long getId() { return id; }
+    public String  getId() { return id; }
     public String getName() {
         return name;
     }

@@ -11,9 +11,9 @@ import java.util.Optional;
 public class UserRepository {
     private static List<User> users = new ArrayList<>(
         Arrays.asList(
-            new User(1L, "José", "root@root.com", "root", Rol.ROOT),
-            new User(2L, "Pepe","sysuser@sysuser.com" ,"sysuser", Rol.SYSUSER),
-            new User(3L, "Otro","otro@gmail.com", "orto", Rol.SYSUSER)
+            new User("José", "root@root.com", "root", Rol.ROOT),
+            new User( "Pepe","sysuser@sysuser.com" ,"sysuser", Rol.SYSUSER),
+            new User("Otro","otro@gmail.com", "orto", Rol.SYSUSER)
         )
     );
     private static long idGen = users.size() + 1;
