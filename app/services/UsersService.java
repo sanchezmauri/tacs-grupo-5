@@ -7,13 +7,14 @@ import org.mindrot.jbcrypt.BCrypt;
 import repos.UserRepository;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 
 public class UsersService {
     public static void create(User user) throws UserException {
-        if (!UserRepository.findByEmail(user.getEmail()).isPresent())
+        if (MongoDbConectionService.getDatastore().createQuery(User.class).filter("email <=", user.getEmail()).first() == null)
         {
             MongoDbConectionService.getDatastore().save(user);
         } else {
@@ -21,13 +22,14 @@ public class UsersService {
         }
     }
 
-    public static void index()
+    public static List<User> index()
     {
-        UserRepository.all();
+        return MongoDbConectionService.getDatastore().createQuery(User.class).asList();
     }
 
     public static void update(User user)
     {
+
     }
 
     public static LoginResult login(String email, String password) {

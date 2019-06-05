@@ -42,4 +42,21 @@ public class UsersTest {
 
     }
 
+    @Test
+    public void createDuplicated(){
+        try {
+            ObjectNode user = JsonNodeFactory.instance.objectNode();
+            user.put("name","test");
+            user.put("email","test@gmail.com");
+            user.put("password","test");
+            route(fakeApplication(), fakeRequest(POST, "/api/users").bodyJson(user));
+            Result result = route(fakeApplication(), fakeRequest(POST, "/api/users").bodyJson(user));
+            assertEquals(BAD_REQUEST, result.status());
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+    }
+
 }
