@@ -7,6 +7,7 @@ import json.LocalDateTimeSerializer;
 import org.mindrot.jbcrypt.BCrypt;
 import play.mvc.PathBindable;
 import repos.UserRepository;
+import services.UsersService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -134,7 +135,7 @@ public class User implements PathBindable<User> {
     // estos metodos son para que linkee una id de la request path
     // con un user (interface PathBindable)
     public User bind(String key, String txt) {
-        return UserRepository.find(Long.valueOf(txt))
+        return UsersService.findById(txt)
             .orElseThrow(() -> new RuntimeException("Couldn't find user with id " + txt));
     }
 

@@ -18,6 +18,7 @@ import play.libs.Json;
 import play.mvc.*;
 import play.libs.ws.*;
 import repos.UserRepository;
+import services.UsersService;
 
 
 public class VenuesController extends Controller {
@@ -69,7 +70,7 @@ public class VenuesController extends Controller {
 
     @Authenticate(types = {"ROOT","SYSUSER"})
     public Result usersInterested(String venueId) {
-        long interestedCount = UserRepository.all()
+        long interestedCount = UsersService.index()
                 .stream()
                 .filter(user -> user.hasVenue(venueId))
                 .count();

@@ -29,6 +29,11 @@ public class UsersService {
         return MongoDbConectionService.getDatastore().createQuery(User.class).asList();
     }
 
+    public static User findById(String id)
+    {
+        return MongoDbConectionService.getDatastore().createQuery(User.class).filter("id ==", id).first();
+    }
+
     public static void update(User user)
     {
         MongoDbConectionService.getDatastore().delete(user);

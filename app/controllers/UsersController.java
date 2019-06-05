@@ -19,7 +19,7 @@ import java.util.function.Predicate;
 public class UsersController extends Controller {
     @Authenticate(types = {"ROOT"})
     public Result list() {
-        JsonNode usersJson = Json.toJson(UserRepository.all());
+        JsonNode usersJson = Json.toJson(UsersService.index());
         return ok(usersJson);
     }
 

@@ -11,6 +11,7 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
 import repos.UserRepository;
+import services.UsersService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,8 +32,7 @@ public class ListsController extends Controller {
         // si es admin, mandarle todas las listas
         // si es user, solo las de el
         if (user.getRol().equals(Rol.ROOT)) {
-            allLists = UserRepository
-                    .all()
+            allLists = UsersService.index()
                     .stream()
                     .flatMap(u -> u.getAllLists().stream())
                     .collect(Collectors.toList());
@@ -245,9 +245,9 @@ public class ListsController extends Controller {
         return ok(Json.toJson(commonVenues));
     }
 
-    private F.Either<Result, VenueList> getListFromUser(Long userId, Long listId) {
+    private F.Either<Result, VenueList> getListFromUser(String userId, Long listId) {
         // obtener usuarios y listas
-        Optional<User> user = UserRepository.find(userId);
+        Optional<User> user = Optional.ofNullable(UsersService.findById(userId));
 
         if (user.isEmpty())
             return F.Either.Left(
