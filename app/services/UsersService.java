@@ -49,8 +49,10 @@ public class UsersService {
     {
         try{
             MongoDbConectionService.getDatastore().save(user.getAllLists().get(user.getAllLists().size()-1));
-            MongoDbConectionService.getDatastore().findAndDelete(MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId())));
-            MongoDbConectionService.getDatastore().save(user);
+            UpdateOperations ops = MongoDbConectionService.getDatastore().createUpdateOperations(User.class)
+                    .push("venueslists", user.getAllLists().get(user.getAllLists().size()-1));
+            MongoDbConectionService.getDatastore().update(MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId())).cloneQuery(), (UpdateOperations<User>) ops);
+
         }catch (Exception e)
         {
             e.printStackTrace();
