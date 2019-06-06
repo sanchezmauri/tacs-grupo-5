@@ -13,10 +13,10 @@ public class VenueList {
     @Id
     private String id;
     private String name;
+    @Reference
     private List<UserVenue> venues;
 
-    public VenueList(String id, String name) {
-        this.id = id;
+    public VenueList( String name) {
         this.name = name;
         this.venues = new ArrayList<>();
     }

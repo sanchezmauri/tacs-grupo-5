@@ -1,7 +1,11 @@
 package models;
 
+import dev.morphia.annotations.Embedded;
+import dev.morphia.annotations.Entity;
+
 import java.time.LocalDate;
 
+@Embedded
 public class FoursquareVenue {
     private String id;
     private String name;

@@ -17,7 +17,6 @@ import models.Venue;
 import play.libs.Json;
 import play.mvc.*;
 import play.libs.ws.*;
-import repos.UserRepository;
 import services.UsersService;
 
 

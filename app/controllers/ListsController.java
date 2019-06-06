@@ -10,7 +10,6 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
-import repos.UserRepository;
 import services.UsersService;
 
 import java.util.*;
@@ -47,7 +46,7 @@ public class ListsController extends Controller {
     // agrego el venue al user que está logueado
     // por ahí si el admin quiere agregar a 1 user un lugar
     // debería hacer: users/:userId/lists/:listId en vez de lists/:listId
-    @Authenticate(types = {"SYSUSER"})
+    @Authenticate(types = "SYSUSER")
     public Result create(Http.Request request) {
         // extraer esto en algún lado tipo validar json o algo
         JsonNode newListJson = request.body().asJson();
@@ -64,11 +63,11 @@ public class ListsController extends Controller {
 
         String listName = newListJson.get("name").asText();
 
-        VenueList newList = new VenueList(nextListId(), listName);
+        VenueList newList = new VenueList(listName);
 
         User user = request.attrs().get(RequestAttrs.USER);
         user.addList(newList);
-
+        UsersService.update(user);
         return created(Json.toJson(newList));
     }
 
@@ -221,12 +220,12 @@ public class ListsController extends Controller {
         Long listId1 = requiredQueryParams.get("list1");
         Long listId2 = requiredQueryParams.get("list2");
 
-        F.Either<Result, VenueList> errOrlist1 = getListFromUser(userId1, listId1);
+        F.Either<Result, VenueList> errOrlist1 = getListFromUser(userId1.toString(), listId1);
 
         if (errOrlist1.left.isPresent())
             return errOrlist1.left.get();
 
-        F.Either<Result, VenueList> errOrlist2 = getListFromUser(userId2, listId2);
+        F.Either<Result, VenueList> errOrlist2 = getListFromUser(userId2.toString(), listId2);
 
         if (errOrlist2.left.isPresent())
             return errOrlist2.left.get();

@@ -48,7 +48,8 @@ public class UsersService {
     public static void update(User user)
     {
         try{
-            MongoDbConectionService.getDatastore().delete(user);
+            MongoDbConectionService.getDatastore().save(user.getAllLists().get(user.getAllLists().size()-1));
+            MongoDbConectionService.getDatastore().findAndDelete(MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId())));
             MongoDbConectionService.getDatastore().save(user);
         }catch (Exception e)
         {
