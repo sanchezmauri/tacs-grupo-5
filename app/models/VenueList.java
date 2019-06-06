@@ -16,6 +16,10 @@ public class VenueList {
     @Reference
     private List<UserVenue> venues;
 
+    public VenueList(){
+
+    }
+
     public VenueList( String name) {
         this.name = name;
         this.venues = new ArrayList<>();

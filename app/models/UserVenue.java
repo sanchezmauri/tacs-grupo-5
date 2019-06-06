@@ -12,6 +12,10 @@ public class UserVenue {
     private FoursquareVenue foursquare;
     private boolean visited;
 
+    public UserVenue(){
+
+    }
+
     public UserVenue(FoursquareVenue foursquareVenue, boolean visited) {
         this.foursquare = foursquareVenue;
         this.visited = visited;

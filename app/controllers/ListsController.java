@@ -3,6 +3,7 @@ package controllers;
 import annotations.Authenticate;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.actions.VenueListAction;
+import models.exceptions.UserException;
 import play.libs.F;
 import models.*;
 import play.libs.Json;
@@ -10,6 +11,7 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
+import services.ListsService;
 import services.UsersService;
 
 import java.util.*;
@@ -47,7 +49,7 @@ public class ListsController extends Controller {
     // por ahí si el admin quiere agregar a 1 user un lugar
     // debería hacer: users/:userId/lists/:listId en vez de lists/:listId
     @Authenticate(types = "SYSUSER")
-    public Result create(Http.Request request) {
+    public Result create(Http.Request request) throws UserException {
         // extraer esto en algún lado tipo validar json o algo
         JsonNode newListJson = request.body().asJson();
 
@@ -67,7 +69,8 @@ public class ListsController extends Controller {
 
         User user = request.attrs().get(RequestAttrs.USER);
         user.addList(newList);
-        UsersService.update(user);
+        ListsService.create(newList);
+        UsersService.addList(user,newList);
         return created(Json.toJson(newList));
     }
 

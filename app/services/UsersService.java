@@ -3,6 +3,7 @@ package services;
 import dev.morphia.query.Query;
 import dev.morphia.query.UpdateOperations;
 import models.User;
+import models.VenueList;
 import models.communication.LoginResult;
 import models.exceptions.UserException;
 import org.bson.types.ObjectId;
@@ -45,13 +46,17 @@ public class UsersService {
             return MongoDbConectionService.getDatastore().createQuery(User.class).filter("email =", email).first();
     }
 
-    public static void update(User user)
+    public static void addList(User user, VenueList list)
     {
         try{
-            MongoDbConectionService.getDatastore().save(user.getAllLists().get(user.getAllLists().size()-1));
-            UpdateOperations ops = MongoDbConectionService.getDatastore().createUpdateOperations(User.class)
-                    .push("venueslists", user.getAllLists().get(user.getAllLists().size()-1));
-            MongoDbConectionService.getDatastore().update(MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId())).cloneQuery(), (UpdateOperations<User>) ops);
+            //MongoDbConectionService.getDatastore().save(user.getAllLists().get(user.getAllLists().size()-1));
+//            UpdateOperations ops = MongoDbConectionService.getDatastore().createUpdateOperations(User.class)
+//                    .push("venueslists", user.getAllLists().get(user.getAllLists().size()-1));
+//            MongoDbConectionService.getDatastore().update(MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId())).cloneQuery(), (UpdateOperations<User>) ops);
+//
+            UpdateOperations<User> userUpdate = MongoDbConectionService.getDatastore().createUpdateOperations(User.class)
+                    .push("venueslists", list);
+            MongoDbConectionService.getDatastore().update(MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId())), userUpdate);
 
         }catch (Exception e)
         {

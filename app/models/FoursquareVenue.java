@@ -7,6 +7,10 @@ import java.time.LocalDate;
 
 @Embedded
 public class FoursquareVenue {
+
+    public FoursquareVenue(){
+    }
+
     private String id;
     private String name;
     private String address;
