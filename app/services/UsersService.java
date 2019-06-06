@@ -49,11 +49,7 @@ public class UsersService {
     public static void addList(User user, VenueList list)
     {
         try{
-            //MongoDbConectionService.getDatastore().save(user.getAllLists().get(user.getAllLists().size()-1));
-//            UpdateOperations ops = MongoDbConectionService.getDatastore().createUpdateOperations(User.class)
-//                    .push("venueslists", user.getAllLists().get(user.getAllLists().size()-1));
-//            MongoDbConectionService.getDatastore().update(MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId())).cloneQuery(), (UpdateOperations<User>) ops);
-//
+            ListsService.create(list);
             UpdateOperations<User> userUpdate = MongoDbConectionService.getDatastore().createUpdateOperations(User.class)
                     .push("venueslists", list);
             MongoDbConectionService.getDatastore().update(MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId())), userUpdate);

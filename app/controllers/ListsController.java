@@ -69,7 +69,6 @@ public class ListsController extends Controller {
 
         User user = request.attrs().get(RequestAttrs.USER);
         user.addList(newList);
-        ListsService.create(newList);
         UsersService.addList(user,newList);
         return created(Json.toJson(newList));
     }
