@@ -1,15 +1,21 @@
 package models;
 
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
+import dev.morphia.annotations.Reference;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Entity
 public class VenueList {
-    private Long id;
+    @Id
+    private String id;
     private String name;
     private List<UserVenue> venues;
 
-    public VenueList(Long id, String name) {
+    public VenueList(String id, String name) {
         this.id = id;
         this.name = name;
         this.venues = new ArrayList<>();
@@ -33,7 +39,7 @@ public class VenueList {
             .findAny();
     }
 
-    public Long getId() { return id; }
+    public String getId() { return id; }
     public String getName() { return name; }
     public void setName(String newName) { name = newName; }
     public List<UserVenue> getVenues() { return venues; }

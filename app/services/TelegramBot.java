@@ -12,9 +12,6 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
-import repos.UserRepository;
-
-import java.util.regex.Pattern;
 
 
 public final class TelegramBot {

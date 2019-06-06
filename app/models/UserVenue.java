@@ -1,10 +1,15 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import dev.morphia.annotations.Embedded;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Reference;
 
+@Embedded
 public class UserVenue {
     // no uso herencia porque estas venues serían compartidas
     // entre todos los usuarios, para saber desde cuando está agregada en el sistema
+    @Embedded
     private FoursquareVenue foursquare;
     private boolean visited;
 

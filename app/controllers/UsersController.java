@@ -9,7 +9,6 @@ import models.UserVenue;
 import models.exceptions.UserException;
 import play.libs.Json;
 import play.mvc.*;
-import repos.UserRepository;
 import services.UsersService;
 
 import java.time.format.DateTimeFormatter;

@@ -33,6 +33,7 @@ public class UsersTest {
             user.put("name","test");
             user.put("email","test@gmail.com");
             user.put("password","test");
+            user.put("rol","SYSUSER");
             Result result = route(fakeApplication(), fakeRequest(POST, "/api/users").bodyJson(user));
             assertEquals(CREATED, result.status());
         }catch (Exception e)

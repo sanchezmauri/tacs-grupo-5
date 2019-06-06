@@ -5,8 +5,8 @@ import dev.morphia.query.UpdateOperations;
 import models.User;
 import models.communication.LoginResult;
 import models.exceptions.UserException;
+import org.bson.types.ObjectId;
 import org.mindrot.jbcrypt.BCrypt;
-import repos.UserRepository;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,32 +16,49 @@ import java.util.Optional;
 
 public class UsersService {
     public static void create(User user) throws UserException {
-        if (MongoDbConectionService.getDatastore().createQuery(User.class).filter("email <=", user.getEmail()).first() == null)
-        {
-            MongoDbConectionService.getDatastore().save(user);
-        } else {
-            throw new UserException("email ya existente.");
+        try{
+            if (MongoDbConectionService.getDatastore().createQuery(User.class).filter("email =", user.getEmail()).first() == null)
+            {
+                MongoDbConectionService.getDatastore().save(user);
+            } else {
+                throw new UserException("email ya existente.");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
+
     }
 
     public static List<User> index()
     {
-        return MongoDbConectionService.getDatastore().createQuery(User.class).asList();
+            return MongoDbConectionService.getDatastore().createQuery(User.class).asList();
+
     }
 
     public static User findById(String id)
     {
-        return MongoDbConectionService.getDatastore().createQuery(User.class).filter("id ==", id).first();
+            return MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(id)).first();
+    }
+
+    public static User findByEmail(String email)
+    {
+            return MongoDbConectionService.getDatastore().createQuery(User.class).filter("email =", email).first();
     }
 
     public static void update(User user)
     {
-        MongoDbConectionService.getDatastore().delete(user);
-        MongoDbConectionService.getDatastore().save(user);
+        try{
+            MongoDbConectionService.getDatastore().delete(user);
+            MongoDbConectionService.getDatastore().save(user);
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
     }
 
     public static LoginResult login(String email, String password) {
-        Optional<User> user = UserRepository.findByEmail(email);
+        Optional<User> user = Optional.ofNullable(UsersService.findByEmail(email));
 
         if (!user.isPresent()) {
             return LoginResult.InvalidUsernameOrPassword;

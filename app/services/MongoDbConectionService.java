@@ -10,7 +10,7 @@ public class MongoDbConectionService {
 
     final static Morphia morphia = new Morphia();
 static {
-    morphia.mapPackage("models");
+    morphia.mapPackage("models.User");
 }
 
     public static Morphia getMorphia() {

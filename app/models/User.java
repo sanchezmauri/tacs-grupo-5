@@ -1,12 +1,13 @@
 package models;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import dev.morphia.annotations.Embedded;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
+import dev.morphia.annotations.Reference;
 import json.LocalDateTimeSerializer;
 import org.mindrot.jbcrypt.BCrypt;
 import play.mvc.PathBindable;
-import repos.UserRepository;
 import services.UsersService;
 
 import java.time.LocalDate;
@@ -29,7 +30,7 @@ public class User implements PathBindable<User> {
     private String name;
     private String email;
     private String passwordHash;
-
+    @Reference
     private List<VenueList> venueslists;
     private LocalDateTime lastAccess;
 
@@ -44,8 +45,7 @@ public class User implements PathBindable<User> {
 
     // este ctor está porque el pathBindable necesita una instancia
     // para hacer el bindeo path -> objeto
-    public User() {
-        this( "", "", "password", Rol.SYSUSER);
+    public User(){
     }
 
 
@@ -59,9 +59,40 @@ public class User implements PathBindable<User> {
     public String getEmail() {
         return email;
     }
-
     public String getPasswordHash() {
         return passwordHash;
+    }
+
+    public void setRol(Rol rol) {
+        this.rol = rol;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public List<VenueList> getVenueslists() {
+        return venueslists;
+    }
+
+    public void setVenueslists(List<VenueList> venueslists) {
+        this.venueslists = venueslists;
+    }
+
+    public void setLastAccess(LocalDateTime lastAccess) {
+        this.lastAccess = lastAccess;
     }
 
     public boolean checkPassword(String plaintextPassword) {
@@ -135,8 +166,7 @@ public class User implements PathBindable<User> {
     // estos metodos son para que linkee una id de la request path
     // con un user (interface PathBindable)
     public User bind(String key, String txt) {
-        return UsersService.findById(txt)
-            .orElseThrow(() -> new RuntimeException("Couldn't find user with id " + txt));
+        return Optional.ofNullable(UsersService.findById(txt)).orElseThrow(() -> new RuntimeException("Couldn't find user with id " + txt));
     }
 
     public String unbind(String key) {
