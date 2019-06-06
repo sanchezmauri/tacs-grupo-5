@@ -30,7 +30,7 @@ public class User implements PathBindable<User> {
     private String name;
     private String email;
     private String passwordHash;
-    @Reference
+    @Embedded
     private List<VenueList> venueslists;
     private LocalDateTime lastAccess;
 
@@ -112,6 +112,10 @@ public class User implements PathBindable<User> {
     }
 
     public void addList(VenueList newList) {
+        if (this.venueslists == null)
+        {
+            venueslists = new ArrayList<>();
+        }
         venueslists.add(newList);
     }
 
