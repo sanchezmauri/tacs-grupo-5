@@ -100,7 +100,7 @@ public class ListsController extends Controller {
     }
 
     @Authenticate(types = {"SYSUSER"})
-    @With(VenueListAction.class)
+    //@With(VenueListAction.class)
     public Result addVenuesToList(Long listId, Http.Request request) {
         // todo: extraer parseo de json a algún lugar
         // esto de decir missing field y toda la gilada
@@ -152,7 +152,11 @@ public class ListsController extends Controller {
             String id = venueJson.get("id").asText();
             String name = venueJson.get("name").asText();
             String address = venueJson.get("location").get("address").asText();
-            user.addVenueToList(list, id, name, address);
+            Venue venue = new Venue(id,name,address);
+
+            UsersService.addVenue(user,list,venue);
+
+            //user.addVenueToList(list, id, name, address);
         });
 
         return ok(Json.toJson(list));
