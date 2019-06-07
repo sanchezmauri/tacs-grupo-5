@@ -1,5 +1,8 @@
 package models;
 
+import dev.morphia.annotations.Entity;
+
+@Entity
 public class Venue {
     private String id;
     private String name;

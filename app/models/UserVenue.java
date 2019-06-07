@@ -5,10 +5,12 @@ import dev.morphia.annotations.Embedded;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Reference;
 
-@Embedded
+@Entity
 public class UserVenue {
     // no uso herencia porque estas venues serían compartidas
     // entre todos los usuarios, para saber desde cuando está agregada en el sistema
+    String id;
+    @Reference
     private FoursquareVenue foursquare;
     private boolean visited;
 

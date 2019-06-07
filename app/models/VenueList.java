@@ -1,5 +1,6 @@
 package models;
 
+import dev.morphia.annotations.Embedded;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Reference;
@@ -13,7 +14,7 @@ public class VenueList {
     @Id
     private String id;
     private String name;
-    @Reference
+    @Embedded
     private List<UserVenue> venues;
 
     public VenueList(){
