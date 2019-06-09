@@ -3,6 +3,7 @@ import * as api from '../api';
 import history from '../routes/history';
 import * as paths from '../routes/paths';
 import * as role from '../role';
+import * as cookies from '../cookies';
 import { requestActionWithState } from './requestAction';
 
 /* 
@@ -30,6 +31,8 @@ export const login = (userData) =>
         types.LOGIN,
         null,
         respData => {
+            cookies.set(role.KEY, respData.role, 7);
+            
             let path =  respData.role === role.SYSUSER ?
                         paths.HOME :
                         paths.SEARCH_USERS;
