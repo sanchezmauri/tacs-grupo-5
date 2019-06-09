@@ -1,5 +1,8 @@
 package services;
 
+import dev.morphia.Datastore;
+import dev.morphia.Key;
+import dev.morphia.query.Query;
 import dev.morphia.query.UpdateOperations;
 import models.*;
 import models.communication.LoginResult;
@@ -16,16 +19,11 @@ import java.util.Optional;
 
 public class UsersService {
     public static void create(User user) throws UserException {
-        try {
-            if (MongoDbConectionService.getDatastore().createQuery(User.class).filter("email =", user.getEmail()).first() == null) {
-                MongoDbConectionService.getDatastore().save(user);
-            } else {
-                throw new UserException("email ya existente.");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (MongoDbConectionService.getDatastore().createQuery(User.class).filter("email =", user.getEmail()).first() == null) {
+            MongoDbConectionService.getDatastore().save(user);
+        } else {
+            throw new UserException("email ya existente.");
         }
-
     }
 
     public static List<User> index() {
@@ -44,9 +42,10 @@ public class UsersService {
     public static void addList(User user, VenueList list) {
         try {
             ListsService.create(list);
+            Query<User> userToUpdate = MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
             UpdateOperations<User> userUpdate = MongoDbConectionService.getDatastore().createUpdateOperations(User.class)
                     .push("venueslists", list);
-            MongoDbConectionService.getDatastore().update(MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId())), userUpdate);
+            MongoDbConectionService.getDatastore().update(userToUpdate, userUpdate);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -54,44 +53,22 @@ public class UsersService {
 
     }
 
-    public static void addVenue(User user, VenueList list, Venue venue) {
+    public static void addVenueToList(User user, VenueList list, UserVenue addedVenue) {
         try {
-            if (UserVenuesService.findById(venue.getId())==null) {
+            Datastore datastore = MongoDbConectionService.getDatastore();
 
-                UserVenue userVenue = new UserVenue(new FoursquareVenue(venue.getId(), venue.getName(), venue.getAddress(), LocalDate.now()), false);
-                UpdateOperations<User> userUpdate = MongoDbConectionService.getDatastore().createUpdateOperations(User.class).push("venueslists.venues", userVenue);
-                MongoDbConectionService.getDatastore().update(MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId())), userUpdate);
+            Query<User> userQuery = datastore.createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
 
-            }
+            // todo: averiguar cómo hacer en mongo esto mejor
+            int index = user.listIndex(list);
 
+            UpdateOperations<User> addVenueUpdate = datastore.createUpdateOperations(User.class).push("venueslists." + Integer.toString(index) + ".venues", addedVenue);
+            datastore.update(userQuery, addVenueUpdate);
+
+            // ListsService.addVenue(list, addedVenue);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-//        public void addVenueToList(VenueList list, String venueId, String venueName, String venueAddress) {
-//        if (!list.hasVenue(venueId)) {
-//            Optional<UserVenue> existingVenue = getVenue(venueId);
-//
-//            list.addVenue(
-//                    existingVenue.orElse(
-//                            new UserVenue(
-//                                    new FoursquareVenue(venueId, venueName, venueAddress, LocalDate.now()),
-//                                    false)
-//                    )
-//            );
-//        }
-//    }
-//        public Optional<UserVenue> getVenue(String venueId) {
-//        return venueslists.stream()
-//                .map(list -> list.getVenue(venueId))
-//                .filter(Optional::isPresent)
-//                .map(Optional::get)
-//                .findAny();
-//    }
-//        public boolean hasVenue(String venueId) {
-//        return getVenue(venueId).isPresent();
-//    }
-
     }
 
     public static LoginResult login(String email, String password) {

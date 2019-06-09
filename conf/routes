@@ -27,18 +27,18 @@ GET     /api/venues/count                   controllers.VenuesController.venuesA
 # list resource
 GET     /api/lists                          controllers.ListsController.list(request: Request)
 POST    /api/lists                          controllers.ListsController.create(request: Request)
-DELETE  /api/lists/:listId                  controllers.ListsController.delete(listId: Long, request: Request)
+DELETE  /api/lists/:listId                  controllers.ListsController.delete(listId: String, request: Request)
 
 # cambiar nombre de lista
-PATCH   /api/lists/:listId                  controllers.ListsController.changeListName(listId: Long, request: Request)
+PATCH   /api/lists/:listId                  controllers.ListsController.changeListName(listId: String, request: Request)
 
 # agregar/sacar venue a lista
-POST    /api/lists/:listId/venues           controllers.ListsController.addVenuesToList(listId: Long, request: Request)
-DELETE  /api/lists/:listId/venues           controllers.ListsController.removeVenueFromList(listId: Long, request: Request)
+POST    /api/lists/:listId/venues           controllers.ListsController.addVenuesToList(listId: String, request: Request)
+DELETE  /api/lists/:listId/venues           controllers.ListsController.removeVenueFromList(listId: String, request: Request)
 
 # Marcar lugar como visitado
 # podría ser algo como: PATCH /api/user/venues
-PATCH /api/lists/:listId/venues/:venueId    controllers.ListsController.visitVenue(listId: Long, venueId: String, request: Request)
+PATCH /api/lists/:listId/venues/:venueId    controllers.ListsController.visitVenue(listId: String, venueId: String, request: Request)
 
 # por query str deberían venir: user1, list1, user2, list2
 GET /api/lists/common-venues                controllers.ListsController.compareUsersLists(request: Request)

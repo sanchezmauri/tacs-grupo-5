@@ -3,7 +3,6 @@ package models;
 import dev.morphia.annotations.Embedded;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
-import dev.morphia.annotations.Reference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +33,14 @@ public class VenueList {
         return venues.removeIf(venue -> venue.getId().equals(venueId));
     }
 
-    public boolean hasVenue(String venueId) {
-        return getVenue(venueId).isPresent();
+    public boolean hasVenueWithFoursquareVenue(FoursquareVenue fqVenue) {
+        return getVenueWithFoursquareVenue(fqVenue).isPresent();
+    }
+
+    public Optional<UserVenue> getVenueWithFoursquareVenue(FoursquareVenue fqVenue) {
+        return venues.stream()
+                .filter(venue -> venue.getFoursquareVenue().equals(fqVenue))
+                .findAny();
     }
 
     public Optional<UserVenue> getVenue(String venueId) {
@@ -48,4 +53,29 @@ public class VenueList {
     public String getName() { return name; }
     public void setName(String newName) { name = newName; }
     public List<UserVenue> getVenues() { return venues; }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder
+                .append(name)
+                .append('(')
+                .append(id)
+                .append(") ")
+                .append(venues.size())
+                .append(" venues.\n");
+
+        venues.forEach(venue -> stringBuilder.append(venue.toString()).append('\n'));
+
+        return stringBuilder.toString();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) return false;
+        VenueList otherList = (VenueList) other;
+        if (otherList == null) return false;
+
+        return  id.equals(otherList.id);
+    }
 }

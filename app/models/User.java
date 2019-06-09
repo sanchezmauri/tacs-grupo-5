@@ -105,7 +105,7 @@ public class User implements PathBindable<User> {
         return venueslists;
     }
 
-    public Optional<VenueList> getList(Long listId) {
+    public Optional<VenueList> getList(String listId) {
         return venueslists.stream()
                 .filter(list -> list.getId().equals(listId))
                 .findFirst();
@@ -119,26 +119,34 @@ public class User implements PathBindable<User> {
         venueslists.add(newList);
     }
 
-    public boolean removeList(Long id) {
+    public boolean removeList(String id) {
         return venueslists.removeIf(list -> list.getId().equals(id));
     }
 
     public int listsCount() { return venueslists.size(); }
 
-    public void addVenueToList(VenueList list, String venueId, String venueName, String venueAddress) {
-        // todo: buscar en un repositorio de lugares foursquare a ver si ya existe,
-        // esto para cumplir el requerimiento de agregados desde
-        if (!list.hasVenue(venueId)) {
-            Optional<UserVenue> existingVenue = getVenue(venueId);
+    public int listIndex(VenueList venueList) { return  venueslists.indexOf(venueList); }
 
-            list.addVenue(
-                existingVenue.orElse(
-                    new UserVenue(
-                        new FoursquareVenue(venueId, venueName, venueAddress, LocalDate.now()),
-                        false)
-                )
-            );
-        }
+    public Optional<UserVenue> addVenueToList(VenueList list, FoursquareVenue fqVenue) {
+        if (list.hasVenueWithFoursquareVenue(fqVenue)) return Optional.empty();
+
+        Optional<UserVenue> existingVenue = getVenueWithFoursquareVenue(fqVenue);
+
+        UserVenue venueToAdd = existingVenue.orElse(
+            new UserVenue(fqVenue, false)
+        );
+
+        list.addVenue(venueToAdd);
+
+        return Optional.of(venueToAdd);
+    }
+
+    public Optional<UserVenue> getVenueWithFoursquareVenue(FoursquareVenue fqVenue) {
+        return venueslists.stream()
+                .map(list -> list.getVenueWithFoursquareVenue(fqVenue))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .findAny();
     }
 
     public Optional<UserVenue> getVenue(String venueId) {

@@ -1,17 +1,24 @@
 package models;
 
-import dev.morphia.annotations.Embedded;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 
 import java.time.LocalDate;
 
-@Entity
+// Este objeto guarda data básica de Foursquare
+// y sirve para cumplir el requerimiento
+// saber cantidad de lugares desde una fecha
+// Es compartido por varios users venues.
+// Esto último puede no ser necesario,
+// porque podríamos hacer que los lugares de usuario repitan la data
+// Como esta @referenciado, está en su propia collection (fq_venues).
+@Entity("fq_venues")
 public class FoursquareVenue {
 
     public FoursquareVenue(){
     }
 
+    @Id
     private String id;
     private String name;
     private String address;
@@ -41,5 +48,20 @@ public class FoursquareVenue {
 
     public LocalDate getAdded() { return added; }
     public void setAdded(LocalDate added) { this.added = added; }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) return false;
+        FoursquareVenue otherFqVenue = (FoursquareVenue) other;
+        if (otherFqVenue == null) return false;
+
+        return  id.equals(otherFqVenue.id);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("foursquareVenue: %s (%s)\nAddress: %s\nAdded: %s",
+                name, id, address, added.toString());
+    }
 }
 

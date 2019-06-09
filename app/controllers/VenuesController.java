@@ -13,7 +13,6 @@ import javax.inject.Inject;
 import com.typesafe.config.Config;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import models.Venue;
 import play.libs.Json;
 import play.mvc.*;
 import play.libs.ws.*;
@@ -32,14 +31,6 @@ public class VenuesController extends Controller {
     private final String clientSecret;
     private final String clientId;
 
-    private List<Venue> venues = new ArrayList<>(
-            Arrays.asList(
-                    new Venue("1", "Jason's Bar", "Corrientes 123"),
-                    new Venue("2", "Chimichangas Car", "Córdoba 456"),
-                    new Venue("3", "Ye Ole Generic Palermitan Craft Beer", "sta fé 789")
-            )
-    );
-
     @Inject
     public VenuesController(Config config, WSClient ws) {
         this.config = config;
@@ -49,22 +40,6 @@ public class VenuesController extends Controller {
         foursquareVersion = this.config.getString("foursquare.version");
         clientSecret = this.config.getString("foursquare.clientSecret");
         clientId = this.config.getString("foursquare.clientId");
-    }
-
-    protected class VenueListed extends Venue {
-
-        private Boolean visited;
-        private Date dateAdded;
-
-        public VenueListed(Venue base, Boolean visited, Date dateAdded) {
-            super(base.getId(), base.getName(), base.getAddress());
-            this.visited = visited;
-            this.dateAdded = dateAdded;
-        }
-
-        public Boolean getVisited() { return visited; }
-
-        public Date getDateAdded() { return dateAdded; }
     }
 
     @Authenticate(types = {"ROOT","SYSUSER"})
@@ -110,10 +85,13 @@ public class VenuesController extends Controller {
         Integer sinceDays = parseSince(since);
 
         Date current = new Date();
-        return venues.stream()
+        // todo: comenté esto porque era mock
+        /*return venues.stream()
                 .map(x -> new VenueListed(x, new Random().nextBoolean(), new Date(2019,Calendar.MARCH,new Random().nextInt(25))))
                 .filter(x -> (TimeUnit.DAYS.convert(current.getTime() - x.getDateAdded().getTime(), TimeUnit.MILLISECONDS)) <= sinceDays.longValue())
-                .count();
+                .count();*/
+        // todo: ir a la base, a las foursquare venues, que debería estar indexada por fecha y hacer con query
+        return 0L;
     }
 
     private String[] parsePositionParam(Http.Request request) {
