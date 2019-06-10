@@ -71,6 +71,7 @@ public class UsersService {
         }
     }
 
+
     public static LoginResult login(String email, String password) {
         Optional<User> user = Optional.ofNullable(UsersService.findByEmail(email));
 

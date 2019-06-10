@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import dev.morphia.annotations.Embedded;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Reference;
@@ -11,7 +12,7 @@ public class UserVenue {
     // entre todos los usuarios, para saber desde cuando está agregada en el sistema
     @Id
     String id;
-    @Reference
+    @Embedded
     private FoursquareVenue foursquare;
     private boolean visited;
 
@@ -21,6 +22,7 @@ public class UserVenue {
 
     public UserVenue(FoursquareVenue foursquareVenue, boolean visited) {
         this.foursquare = foursquareVenue;
+        this.id = foursquareVenue.getId();
         this.visited = visited;
     }
 

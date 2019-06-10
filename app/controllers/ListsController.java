@@ -11,9 +11,7 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
-import services.FoursquareVenueService;
-import services.ListsService;
-import services.UsersService;
+import services.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -149,9 +147,11 @@ public class ListsController extends Controller {
 
             FoursquareVenue fqVenue = FoursquareVenueService.getOrCreate(id, name, address);
 
-            user.addVenueToList(list, fqVenue).ifPresent(addedVenue -> {
-                UsersService.addVenueToList(user, list, addedVenue);
-            });
+            UserVenue userVenue = new UserVenue(fqVenue, false);
+
+           // user.addVenueToList(list, fqVenue).ifPresent(addedVenue -> {
+                UsersService.addVenueToList(user, list, userVenue);
+            //});
         });
 
         return ok(Json.toJson(list));
@@ -159,7 +159,11 @@ public class ListsController extends Controller {
 
     @Authenticate(types = {"SYSUSER"})
     @With(VenueListAction.class)
-    public Result removeVenueFromList(String listId, Http.Request request) {
+    public Result removeVenueFromList(String listId, Http.Request request) throws Exception {
+
+        Map<String, Object> map = CodesService.decodeMapFromToken(request.session().data().get("token"));
+        User user = UsersService.findById( map.get("userId").toString()); //Aca deberia buscar el usuario segun id y traerlo con los PERMISOS QUE TIENE;
+
         JsonNode venueIdJson = request.body().asJson();
 
         if (!venueIdJson.has("id"))
@@ -172,7 +176,11 @@ public class ListsController extends Controller {
 
 
         if (list.removeVenue(venueId))
+        {
+            UserVenuesService.deleteUserVenue(user,venueId);
             return ok(Json.toJson(list));
+
+        }
         else
             return badRequest(Utils.createErrorMessage("No venue with id " + venueId));
     }
