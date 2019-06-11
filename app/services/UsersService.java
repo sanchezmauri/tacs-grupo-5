@@ -1,5 +1,6 @@
 package services;
 
+import com.mongodb.BasicDBObject;
 import dev.morphia.Datastore;
 import dev.morphia.Key;
 import dev.morphia.query.Query;
@@ -85,6 +86,41 @@ public class UsersService {
             } else {
                 return LoginResult.InvalidUsernameOrPassword;
             }
+        }
+    }
+
+    public static void deleteUserVenue(User user, String venueId) {
+        try {
+
+
+            int venueCount = 0;
+
+            for(VenueList venueList : user.getAllLists())
+            {
+                for (UserVenue userVenue : venueList.getVenues())
+                {
+
+                    UpdateOperations<User> ops = MongoDbConectionService.getDatastore().createUpdateOperations(User.class).disableValidation().removeAll("venueslists."+venueCount+".venues", new BasicDBObject("_id", venueId));
+                    final Query<User> userVenueQuery = MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
+                    MongoDbConectionService.getDatastore().update(userVenueQuery, ops);
+                }
+                venueCount ++;
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void deleteUserVenueList(User user, String listId) {
+        try {
+
+                    UpdateOperations<User> ops = MongoDbConectionService.getDatastore().createUpdateOperations(User.class).disableValidation().removeAll("venueslists", new BasicDBObject("_id", listId));
+                    final Query<User> userVenueListQuery = MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
+                    MongoDbConectionService.getDatastore().update(userVenueListQuery, ops);
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

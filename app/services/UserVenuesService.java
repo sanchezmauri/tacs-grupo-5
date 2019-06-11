@@ -29,28 +29,7 @@ public class UserVenuesService {
         return MongoDbConectionService.getDatastore().createQuery(UserVenue.class).field("id").equal(new ObjectId(id)).first();
     }
 
-    public static void deleteUserVenue(User user, String venueId) {
-        try {
 
-
-            int venueCount = 0;
-
-            for(VenueList venueList : user.getAllLists())
-            {
-                for (UserVenue userVenue : venueList.getVenues())
-                {
-
-                    UpdateOperations<User> ops = MongoDbConectionService.getDatastore().createUpdateOperations(User.class).disableValidation().removeAll("venueslists."+venueCount+".venues", new BasicDBObject("_id", venueId));
-                    final Query<User> userVenueQuery = MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
-                    MongoDbConectionService.getDatastore().update(userVenueQuery, ops);
-                }
-                venueCount ++;
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
 //    public Optional<UserVenue> getVenue(String venueId) {
 //        return venueslists.stream()

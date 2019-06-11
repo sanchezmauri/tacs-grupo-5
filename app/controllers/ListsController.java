@@ -69,7 +69,7 @@ public class ListsController extends Controller {
     @With(VenueListAction.class)
     public Result delete(String listId, Http.Request request) {
         User user = request.attrs().get(RequestAttrs.USER);
-
+        UsersService.deleteUserVenueList(user,listId);
         user.removeList(listId);
 
         return ok();
@@ -177,7 +177,7 @@ public class ListsController extends Controller {
 
         if (list.removeVenue(venueId))
         {
-            UserVenuesService.deleteUserVenue(user,venueId);
+            UsersService.deleteUserVenue(user,venueId);
             return ok(Json.toJson(list));
 
         }
