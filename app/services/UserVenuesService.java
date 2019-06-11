@@ -26,7 +26,7 @@ public class UserVenuesService {
 
     public static UserVenue findById(String id)
     {
-        return MongoDbConectionService.getDatastore().createQuery(UserVenue.class).field("id").equal(new ObjectId(id)).first();
+        return new UserVenue(MongoDbConectionService.getDatastore().createQuery(FoursquareVenue.class).field("id").equal(new ObjectId(id)).first(),true);
     }
 
 
