@@ -2,6 +2,7 @@ package controllers.actions;
 
 import controllers.RequestAttrs;
 import models.User;
+import org.bson.types.ObjectId;
 import play.mvc.Result;
 import play.mvc.Http;
 
@@ -11,7 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class VenueListAction extends play.mvc.Action.Simple {
-    private static Pattern LIST_PATTERN = Pattern.compile("/lists/(\\d+)/?");
+    private static Pattern LIST_PATTERN = Pattern.compile("/lists/([A-Fa-f\\d]{24})/?");
 
     public CompletionStage<Result> call(Http.Request req) {
         User user = req.attrs().get(RequestAttrs.USER);
@@ -21,8 +22,10 @@ public class VenueListAction extends play.mvc.Action.Simple {
         if (!foundListId)
             return listNotFound();
 
-        String listIdStr = matcher.group(1);
-        Long listId = Long.parseLong(listIdStr);
+        String listId = matcher.group(1);
+
+        if (!ObjectId.isValid(listId))
+            return listNotFound();
 
         return user.getList(listId)
                 .map(list -> delegate.call(req.addAttr(RequestAttrs.LIST, list)))

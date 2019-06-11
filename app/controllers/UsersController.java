@@ -9,7 +9,6 @@ import models.UserVenue;
 import models.exceptions.UserException;
 import play.libs.Json;
 import play.mvc.*;
-import repos.UserRepository;
 import services.UsersService;
 
 import java.time.format.DateTimeFormatter;
@@ -19,7 +18,7 @@ import java.util.function.Predicate;
 public class UsersController extends Controller {
     @Authenticate(types = {"ROOT"})
     public Result list() {
-        JsonNode usersJson = Json.toJson(UserRepository.all());
+        JsonNode usersJson = Json.toJson(UsersService.index());
         return ok(usersJson);
     }
 
@@ -36,7 +35,6 @@ public class UsersController extends Controller {
                         .orElse(Rol.SYSUSER);
 
             User newUser = new User(
-                UserRepository.nextId(),
                 userToCreateJson.get("name").asText(),
                 userToCreateJson.get("email").asText(),
                 userToCreateJson.get("password").asText(),

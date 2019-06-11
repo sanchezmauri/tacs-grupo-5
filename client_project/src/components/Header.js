@@ -25,7 +25,7 @@ class Header extends React.Component {
 
     renderNav() {
         return this.props.options.map(option =>
-            (<Link to={option.link}
+            (<Link key={option.link} to={option.link}
                 className="item">
                 {option.text}
             </Link>)

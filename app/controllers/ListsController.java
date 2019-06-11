@@ -3,6 +3,7 @@ package controllers;
 import annotations.Authenticate;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.actions.VenueListAction;
+import models.exceptions.UserException;
 import play.libs.F;
 import models.*;
 import play.libs.Json;
@@ -10,19 +11,13 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
-import repos.UserRepository;
+import services.*;
 
+import java.awt.desktop.UserSessionEvent;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ListsController extends Controller {
-
-    private long listId = 0L;
-    private Long nextListId() {
-        listId++;
-        return listId;
-    }
-
     @Authenticate(types = {"ROOT", "SYSUSER"})
     public Result list(Http.Request request) {
         User user = request.attrs().get(RequestAttrs.USER);
@@ -31,8 +26,7 @@ public class ListsController extends Controller {
         // si es admin, mandarle todas las listas
         // si es user, solo las de el
         if (user.getRol().equals(Rol.ROOT)) {
-            allLists = UserRepository
-                    .all()
+            allLists = UsersService.index()
                     .stream()
                     .flatMap(u -> u.getAllLists().stream())
                     .collect(Collectors.toList());
@@ -47,8 +41,8 @@ public class ListsController extends Controller {
     // agrego el venue al user que está logueado
     // por ahí si el admin quiere agregar a 1 user un lugar
     // debería hacer: users/:userId/lists/:listId en vez de lists/:listId
-    @Authenticate(types = {"SYSUSER"})
-    public Result create(Http.Request request) {
+    @Authenticate(types = "SYSUSER")
+    public Result create(Http.Request request) throws UserException {
         // extraer esto en algún lado tipo validar json o algo
         JsonNode newListJson = request.body().asJson();
 
@@ -64,19 +58,19 @@ public class ListsController extends Controller {
 
         String listName = newListJson.get("name").asText();
 
-        VenueList newList = new VenueList(nextListId(), listName);
+        VenueList newList = new VenueList(listName);
 
         User user = request.attrs().get(RequestAttrs.USER);
         user.addList(newList);
-
+        UsersService.addList(user, newList);
         return created(Json.toJson(newList));
     }
 
     @Authenticate(types = {"SYSUSER"})
     @With(VenueListAction.class)
-    public Result delete(Long listId, Http.Request request) {
+    public Result delete(String listId, Http.Request request) {
         User user = request.attrs().get(RequestAttrs.USER);
-
+        UsersService.deleteUserVenueList(user, listId);
         user.removeList(listId);
 
         return ok();
@@ -84,7 +78,7 @@ public class ListsController extends Controller {
 
     @Authenticate(types = {"SYSUSER"})
     @With(VenueListAction.class)
-    public Result changeListName(Long listId, Http.Request request) {
+    public Result changeListName(String listId, Http.Request request) {
         JsonNode changeJson = request.body().asJson();
 
         if (!changeJson.has("name"))
@@ -100,7 +94,7 @@ public class ListsController extends Controller {
 
     @Authenticate(types = {"SYSUSER"})
     @With(VenueListAction.class)
-    public Result addVenuesToList(Long listId, Http.Request request) {
+    public Result addVenuesToList(String listId, Http.Request request) {
         // todo: extraer parseo de json a algún lugar
         // esto de decir missing field y toda la gilada
         JsonNode venuesJson = request.body().asJson();
@@ -148,10 +142,17 @@ public class ListsController extends Controller {
         }
 
         venuesJson.forEach((venueJson) -> {
-            String id = venueJson.get("id").asText();
+//            String id = venueJson.get("id").asText();
             String name = venueJson.get("name").asText();
             String address = venueJson.get("location").get("address").asText();
-            user.addVenueToList(list, id, name, address);
+
+            FoursquareVenue fqVenue = FoursquareVenueService.getOrCreate(name, address);
+
+            UserVenue userVenue = new UserVenue(fqVenue, false);
+
+            // user.addVenueToList(list, fqVenue).ifPresent(addedVenue -> {
+            UsersService.addVenueToList(user, list, userVenue);
+            //});
         });
 
         return ok(Json.toJson(list));
@@ -159,7 +160,11 @@ public class ListsController extends Controller {
 
     @Authenticate(types = {"SYSUSER"})
     @With(VenueListAction.class)
-    public Result removeVenueFromList(Long listId, Http.Request request) {
+    public Result removeVenueFromList(String listId, Http.Request request) throws Exception {
+
+        Map<String, Object> map = CodesService.decodeMapFromToken(request.session().data().get("token"));
+        User user = UsersService.findById(map.get("userId").toString()); //Aca deberia buscar el usuario segun id y traerlo con los PERMISOS QUE TIENE;
+
         JsonNode venueIdJson = request.body().asJson();
 
         if (!venueIdJson.has("id"))
@@ -171,62 +176,61 @@ public class ListsController extends Controller {
         VenueList list = request.attrs().get(RequestAttrs.LIST);
 
 
-        if (list.removeVenue(venueId))
+        if (list.removeVenue(venueId)) {
+            UsersService.deleteUserVenue(user, venueId);
             return ok(Json.toJson(list));
-        else
+
+        } else
             return badRequest(Utils.createErrorMessage("No venue with id " + venueId));
     }
 
     @Authenticate(types = {"SYSUSER"})
     @With(VenueListAction.class)
-    public Result visitVenue(Long listId, String venueId, Http.Request request) {
+    public Result visitVenue(String listId, String venueId, Http.Request request) {
         VenueList venueList = request.attrs().get(RequestAttrs.LIST);
-
-        return venueList.getVenue(venueId)
-                .map(venue -> {
-                    venue.visit();
-                    return ok(Json.toJson(venue));
-                })
-                .orElse(
-                    badRequest(Utils.createErrorMessage("No venue with id = " + venueId))
-                );
+        User user = request.attrs().get(RequestAttrs.USER);
+        UsersService.visitUserVenue(user, listId, venueId);
+        UserVenue userVenue = UserVenuesService.findById(venueId);
+        userVenue.visit();
+        return ok(Json.toJson(userVenue));
     }
 
     @Authenticate(types = {"ROOT"})
     public Result compareUsersLists(Http.Request request) {
         // requerir query params user1, list1, user2, list2
-        Map<String, Long> requiredQueryParams = new HashMap<>();
+        Map<String, String> requiredQueryParams = new HashMap<>();
         requiredQueryParams.put("user1", null);
         requiredQueryParams.put("list1", null);
         requiredQueryParams.put("user2", null);
         requiredQueryParams.put("list2", null);
 
-        for (Map.Entry<String, Long> requiredParamName : requiredQueryParams.entrySet()) {
-            F.Either<String, Long> result = Utils.parseLongQueryParam(request, requiredParamName.getKey());
+        for (Map.Entry<String, String> requiredParamName : requiredQueryParams.entrySet()) {
+            String queryParam = request.getQueryString(requiredParamName.getKey());
 
-            if (result.left.isPresent()) {
+            // todo: chequear con regex object id
+            if (queryParam == null || queryParam.isEmpty()) {
                 return badRequest(
-                    Utils.createErrorMessage(result.left.get())
+                        Utils.createErrorMessage("Missing query param: " + requiredParamName.getKey())
                 );
             }
 
             requiredQueryParams.put(
-                requiredParamName.getKey(),
-                result.right.get()
+                    requiredParamName.getKey(),
+                    queryParam
             );
         }
 
-        Long userId1 = requiredQueryParams.get("user1");
-        Long userId2 = requiredQueryParams.get("user2");
-        Long listId1 = requiredQueryParams.get("list1");
-        Long listId2 = requiredQueryParams.get("list2");
+        String userId1 = requiredQueryParams.get("user1");
+        String userId2 = requiredQueryParams.get("user2");
+        String listId1 = requiredQueryParams.get("list1");
+        String listId2 = requiredQueryParams.get("list2");
 
-        F.Either<Result, VenueList> errOrlist1 = getListFromUser(userId1, listId1);
+        F.Either<Result, VenueList> errOrlist1 = getListFromUser(userId1.toString(), listId1);
 
         if (errOrlist1.left.isPresent())
             return errOrlist1.left.get();
 
-        F.Either<Result, VenueList> errOrlist2 = getListFromUser(userId2, listId2);
+        F.Either<Result, VenueList> errOrlist2 = getListFromUser(userId2.toString(), listId2);
 
         if (errOrlist2.left.isPresent())
             return errOrlist2.left.get();
@@ -245,20 +249,20 @@ public class ListsController extends Controller {
         return ok(Json.toJson(commonVenues));
     }
 
-    private F.Either<Result, VenueList> getListFromUser(Long userId, Long listId) {
+    private F.Either<Result, VenueList> getListFromUser(String userId, String listId) {
         // obtener usuarios y listas
-        Optional<User> user = UserRepository.find(userId);
+        Optional<User> user = Optional.ofNullable(UsersService.findById(userId));
 
         if (user.isEmpty())
             return F.Either.Left(
-                badRequest("No user with id = " + userId.toString())
+                    badRequest("No user with id = " + userId.toString())
             );
 
         Optional<VenueList> list = user.get().getList(listId);
 
         if (list.isEmpty())
             return F.Either.Left(
-                badRequest("No list with id = " + listId.toString())
+                    badRequest("No list with id = " + listId.toString())
             );
 
         return F.Either.Right(list.get());

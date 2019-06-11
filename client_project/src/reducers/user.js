@@ -1,12 +1,13 @@
 import { LOGIN, LOGOUT } from '../actions/types'
 import { getCompletedRequestAction } from '../actions/requestAction';
 import * as role from '../role';
+import * as cookies from '../cookies';
 
 // todo: esto no se qué tan bueno es
 // es que si no, tendría que preguntar en cada página?
 const initialValue = {
-    loggedIn: false, // document.cookie.includes('PLAY_SESSION'),
-    role: role.NONE // todo: descomentar linea arriba y ver como obtener el rol (desde la sesion?)
+    loggedIn: document.cookie.includes('PLAY_SESSION'),
+    role: cookies.get(role.KEY) || role.NONE
 };
 
 export default (state = initialValue, action) => {

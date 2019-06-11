@@ -29,14 +29,4 @@ public class Utils {
                 .map(x -> text.substring(x.start(),x.end()))
                 .orElse("");
     }
-
-    public static F.Either<String, Long> parseLongQueryParam(Http.Request request, String name) {
-        String queryParam = request.getQueryString(name);
-
-        if (queryParam == null || queryParam.isEmpty()) {
-            return F.Either.Left("Missing query param: " + name);
-        }
-
-        return F.Either.Right(Long.parseLong(queryParam));
-    }
 }

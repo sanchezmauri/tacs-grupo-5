@@ -29,7 +29,7 @@ class ListVenueSearch extends React.Component {
     renderBody(searchEnabled) {
         if (searchEnabled) {
             return <VenueSearchResult
-                        listId={parseInt(this.props.match.params.id, 10)}
+                        listId={this.props.match.params.id}
                         venues={this.props.searchVenues}
                     />;
         } else {

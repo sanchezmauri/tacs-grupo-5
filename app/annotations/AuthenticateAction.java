@@ -7,8 +7,8 @@ import models.User;
 import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Result;
-import repos.UserRepository;
 import services.CodesService;
+import services.UsersService;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -29,7 +29,7 @@ public class AuthenticateAction extends Action<Authenticate> {
             }
 
             Map<String, Object> map = CodesService.decodeMapFromToken(token);
-            Optional<User> user = UserRepository.find(Long.parseLong(map.get("userId").toString())); //Aca deberia buscar el usuario segun id y traerlo con los PERMISOS QUE TIENE;
+            Optional<User> user = Optional.ofNullable(UsersService.findById((String) map.get("userId").toString())); //Aca deberia buscar el usuario segun id y traerlo con los PERMISOS QUE TIENE;
 
             if (user.isEmpty()) {
                 return CompletableFuture.completedFuture(Utils.unauthorizedErrorJson("no user found"));
