@@ -26,20 +26,4 @@ public class FoursquareVenueService {
                 .first();
     }
 
-    // acá le paso el id que viene desde foursquare
-    // el formato parece el mismo que usa mongo
-    // si empieza a quejarse chequear esto
-    public static FoursquareVenue getOrCreate(String id, String name, String address) {
-        FoursquareVenue fqVenueFromDB = findById(id);
-
-        if (fqVenueFromDB != null) return fqVenueFromDB;
-
-        FoursquareVenue newFqVenue = new FoursquareVenue(id, name, address, LocalDate.now());
-
-        try {
-            create(newFqVenue);
-        } catch (Exception discarded) { } // este error no puede pasar, porque solo pasa si trato de crear uno q ya existe
-
-        return newFqVenue;
-    }
 }

@@ -13,6 +13,7 @@ import play.mvc.Result;
 import play.mvc.With;
 import services.*;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -145,13 +146,11 @@ public class ListsController extends Controller {
             String name = venueJson.get("name").asText();
             String address = venueJson.get("location").get("address").asText();
 
-            FoursquareVenue fqVenue = FoursquareVenueService.getOrCreate(id, name, address);
+            FoursquareVenue newFqVenue = new FoursquareVenue(id, name, address, LocalDate.now());
 
-            UserVenue userVenue = new UserVenue(fqVenue, false);
+            UserVenue userVenue = new UserVenue(newFqVenue, false);
 
-           // user.addVenueToList(list, fqVenue).ifPresent(addedVenue -> {
-                UsersService.addVenueToList(user, list, userVenue);
-            //});
+            UsersService.addVenueToList(user, list, userVenue);
         });
 
         return ok(Json.toJson(list));

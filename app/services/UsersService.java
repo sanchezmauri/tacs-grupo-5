@@ -42,7 +42,6 @@ public class UsersService {
 
     public static void addList(User user, VenueList list) {
         try {
-            ListsService.create(list);
             Query<User> userToUpdate = MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
             UpdateOperations<User> userUpdate = MongoDbConectionService.getDatastore().createUpdateOperations(User.class)
                     .push("venueslists", list);
