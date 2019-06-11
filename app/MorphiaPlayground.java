@@ -50,7 +50,6 @@ public class MorphiaPlayground {
         User user = UsersService.findByEmail("paul@hotmail.com");
 
         FoursquareVenue fqVenue = FoursquareVenueService.getOrCreate(
-                "4ed9866346907c1b41a0e5f6",
             "El Lugar donde cosas salvajes",
             "Ambroseti 123"
         );

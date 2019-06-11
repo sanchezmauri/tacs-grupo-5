@@ -24,8 +24,7 @@ public class FoursquareVenue {
     private String address;
     private LocalDate added;
 
-    public FoursquareVenue(String id, String name, String address, LocalDate added) {
-        this.id = id;
+    public FoursquareVenue(String name, String address, LocalDate added) {
         this.name = name;
         this.address = address;
         this.added = added;

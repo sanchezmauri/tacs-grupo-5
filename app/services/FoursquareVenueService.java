@@ -8,14 +8,8 @@ import java.time.LocalDate;
 
 
 public class FoursquareVenueService {
-    public static void create(FoursquareVenue fqVenue) throws Exception {
-        FoursquareVenue fqVenueFromDB = findById(fqVenue.getId());
-
-        if (fqVenueFromDB == null) {
+    public static void create(FoursquareVenue fqVenue) {
             MongoDbConectionService.getDatastore().save(fqVenue);
-        } else {
-            throw new UserException("ya había un fqVenue con id " + fqVenue.getId());
-        }
     }
 
     public static FoursquareVenue findById(String id) {
@@ -29,12 +23,12 @@ public class FoursquareVenueService {
     // acá le paso el id que viene desde foursquare
     // el formato parece el mismo que usa mongo
     // si empieza a quejarse chequear esto
-    public static FoursquareVenue getOrCreate(String id, String name, String address) {
-        FoursquareVenue fqVenueFromDB = findById(id);
+    public static FoursquareVenue getOrCreate(String name, String address) {
+//        FoursquareVenue fqVenueFromDB = findById(id);
+//
+//        if (fqVenueFromDB != null) return fqVenueFromDB;
 
-        if (fqVenueFromDB != null) return fqVenueFromDB;
-
-        FoursquareVenue newFqVenue = new FoursquareVenue(id, name, address, LocalDate.now());
+        FoursquareVenue newFqVenue = new FoursquareVenue(name, address, LocalDate.now());
 
         try {
             create(newFqVenue);

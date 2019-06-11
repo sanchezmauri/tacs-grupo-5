@@ -111,6 +111,35 @@ public class UsersService {
             e.printStackTrace();
         }
     }
+    public static void visitUserVenue(User user,String listId, String venueId) {
+        try {
+
+
+            int venueListCount = 0;
+
+            for(VenueList venueList : user.getAllLists())
+            {
+                int venueCount = 0;
+                for (UserVenue userVenue : venueList.getVenues())
+                {
+                    if (MongoDbConectionService.getDatastore().createQuery(User.class).field("venueslists."+venueListCount+".venues."+venueCount+".id").equal(venueId).first() != null)
+
+                    {
+                        UpdateOperations<User> ops = MongoDbConectionService.getDatastore().createUpdateOperations(User.class).disableValidation().set("venueslists."+venueListCount+".venues."+venueCount+".visited", true);
+                        final Query<User> userVenueQuery = MongoDbConectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
+                        MongoDbConectionService.getDatastore().update(userVenueQuery, ops);
+                    }
+
+                    venueCount ++;
+
+                }
+                venueListCount ++;
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void deleteUserVenueList(User user, String listId) {
         try {

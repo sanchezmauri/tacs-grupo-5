@@ -13,6 +13,7 @@ import play.mvc.Result;
 import play.mvc.With;
 import services.*;
 
+import java.awt.desktop.UserSessionEvent;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -61,7 +62,7 @@ public class ListsController extends Controller {
 
         User user = request.attrs().get(RequestAttrs.USER);
         user.addList(newList);
-        UsersService.addList(user,newList);
+        UsersService.addList(user, newList);
         return created(Json.toJson(newList));
     }
 
@@ -69,7 +70,7 @@ public class ListsController extends Controller {
     @With(VenueListAction.class)
     public Result delete(String listId, Http.Request request) {
         User user = request.attrs().get(RequestAttrs.USER);
-        UsersService.deleteUserVenueList(user,listId);
+        UsersService.deleteUserVenueList(user, listId);
         user.removeList(listId);
 
         return ok();
@@ -141,16 +142,16 @@ public class ListsController extends Controller {
         }
 
         venuesJson.forEach((venueJson) -> {
-            String id = venueJson.get("id").asText();
+//            String id = venueJson.get("id").asText();
             String name = venueJson.get("name").asText();
             String address = venueJson.get("location").get("address").asText();
 
-            FoursquareVenue fqVenue = FoursquareVenueService.getOrCreate(id, name, address);
+            FoursquareVenue fqVenue = FoursquareVenueService.getOrCreate(name, address);
 
             UserVenue userVenue = new UserVenue(fqVenue, false);
 
-           // user.addVenueToList(list, fqVenue).ifPresent(addedVenue -> {
-                UsersService.addVenueToList(user, list, userVenue);
+            // user.addVenueToList(list, fqVenue).ifPresent(addedVenue -> {
+            UsersService.addVenueToList(user, list, userVenue);
             //});
         });
 
@@ -162,7 +163,7 @@ public class ListsController extends Controller {
     public Result removeVenueFromList(String listId, Http.Request request) throws Exception {
 
         Map<String, Object> map = CodesService.decodeMapFromToken(request.session().data().get("token"));
-        User user = UsersService.findById( map.get("userId").toString()); //Aca deberia buscar el usuario segun id y traerlo con los PERMISOS QUE TIENE;
+        User user = UsersService.findById(map.get("userId").toString()); //Aca deberia buscar el usuario segun id y traerlo con los PERMISOS QUE TIENE;
 
         JsonNode venueIdJson = request.body().asJson();
 
@@ -175,13 +176,11 @@ public class ListsController extends Controller {
         VenueList list = request.attrs().get(RequestAttrs.LIST);
 
 
-        if (list.removeVenue(venueId))
-        {
-            UsersService.deleteUserVenue(user,venueId);
+        if (list.removeVenue(venueId)) {
+            UsersService.deleteUserVenue(user, venueId);
             return ok(Json.toJson(list));
 
-        }
-        else
+        } else
             return badRequest(Utils.createErrorMessage("No venue with id " + venueId));
     }
 
@@ -189,15 +188,11 @@ public class ListsController extends Controller {
     @With(VenueListAction.class)
     public Result visitVenue(String listId, String venueId, Http.Request request) {
         VenueList venueList = request.attrs().get(RequestAttrs.LIST);
-
-        return venueList.getVenue(venueId)
-                .map(venue -> {
-                    venue.visit();
-                    return ok(Json.toJson(venue));
-                })
-                .orElse(
-                    badRequest(Utils.createErrorMessage("No venue with id = " + venueId))
-                );
+        User user = request.attrs().get(RequestAttrs.USER);
+        UsersService.visitUserVenue(user, listId, venueId);
+        UserVenue userVenue = UserVenuesService.findById(venueId);
+        userVenue.visit();
+        return ok(Json.toJson(userVenue));
     }
 
     @Authenticate(types = {"ROOT"})
@@ -215,13 +210,13 @@ public class ListsController extends Controller {
             // todo: chequear con regex object id
             if (queryParam == null || queryParam.isEmpty()) {
                 return badRequest(
-                    Utils.createErrorMessage("Missing query param: " + requiredParamName.getKey())
+                        Utils.createErrorMessage("Missing query param: " + requiredParamName.getKey())
                 );
             }
 
             requiredQueryParams.put(
-                requiredParamName.getKey(),
-                queryParam
+                    requiredParamName.getKey(),
+                    queryParam
             );
         }
 
@@ -260,14 +255,14 @@ public class ListsController extends Controller {
 
         if (user.isEmpty())
             return F.Either.Left(
-                badRequest("No user with id = " + userId.toString())
+                    badRequest("No user with id = " + userId.toString())
             );
 
         Optional<VenueList> list = user.get().getList(listId);
 
         if (list.isEmpty())
             return F.Either.Left(
-                badRequest("No list with id = " + listId.toString())
+                    badRequest("No list with id = " + listId.toString())
             );
 
         return F.Either.Right(list.get());
