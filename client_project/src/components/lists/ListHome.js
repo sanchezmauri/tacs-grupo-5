@@ -13,9 +13,9 @@ import { FETCH_LISTS } from '../../actions/types';
 
 class ListHome extends React.Component {
     componentDidMount() {
-        if (!this.props.list) {
+        //if (!this.props.list) {
             this.props.fetchLists();
-        }
+        //}
     }
 
     render() {
