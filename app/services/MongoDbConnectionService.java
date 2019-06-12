@@ -63,6 +63,8 @@ public class MongoDbConnectionService {
             Config config = Play.current().injector().instanceOf(Config.class);
             String connectionString = config.getString("mongo.connectionString");
 
+            System.out.println("The mongo Connection is --> "+connectionString+" <-- ");
+
             datastore = morphia.createDatastore(new MongoClient(new MongoClientURI(connectionString)), workingDataBaseName);
             datastore.ensureIndexes();
         }
