@@ -1,19 +1,11 @@
-import dev.morphia.Datastore;
 import dev.morphia.mapping.MappingException;
 import models.FoursquareVenue;
 import models.Rol;
 import models.User;
 import models.VenueList;
 import models.exceptions.UserException;
-import org.bson.types.ObjectId;
-import play.libs.Json;
 import services.FoursquareVenueService;
-import services.MongoDbConectionService;
 import services.UsersService;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
 
 public class MorphiaPlayground {
     private static void createUserOneList() {

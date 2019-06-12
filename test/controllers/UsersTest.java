@@ -6,7 +6,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import play.mvc.Result;
-import services.MongoDbConectionService;
+import services.MongoDbConnectionService;
 
 import static org.junit.Assert.assertEquals;
 import static play.mvc.Http.Status.CREATED;
@@ -17,13 +17,13 @@ public class UsersTest {
 
     @Before
     public void setUpMongoDb(){
-        MongoDbConectionService.setWorkingDataBaseToTest();
+        MongoDbConnectionService.getInstance().setWorkingDataBaseToTest();
     }
 
     @After
     public void dropMongoDb(){
-        MongoDbConectionService.getDatastore().getDatabase().drop();
-        MongoDbConectionService.setWorkingDataBaseToProduction();
+        MongoDbConnectionService.getDatastore().getDatabase().drop();
+        MongoDbConnectionService.getInstance().setWorkingDataBaseToProduction();
     }
 
     @Test

@@ -5,7 +5,7 @@ import models.VenueList;
 
 public class ListsService {
     public static Key<VenueList> create(VenueList list) {
-        return MongoDbConectionService.getDatastore().save(list);
+        return MongoDbConnectionService.getDatastore().save(list);
     }
 }
 
