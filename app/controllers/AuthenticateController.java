@@ -23,7 +23,9 @@ public class AuthenticateController extends Controller {
         LoginResult result = UsersService.login(email.textValue(),password.textValue());
 
         if (result.success()) {
-            JsonNode userInfo = Json.newObject().put("role", result.user.get().getRol().toString());
+            JsonNode userInfo = Json.newObject()
+                    .put("role", result.user.get().getRol().toString())
+                    .put("token", result.token);
             return ok(userInfo).addingToSession(request, "token", result.token);
         } else {
             return unauthorized(Utils.createErrorMessage("Credenciales invalidas."));

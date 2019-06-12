@@ -20,11 +20,9 @@ public class AuthenticateAction extends Action<Authenticate> {
 
     public CompletionStage<Result> call(Http.Request req) {
         try {
-            String token;
+            String token = req.header("Authorization").map(str -> str.substring(7)).orElse("");
 
-            if (req.session().data().containsKey("token")) {
-                token = req.session().data().get("token");
-            } else {
+            if (token.isEmpty()) {
                 return CompletableFuture.completedFuture(Utils.unauthorizedErrorJson("no session token"));
             }
 
