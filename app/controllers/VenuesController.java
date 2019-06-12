@@ -13,10 +13,10 @@ import javax.inject.Inject;
 import com.typesafe.config.Config;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import models.Venue;
 import play.libs.Json;
 import play.mvc.*;
 import play.libs.ws.*;
+import services.UsersService;
 
 
 public class VenuesController extends Controller {
@@ -31,14 +31,6 @@ public class VenuesController extends Controller {
     private final String clientSecret;
     private final String clientId;
 
-    private List<Venue> venues = new ArrayList<>(
-            Arrays.asList(
-                    new Venue(1L, "Jason's Bar"),
-                    new Venue(2L, "Chimichangas Car"),
-                    new Venue(3L, "Ye Ole Generic Palermitan Craft Beer")
-            )
-    );
-
     @Inject
     public VenuesController(Config config, WSClient ws) {
         this.config = config;
@@ -50,47 +42,20 @@ public class VenuesController extends Controller {
         clientId = this.config.getString("foursquare.clientId");
     }
 
-    protected class VenueListed extends Venue {
-
-        private Boolean visited;
-        private Date dateAdded;
-
-        public VenueListed(Venue base,Boolean visited, Date dateAdded) {
-            super(base.getId(), base.getName());
-            this.visited = visited;
-            this.dateAdded = dateAdded;
-        }
-
-        public Boolean getVisited() { return visited; }
-
-        public Date getDateAdded() { return dateAdded; }
-    }
-
-    protected class VenueInterested extends Venue {
-
-        private Long usersInterested;
-
-        public VenueInterested(Venue base,Long usersInterested) {
-            super(base.getId(), base.getName());
-            this.usersInterested = usersInterested;
-        }
-
-        public Long getUsersInterested() { return usersInterested; }
-    }
-
     @Authenticate(types = {"ROOT","SYSUSER"})
-    public Result usersInterested(Long venueId) {
-        return venues.stream()
-                .filter(x -> x.getId().equals(venueId))
-                .findFirst()
-                .map(x -> new VenueInterested(x, new Random().nextLong()))
-                .map(x -> ok(Json.toJson(x)).as("application/json"))
-                .orElse(noContent());
+    public Result usersInterested(String venueId) {
+        long interestedCount = UsersService.index()
+                .stream()
+                .filter(user -> user.hasVenue(venueId))
+                .count();
+
+        return ok(
+            Json.newObject().put("usersInterested", interestedCount)
+        );
     }
 
 
-
-    private Map<String, Integer> periodToDays = new HashMap<String, Integer>() {{
+    private Map<String, Integer> periodToDays = new HashMap<>() {{
         put("week", 7);
         put("month", 30);
         put("year", 365);
@@ -120,10 +85,13 @@ public class VenuesController extends Controller {
         Integer sinceDays = parseSince(since);
 
         Date current = new Date();
-        return venues.stream()
+        // todo: comenté esto porque era mock
+        /*return venues.stream()
                 .map(x -> new VenueListed(x, new Random().nextBoolean(), new Date(2019,Calendar.MARCH,new Random().nextInt(25))))
                 .filter(x -> (TimeUnit.DAYS.convert(current.getTime() - x.getDateAdded().getTime(), TimeUnit.MILLISECONDS)) <= sinceDays.longValue())
-                .count();
+                .count();*/
+        // todo: ir a la base, a las foursquare venues, que debería estar indexada por fecha y hacer con query
+        return 0L;
     }
 
     private String[] parsePositionParam(Http.Request request) {

@@ -12,9 +12,6 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
-import repos.UserRepository;
-
-import java.util.regex.Pattern;
 
 
 public final class TelegramBot {
@@ -98,12 +95,11 @@ public final class TelegramBot {
 
                 this.sendMessage(update.getChatId(), reply);
             case "/users":
-                reply = UserRepository.all().toString();
+                reply = UsersService.index().toString();
                 this.sendMessage(update.getChatId(), reply);
                 break;
             case "/getUser":
-                Long paramLong = Long.parseLong(parameters);
-                reply = UserRepository.find(paramLong).toString();
+                reply = UsersService.findById(parameters).toString();
 
                 sendMessage(update.getChatId(), reply);
                 break;

@@ -10,28 +10,35 @@ POST    /api/security/logout                 controllers.AuthenticateController.
 POST    /api/telegram/:token/receiveUpdate  controllers.TelegramController.receiveUpdate(token: String, request: Request)
 
 # users resource
-POST    /api/users                      controllers.UsersController.create(request: Request)
+POST    /api/users                           controllers.UsersController.create(request: Request)
 
 #users (for admins)
-GET     /api/users                      controllers.UsersController.list
-GET     /api/users/:user                controllers.UsersController.user(user: models.User)
-GET     /api/users/:user/lists/count    controllers.UsersController.listsCount(user: models.User)
-GET     /api/users/:user/places/count   controllers.UsersController.placesCount(user: models.User, visited: java.util.Optional[java.lang.Boolean])
-GET     /api/users/:user/lastAccess     controllers.UsersController.lastAccess(user: models.User)
+GET     /api/users                          controllers.UsersController.list
+GET     /api/users/:user                    controllers.UsersController.user(user: models.User)
+GET     /api/users/:user/lists/count        controllers.UsersController.listsCount(user: models.User)
+GET     /api/users/:user/venues/count       controllers.UsersController.venuesCount(user: models.User, visited: java.util.Optional[java.lang.Boolean])
+GET     /api/users/:user/lastAccess         controllers.UsersController.lastAccess(user: models.User)
 
 # venues resource
-GET     /api/venues                 controllers.VenuesController.search(request: Request)
-GET     /api/venues/:id/userCount   controllers.VenuesController.usersInterested(id: Long)
-GET     /api/venues/count           controllers.VenuesController.venuesAddedSince(since ?= null)
+GET     /api/venues                         controllers.VenuesController.search(request: Request)
+GET     /api/venues/:id/userCount           controllers.VenuesController.usersInterested(id: String)
+GET     /api/venues/count                   controllers.VenuesController.venuesAddedSince(since ?= null)
 
 # list resource
-GET     /api/lists                      controllers.ListsController.list(request: Request)
-POST    /api/lists                      controllers.ListsController.create(request: Request)
-DELETE  /api/lists/:listId              controllers.ListsController.delete(listId: Long, request: Request)
-PATCH   /api/lists/:listId              controllers.ListsController.changeListName(listId: Long, request: Request)
+GET     /api/lists                          controllers.ListsController.list(request: Request)
+POST    /api/lists                          controllers.ListsController.create(request: Request)
+DELETE  /api/lists/:listId                  controllers.ListsController.delete(listId: String, request: Request)
 
-POST    /api/lists/:listId/venues       controllers.ListsController.addPlaceToList(listId: Long, request: Request)
-DELETE  /api/lists/:listId/venues       controllers.ListsController.removePlaceFromList(listId: Long, request: Request)
+# cambiar nombre de lista
+PATCH   /api/lists/:listId                  controllers.ListsController.changeListName(listId: String, request: Request)
+
+# agregar/sacar venue a lista
+POST    /api/lists/:listId/venues           controllers.ListsController.addVenuesToList(listId: String, request: Request)
+DELETE  /api/lists/:listId/venues           controllers.ListsController.removeVenueFromList(listId: String, request: Request)
 
 # Marcar lugar como visitado
-# POST /api/lists/:listId/places/{placeId}/mark controllers.ListsController.visitPlace?
+# podría ser algo como: PATCH /api/user/venues
+PATCH /api/lists/:listId/venues/:venueId    controllers.ListsController.visitVenue(listId: String, venueId: String, request: Request)
+
+# por query str deberían venir: user1, list1, user2, list2
+GET /api/lists/common-venues                controllers.ListsController.compareUsersLists(request: Request)
