@@ -11,6 +11,7 @@ import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class Venues {
 
@@ -43,23 +44,23 @@ public class Venues {
         put("year", 365);
     }};
 
-    public static Integer parseSince(String since) {
+    public static Optional<Integer> parseSince(String since) {
         if (since == null || since.equals("forever"))
-            return Integer.MAX_VALUE;
+            return Optional.of(Integer.MAX_VALUE);
 
-        NumberFormat formatter = NumberFormat.getInstance();
-        ParsePosition pos = new ParsePosition(0);
-        Number number = formatter.parse(since, pos);
-        int days = Math.max(number.intValue(), 1);
+        if (periodToDays.containsKey(since)) {
+            return Optional.of(periodToDays.get(since));
+        }
 
-        String period = since.substring(pos.getIndex());
-        Integer periodDays = periodToDays.getOrDefault(period, 1);
+        try
+        {
+            return Optional.of(Integer.parseInt(since));
+        }
+        catch(Exception e)
+        {
+            return Optional.empty();
+        }
 
-        return days * periodDays;
-    }
-
-    public Long countVenuesAddedSince(Integer days) {
-        return 0L;
     }
 
 

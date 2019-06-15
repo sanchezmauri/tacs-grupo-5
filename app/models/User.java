@@ -151,10 +151,13 @@ public class User implements PathBindable<User> {
 
     public Optional<UserVenue> getVenue(String venueId) {
         return venueslists.stream()
-                .map(list -> list.getVenue(venueId))
+                .flatMap(list -> list.getVenue(venueId).stream())
+                .findAny();
+            /*
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .findAny();
+             */
     }
 
     public boolean hasVenue(String venueId) {

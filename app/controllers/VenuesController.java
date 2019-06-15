@@ -19,6 +19,7 @@ import models.exceptions.FoursquareException;
 import play.libs.Json;
 import play.mvc.*;
 import play.libs.ws.*;
+import services.FoursquareVenueService;
 import services.UsersService;
 
 
@@ -32,7 +33,7 @@ public class VenuesController extends Controller {
         businessVenues = bVenues;
     }
 
-    @Authenticate(types = {"ROOT","SYSUSER"})
+    @Authenticate(types = {"ROOT"})
     public Result usersInterested(String venueId) {
         long interestedCount = UsersService.index()
                 .stream()
@@ -46,23 +47,25 @@ public class VenuesController extends Controller {
 
 
 
-
+    @Authenticate(types = {"ROOT"})
     public Result venuesAddedSince(String since) {
-        return ok(Json.toJson(countVenuesAddedSince(since))).as("application/json");
-    }
 
+        var opt = Venues.parseSince(since);
 
-    public Long countVenuesAddedSince(String since) {
-        Integer sinceDays = Venues.parseSince(since);
+        if (opt.isEmpty()) {
+            return badRequest("Invalid \"since\" value");
+        }
+        var sinceDays = opt.get();
 
         Date current = new Date();
-        // todo: comenté esto porque era mock
-        /*return venues.stream()
-                .map(x -> new VenueListed(x, new Random().nextBoolean(), new Date(2019,Calendar.MARCH,new Random().nextInt(25))))
-                .filter(x -> (TimeUnit.DAYS.convert(current.getTime() - x.getDateAdded().getTime(), TimeUnit.MILLISECONDS)) <= sinceDays.longValue())
-                .count();*/
-        // todo: ir a la base, a las foursquare venues, que debería estar indexada por fecha y hacer con query
-        return 0L;
+
+        var count = FoursquareVenueService.getCountByDate(current, sinceDays);
+
+        return ok(
+                Json.newObject().put("count", count)
+        ).as("application/json");
+
+
     }
 
     private String[] parsePositionParam(Http.Request request) {
