@@ -10,6 +10,16 @@ import dev.morphia.annotations.Reference;
 public class UserVenue {
     // no uso herencia porque estas venues serían compartidas
     // entre todos los usuarios, para saber desde cuando está agregada en el sistema
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj.getClass() == UserVenue.class) {
+            return id.equals(((UserVenue) obj).id);
+        }
+        return false;
+    }
+
     @Id
     String id;
     @Embedded
