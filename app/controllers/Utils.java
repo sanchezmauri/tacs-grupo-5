@@ -1,6 +1,11 @@
 package controllers;
 
+import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -28,5 +33,17 @@ public class Utils {
                 .findFirst()
                 .map(x -> text.substring(x.start(),x.end()))
                 .orElse("");
+    }
+
+    public static <T> Stream<T> toStream(Iterator<T> iterator) {
+
+        // Convert the iterator to Spliterator
+        Spliterator<T>
+                spliterator = Spliterators
+                .spliteratorUnknownSize(iterator, 0);
+
+        // Get a Sequential Stream from spliterator
+        return StreamSupport.stream(spliterator, false);
+
     }
 }
