@@ -38,7 +38,7 @@ public class UsersService {
     }
 
     public static List<User> findByName(String name) {
-        Datastore ds = MongoDbConectionService.getDatastore();
+        Datastore ds = MongoDbConnectionService.getDatastore();
         return ds.createQuery(User.class)
                 .field("name")
                 .containsIgnoreCase(name)

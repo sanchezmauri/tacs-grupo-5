@@ -9,10 +9,7 @@ import java.util.Iterator;
 
 public class TelegramUtils {
 
-    public static JsonNode getKeyboard(String titled, Iterator<JsonNode> elements) {
-
-        var sb = new StringBuilder();
-        sb.append("*").append(titled).append("*\n");
+    public static <K> JsonNode getKeyboard(Iterator<K> elements) {
 
         var keyboard = Json.newArray();
 
@@ -28,12 +25,6 @@ public class TelegramUtils {
         do {
 
             var element = elements.next();
-
-            sb.append("/")
-                    .append(i)
-                    .append(" :")
-                    .append(element.get("name"))
-                    .append("\n");
 
             var mod = i % 3;
             switch (mod) {
@@ -65,11 +56,8 @@ public class TelegramUtils {
         }
 
 
-        sb.append("If your venue isn't any of these, please repeat the search with a more specific filter");
-
         return Json.newObject()
                 .put("resize_keyboard",true)
-                .put("option-text", sb.toString())
                 .set("keyboard", keyboard);
 
     }

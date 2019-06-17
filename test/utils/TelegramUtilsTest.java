@@ -20,7 +20,7 @@ public class TelegramUtilsTest {
         try {
             JsonNode actualObj = mapper.readTree("[ {\"name\":\"Jonh0\"}, {\"name\":\"Jonh1\"}, {\"name\":\"Jonh3\"}]");
 
-            var keyboard = TelegramUtils.getKeyboard("Test", actualObj.elements());
+            var keyboard = TelegramUtils.getKeyboard(actualObj.elements());
 
             assertEquals("", mapper.writeValueAsString(keyboard));
 
