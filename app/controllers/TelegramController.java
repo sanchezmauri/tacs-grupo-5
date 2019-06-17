@@ -1,5 +1,6 @@
 package controllers;
 
+import bussiness.Venues;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.typesafe.config.Config;
 import models.telegram.Update;
@@ -16,8 +17,8 @@ public class TelegramController extends Controller {
     private final TelegramBot bot;
 
     @Inject
-    public TelegramController(Config config, WSClient ws) {
-        this.bot = new TelegramBot(config,ws);
+    public TelegramController(Config config, WSClient ws, Venues bVenues) {
+        this.bot = new TelegramBot(config, ws, bVenues);
     }
 
     public Result receiveUpdate(String token, Http.Request request) {

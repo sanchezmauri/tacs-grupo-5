@@ -16,6 +16,7 @@ import services.*;
 import java.awt.desktop.UserSessionEvent;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ListsController extends Controller {
     @Authenticate(types = {"ROOT", "SYSUSER"})
@@ -197,74 +198,35 @@ public class ListsController extends Controller {
 
     @Authenticate(types = {"ROOT"})
     public Result compareUsersLists(Http.Request request) {
-        // requerir query params user1, list1, user2, list2
-        Map<String, String> requiredQueryParams = new HashMap<>();
-        requiredQueryParams.put("user1", null);
-        requiredQueryParams.put("list1", null);
-        requiredQueryParams.put("user2", null);
-        requiredQueryParams.put("list2", null);
 
-        for (Map.Entry<String, String> requiredParamName : requiredQueryParams.entrySet()) {
-            String queryParam = request.getQueryString(requiredParamName.getKey());
+        var list1Id = request.getQueryString("list1");
+        var list2Id = request.getQueryString("list2");
 
-            // todo: chequear con regex object id
-            if (queryParam == null || queryParam.isEmpty()) {
-                return badRequest(
-                        Utils.createErrorMessage("Missing query param: " + requiredParamName.getKey())
-                );
-            }
-
-            requiredQueryParams.put(
-                    requiredParamName.getKey(),
-                    queryParam
+        if (list1Id.isEmpty() || list2Id.isEmpty()) {
+            return badRequest(
+                    Utils.createErrorMessage("Both List Id's are required.")
             );
         }
 
-        String userId1 = requiredQueryParams.get("user1");
-        String userId2 = requiredQueryParams.get("user2");
-        String listId1 = requiredQueryParams.get("list1");
-        String listId2 = requiredQueryParams.get("list2");
+        var list1 = ListsService.getById(list1Id);
+        var list2 = ListsService.getById(list2Id);
 
-        F.Either<Result, VenueList> errOrlist1 = getListFromUser(userId1.toString(), listId1);
+        if (list1.isEmpty()) {
+            return badRequest(
+                    Utils.createErrorMessage("List 1 not found.")
+            );
+        } else if (list2.isEmpty()) {
+            return badRequest(
+                    Utils.createErrorMessage("List 2 not found.")
+            );
+        }
 
-        if (errOrlist1.left.isPresent())
-            return errOrlist1.left.get();
-
-        F.Either<Result, VenueList> errOrlist2 = getListFromUser(userId2.toString(), listId2);
-
-        if (errOrlist2.left.isPresent())
-            return errOrlist2.left.get();
-
-
-        Set<String> list2VenuesIds = errOrlist2.right.get().getVenues().stream()
-                .map(UserVenue::getId)
+        Set<UserVenue> result = list1.get().getVenues().stream()
+                .distinct()
+                .filter(list2.get().getVenues()::contains)
                 .collect(Collectors.toSet());
 
-        Set<String> commonVenues = errOrlist1.right.get().getVenues().stream()
-                .map(UserVenue::getId)
-                .filter(list2VenuesIds::contains)
-                .collect(Collectors.toSet());
-
-
-        return ok(Json.toJson(commonVenues));
+        return ok(Json.toJson(result));
     }
 
-    private F.Either<Result, VenueList> getListFromUser(String userId, String listId) {
-        // obtener usuarios y listas
-        Optional<User> user = Optional.ofNullable(UsersService.findById(userId));
-
-        if (user.isEmpty())
-            return F.Either.Left(
-                    badRequest("No user with id = " + userId.toString())
-            );
-
-        Optional<VenueList> list = user.get().getList(listId);
-
-        if (list.isEmpty())
-            return F.Either.Left(
-                    badRequest("No list with id = " + listId.toString())
-            );
-
-        return F.Either.Right(list.get());
-    }
 }
