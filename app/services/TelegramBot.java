@@ -77,6 +77,10 @@ public final class TelegramBot {
 
                 break;
 
+            case "/logout":
+
+                result = telegramBot -> telegramBot.logout(chatId);
+
             case "/start":
             default:
                 return telegramBot -> { };
@@ -96,6 +100,17 @@ public final class TelegramBot {
         } else {
             this.comunicator.sendMessage(chatId, MESSAGES_ERROR_FOR_USER);
         }
+    }
+
+    private void logout(Integer chatId) {
+
+        if (state.loggedUserTokens.containsKey(chatId)) {
+
+            this.comunicator.sendMessage(chatId, MESSAGES_LOGOUT_SUCCESS);
+            state.loggedUserTokens.remove(chatId);
+
+        }
+
     }
 
     @Deprecated()
@@ -228,7 +243,10 @@ public final class TelegramBot {
 
     public static String MESSAGES_PERFORMING_LOGIN = "Thanks!, loggin in";
     public static String MESSAGES_LOGIN_SUCCESS = "Logged in successfully!";
+    public static String MESSAGES_LOGOUT_SUCCESS = "See you next time!";
     public static String MESSAGES_ERROR_FOR_USER = "Sorry, there was an error, please try again or contact the admins";
+
+
 
 
 }
