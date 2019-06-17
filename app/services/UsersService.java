@@ -38,6 +38,16 @@ public class UsersService {
         return MongoDbConnectionService.getDatastore().createQuery(User.class).filter("email =", email).first();
     }
 
+    public static List<User> findByName(String name) {
+        Datastore ds = MongoDbConnectionService.getDatastore();
+
+        return ds.createQuery(User.class)
+                .field("name")
+                .containsIgnoreCase(name)
+                .find()
+                .toList();
+    }
+
     public static void addList(User user, VenueList list) {
         try {
             ListsService.create(list);

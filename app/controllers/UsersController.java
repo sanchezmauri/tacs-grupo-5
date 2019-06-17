@@ -12,14 +12,17 @@ import play.mvc.*;
 import services.UsersService;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 public class UsersController extends Controller {
     @Authenticate(types = {"ROOT"})
-    public Result list() {
-        JsonNode usersJson = Json.toJson(UsersService.index());
-        return ok(usersJson);
+    public Result list(Optional<String> name) {
+        List<User> users = name.map(UsersService::findByName)
+                .orElseGet(UsersService::index);
+
+        return ok(Json.toJson(users));
     }
 
     public Result create(Http.Request request) {
