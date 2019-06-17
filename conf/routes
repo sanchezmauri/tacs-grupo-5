@@ -13,7 +13,7 @@ POST    /api/telegram/:token/receiveUpdate  controllers.TelegramController.recei
 POST    /api/users                           controllers.UsersController.create(request: Request)
 
 #users (for admins)
-GET     /api/users                          controllers.UsersController.list
+GET     /api/users                          controllers.UsersController.list(name: java.util.Optional[String])
 GET     /api/users/:user                    controllers.UsersController.user(user: models.User)
 GET     /api/users/:user/lists/count        controllers.UsersController.listsCount(user: models.User)
 GET     /api/users/:user/venues/count       controllers.UsersController.venuesCount(user: models.User, visited: java.util.Optional[java.lang.Boolean])
