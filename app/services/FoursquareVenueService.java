@@ -1,9 +1,13 @@
 package services;
 
+import dev.morphia.query.Sort;
 import models.FoursquareVenue;
 import org.bson.types.ObjectId;
 
 import java.time.LocalDate;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 
 public class FoursquareVenueService {
@@ -34,5 +38,27 @@ public class FoursquareVenueService {
         } catch (Exception discarded) { } // este error no puede pasar, porque solo pasa si trato de crear uno q ya existe
 
         return newFqVenue;
+    }
+
+    public static Long getCountByDate(Date fromDate, Integer days) {
+
+        if (days == Integer.MAX_VALUE) {
+            return MongoDbConnectionService.getDatastore()
+                    .createQuery(FoursquareVenue.class)
+                    .count();
+        } else {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(fromDate);
+            cal.add(Calendar.DATE, -days);
+            
+            return MongoDbConnectionService.getDatastore()
+                    .createQuery(FoursquareVenue.class)
+                    .order(Sort.ascending("added"))
+                    .field("added")
+                    .greaterThanOrEq(cal.getTime())
+                    .count();
+        }
+
+
     }
 }

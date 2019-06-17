@@ -26,8 +26,7 @@ public class UsersService {
     }
 
     public static List<User> index() {
-        return MongoDbConnectionService.getDatastore().createQuery(User.class).asList();
-
+        return MongoDbConnectionService.getDatastore().createQuery(User.class).find().toList();
     }
 
     public static User findById(String id) {
@@ -36,6 +35,15 @@ public class UsersService {
 
     public static User findByEmail(String email) {
         return MongoDbConnectionService.getDatastore().createQuery(User.class).filter("email =", email).first();
+    }
+
+    public static List<User> findByName(String name) {
+        Datastore ds = MongoDbConnectionService.getDatastore();
+        return ds.createQuery(User.class)
+                .field("name")
+                .containsIgnoreCase(name)
+                .find()
+                .toList();
     }
 
     public static void addList(User user, VenueList list) {
