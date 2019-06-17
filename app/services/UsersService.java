@@ -26,8 +26,7 @@ public class UsersService {
     }
 
     public static List<User> index() {
-        return MongoDbConnectionService.getDatastore().createQuery(User.class).asList();
-
+        return MongoDbConnectionService.getDatastore().createQuery(User.class).find().toList();
     }
 
     public static User findById(String id) {
