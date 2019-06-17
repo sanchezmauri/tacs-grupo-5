@@ -11,6 +11,7 @@ import play.mvc.Result;
 import services.TelegramBot;
 import services.UsersService;
 import utils.TelegramComunicator;
+import utils.TelegramState;
 
 import javax.inject.Inject;
 import java.util.Arrays;
@@ -20,15 +21,15 @@ public class TelegramController extends Controller {
     private final TelegramBot bot;
     private final TelegramComunicator comunicator;
 
+
     @Inject
-    public TelegramController(Config config, WSClient ws, Venues bVenues, UsersService usersService) {
+    public TelegramController(Config config, WSClient ws, TelegramState state, Venues bVenues, UsersService usersService) {
 
         var endpoint = config.getString("telegram.url");
         var token = config.getString("telegram.token");
 
         this.comunicator = new TelegramComunicator(ws,endpoint,token);
-
-        this.bot = new TelegramBot(comunicator,usersService, bVenues);
+        this.bot = new TelegramBot(comunicator, state, usersService, bVenues);
     }
 
     public Result receiveUpdate(String token, Http.Request request) {
@@ -43,28 +44,19 @@ public class TelegramController extends Controller {
                 Update update = Update.fromJson(request.body().asJson());
 
                 if (update.getCommand().orElse("").equals("/start")) {
-                    var reply = request.session().getOptional("token")
+                    var reply = bot.getUserToken(update.getChatId())
                             .map(s -> "Hey you!, you are logged in and your token is " + s)
                             .orElse("Who are you, do we know each other? Introduce yourself using /login {email} {password}");
 
                     comunicator.sendMessage(update.getChatId(), reply);
-                    result = ok();
                 }
                 else {
                     var callback = bot.routeUpdate(update.getChatId(), update.getCommand().orElse(""), update.getMessageText(), update);
 
-                    var response = callback.apply(bot);
-
-                    if (response.has("token")) {
-                        var userToken = response.get("token").textValue();
-
-                        result = ok().addingToSession(request, "token", userToken);
-                    } else {
-                        result = ok();
-                    }
+                    callback.accept(bot);
                 }
 
-                return result;
+                return ok();
 
             } catch (JsonProcessingException ex) {
                 System.out.println("Error processing Update for Telegram bot");

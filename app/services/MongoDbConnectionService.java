@@ -24,21 +24,7 @@ import java.util.List;
 
 @Singleton
 public class MongoDbConnectionService {
-/*
-    private static MongoDbConnectionService _instance;
 
-    public static MongoDbConnectionService getInstance() {
-        if (_instance == null) {
-            _instance = new MongoDbConnectionService();
-        }
-        return _instance;
-    }
-
-    public static Datastore getDatastore() {
-        return getInstance().getInternalDatastore();
-    }
-
-    */
     private String workingDataBaseName = "TACS";
 
     private final Morphia morphia = new Morphia();
@@ -62,13 +48,6 @@ public class MongoDbConnectionService {
             throw mapError;
         }
     }
-
-    private Morphia getMorphia() {
-        return morphia;
-    }
-
-
-
 
     public Datastore getDatastore() {
         if (datastore == null) {

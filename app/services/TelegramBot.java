@@ -1,8 +1,6 @@
 package services;
 
 import bussiness.Venues;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import models.User;
 import models.communication.LoginResult;
 import models.telegram.Update;
@@ -10,63 +8,69 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
 import utils.TelegramComunicator;
+import utils.TelegramState;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 
 public final class TelegramBot {
 
 
-
-
-    private Map<Integer, String> operationsPendingByChatId = new HashMap<>();
-
     //Business Layer Injects
     private final Venues venuesBusiness;
     private final UsersService usersService;
 
     private TelegramComunicator comunicator;
+    private TelegramState state;
 
     public TelegramBot(TelegramComunicator comm,
+                       TelegramState state,
                        UsersService usersService,
                        Venues bVenues) {
         this.comunicator = comm;
+        this.state = state;
+
         this.usersService = usersService;
         this.venuesBusiness = bVenues;
     }
 
+    public Optional<String> getUserToken(Integer chatId) {
+        return state.loggedUserTokens.containsKey(chatId)
+                ? Optional.of(state.loggedUserTokens.get(chatId))
+                : Optional.empty();
+    }
 
-    public Function<TelegramBot, JsonNode> routeUpdate(Integer chatId, String command, String message, Update update) {
+    public Consumer<TelegramBot> routeUpdate(Integer chatId, String command, String message, Update update) {
 
         String[] parameters;
-        if (operationsPendingByChatId.containsKey(chatId)) {
-            command = operationsPendingByChatId.get(chatId);
+        if (state.pendingOperations.containsKey(chatId)) {
+            command = state.pendingOperations.get(chatId);
             parameters = message.trim().split(" ");
-            operationsPendingByChatId.remove(chatId);
+            state.pendingOperations.remove(chatId);
         } else {
             parameters = message.substring(command.length()).trim().split(" ");
         }
 
         if (command.length() <= 0) {
             System.out.println("No command found on Telegram Update ");
-            return telegramBot -> JsonNodeFactory.instance.objectNode();
+            return telegramBot -> { };
         }
 
-        Function<TelegramBot, JsonNode> result;
+        Consumer<TelegramBot> result;
 
         switch (command) {
             case "/login":
 
                 if (parameters.length != 2) {
-                    return telegramBot -> JsonNodeFactory.instance.objectNode();
+                    return telegramBot -> { };
                 }
                 var email = parameters[0];
                 var password = parameters[1];
                 if (email == null || password == null || email.isEmpty() || password.isEmpty()) {
-                    return telegramBot -> JsonNodeFactory.instance.objectNode();
+                    return telegramBot -> { };
                 } else {
                     result = telegramBot -> telegramBot.login(chatId, parameters[0], parameters[1]);
                 }
@@ -75,24 +79,22 @@ public final class TelegramBot {
 
             case "/start":
             default:
-                result = telegramBot -> JsonNodeFactory.instance.objectNode();
-                break;
+                return telegramBot -> { };
         }
 
         return result;
     }
 
-    private JsonNode login(Integer chatId, String email, String password) {
+    private void login(Integer chatId, String email, String password) {
         this.comunicator.sendMessage(chatId, MESSAGES_PERFORMING_LOGIN);
 
         LoginResult result = usersService.login(email,password);
 
         if (result.success()) {
             this.comunicator.sendMessage(chatId, MESSAGES_LOGIN_SUCCESS);
-            return JsonNodeFactory.instance.objectNode().put("token", result.token);
+            state.loggedUserTokens.put(chatId, result.token);
         } else {
             this.comunicator.sendMessage(chatId, MESSAGES_ERROR_FOR_USER);
-            return JsonNodeFactory.instance.objectNode();
         }
     }
 
@@ -112,10 +114,10 @@ public final class TelegramBot {
 
         String command;
         String parameters;
-        if (operationsPendingByChatId.containsKey(update.getChatId())) {
-            command = operationsPendingByChatId.get(update.getChatId());
+        if (state.pendingOperations.containsKey(update.getChatId())) {
+            command = state.pendingOperations.get(update.getChatId());
             parameters = message.trim();
-            operationsPendingByChatId.remove(update.getChatId());
+            state.pendingOperations.remove(update.getChatId());
         } else {
             command = update.getCommand().orElse("");
             parameters = message.substring(command.length()).trim();
@@ -179,7 +181,7 @@ public final class TelegramBot {
 
                 var lists = user.get().getAllLists();
                 if (lists.size() > 0) {
-                    this.operationsPendingByChatId.put(update.getChatId(), "/displayList");
+                    state.pendingOperations.put(update.getChatId(), "/displayList");
 
                     this.comunicator.sendMessageWithOptions(update.getChatId(),"You have the following lists: ",lists.iterator());
                 } else {

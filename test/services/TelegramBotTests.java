@@ -1,6 +1,7 @@
 package services;
 
 import bussiness.Venues;
+import com.auth0.jwt.internal.org.bouncycastle.asn1.teletrust.TeleTrusTNamedCurves;
 import com.typesafe.config.Config;
 import models.Rol;
 import models.User;
@@ -18,10 +19,12 @@ import org.mockito.stubbing.Answer;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import play.libs.ws.WSClient;
 import utils.TelegramComunicator;
+import utils.TelegramState;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -32,6 +35,8 @@ import static org.mockito.Mockito.*;
 public class TelegramBotTests {
 
     TelegramComunicator comunicatorMock;
+    TelegramState stateMock;
+
     Venues venuesMock;
     UsersService usersServiceMock;
 
@@ -43,7 +48,9 @@ public class TelegramBotTests {
         comunicatorMock = mock(TelegramComunicator.class);
         venuesMock = mock(Venues.class);
 
-        bot = new TelegramBot(comunicatorMock, usersServiceMock, venuesMock);
+        stateMock = new TelegramState();
+
+        bot = new TelegramBot(comunicatorMock, stateMock, usersServiceMock, venuesMock);
 
         doAnswer((Answer<Void>) invocation -> {
             Object[] args = invocation.getArguments();
@@ -94,13 +101,15 @@ public class TelegramBotTests {
         try {
             var update = Update.fromJsonString("{\"update_id\":44388793,\"message\":{\"message_id\":173,\"from\":{\"id\":277016262,\"is_bot\":false,\"first_name\":\"Martin\",\"last_name\":\"Loguancio\",\"username\":\"maadlog\",\"language_code\":\"es\"},\"chat\":{\"id\":277016262,\"first_name\":\"Martin\",\"last_name\":\"Loguancio\",\"username\":\"maadlog\",\"type\":\"private\"},\"date\":1560784500,\"text\":\"/login root@root.com root\",\"entities\":[{\"offset\":0,\"length\":6,\"type\":\"bot_command\"},{\"offset\":7,\"length\":13,\"type\":\"email\"}]}}");
 
-            var callback = bot.routeUpdate(1,"/login","/login root@root.com root",update);
+            var testChatId = new Random().nextInt();
 
-            var response = callback.apply(bot);
+            var callback = bot.routeUpdate(testChatId,"/login","/login root@root.com root",update);
 
-            assertTrue(response.has("token"));
-            verify(comunicatorMock).sendMessage(1,TelegramBot.MESSAGES_PERFORMING_LOGIN);
-            verify(comunicatorMock).sendMessage(1,TelegramBot.MESSAGES_LOGIN_SUCCESS);
+            callback.accept(bot);
+
+            assertTrue(stateMock.loggedUserTokens.containsKey(testChatId));
+            verify(comunicatorMock).sendMessage(testChatId,TelegramBot.MESSAGES_PERFORMING_LOGIN);
+            verify(comunicatorMock).sendMessage(testChatId,TelegramBot.MESSAGES_LOGIN_SUCCESS);
 
         } catch (IOException e) {
             e.printStackTrace();
