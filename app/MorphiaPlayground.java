@@ -5,13 +5,18 @@ import models.User;
 import models.VenueList;
 import models.exceptions.UserException;
 import services.FoursquareVenueService;
+import services.MongoDbConnectionService;
 import services.UsersService;
 
 public class MorphiaPlayground {
+
+    //Commented because static playground doesn't allow for dependency injected Services
+
+    /*
     private static void createUserOneList() {
         try {
             User pepe = new User("capo", "capo@hotmail.com", "123", Rol.SYSUSER);
-            UsersService.create(pepe);
+            new UsersService(new MongoDbConnectionService()).create(pepe);
 
 
         } catch (MappingException mapError) {
@@ -53,10 +58,10 @@ public class MorphiaPlayground {
         });
 
     }
-
+*/
     public static void main(String[] args) {
         //createUserOneList();
-        createUserWithList();
-        addVenueToList();
+        //createUserWithList();
+        //addVenueToList();
     }
 }

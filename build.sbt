@@ -17,6 +17,7 @@ libraryDependencies += "com.h2database" % "h2" % "1.4.194"
 libraryDependencies += "org.assertj" % "assertj-core" % "3.6.2" % Test
 libraryDependencies += "org.awaitility" % "awaitility" % "2.0.0" % Test
 
+libraryDependencies += "org.mockito" % "mockito-core" % "2.28.2" % Test
 
 // My framewords
 libraryDependencies += "org.mindrot" % "jbcrypt" % "0.4"

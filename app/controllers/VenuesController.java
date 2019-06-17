@@ -28,14 +28,19 @@ public class VenuesController extends Controller {
 
 
     private final Venues businessVenues;
+    private final UsersService usersService;
+    private final FoursquareVenueService foursquareVenueService;
+
     @Inject
-    public VenuesController(Venues bVenues) {
-        businessVenues = bVenues;
+    public VenuesController(Venues bVenues,UsersService usersService, FoursquareVenueService foursquareVenueService) {
+        this.businessVenues = bVenues;
+        this.usersService = usersService;
+        this.foursquareVenueService = foursquareVenueService;
     }
 
     @Authenticate(types = {"ROOT"})
     public Result usersInterested(String venueId) {
-        long interestedCount = UsersService.index()
+        long interestedCount = usersService.index()
                 .stream()
                 .filter(user -> user.hasVenue(venueId))
                 .count();
@@ -59,7 +64,7 @@ public class VenuesController extends Controller {
 
         Date current = new Date();
 
-        var count = FoursquareVenueService.getCountByDate(current, sinceDays);
+        var count = foursquareVenueService.getCountByDate(current, sinceDays);
 
         return ok(
                 Json.newObject().put("count", count)

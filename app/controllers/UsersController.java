@@ -11,16 +11,26 @@ import play.libs.Json;
 import play.mvc.*;
 import services.UsersService;
 
+import javax.inject.Inject;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 public class UsersController extends Controller {
+
+
+    private UsersService usersService;
+
+    @Inject
+    public UsersController(UsersService usersService) {
+        this.usersService = usersService;
+    }
+
     @Authenticate(types = {"ROOT"})
     public Result list(Optional<String> name) {
-        List<User> users = name.map(UsersService::findByName)
-                               .orElseGet(UsersService::index);
+        List<User> users = name.map(usersService::findByName)
+                               .orElseGet(usersService::index);
 
         return ok(Json.toJson(users));
     }
@@ -43,7 +53,7 @@ public class UsersController extends Controller {
                 userToCreateJson.get("password").asText(),
                 role
             );
-            UsersService.create(newUser);
+            usersService.create(newUser);
             return created(Json.toJson(newUser));
         } catch (UserException e) {
             return badRequest(Utils.createErrorMessage(e.getMessage()));
@@ -52,13 +62,21 @@ public class UsersController extends Controller {
         }
     }
 
+    private User retrieveUserOrFail(String userId) {
+        return usersService.findById(userId).orElseThrow(() -> new RuntimeException("Couldn't find user with id " + userId));
+    }
+
     @Authenticate(types = {"ROOT"})
-    public Result user(User user) {
+    public Result user(String userId) {
+
+        var user = retrieveUserOrFail(userId);
+
         return ok(Json.toJson(user));
     }
 
     @Authenticate(types = {"ROOT","SYSUSER"})
-    public Result listsCount(User user) {
+    public Result listsCount(String userId) {
+        var user = retrieveUserOrFail(userId);
         return ok(
             Json.newObject().put("listsCount", user.listsCount())
         );
@@ -70,7 +88,10 @@ public class UsersController extends Controller {
     }
 
     @Authenticate(types = {"ROOT","SYSUSER"})
-    public Result venuesCount(User user, Optional<Boolean> visitedOpt) {
+    public Result venuesCount(String userId, Optional<Boolean> visitedOpt) {
+
+        var user = retrieveUserOrFail(userId);
+
         Predicate<UserVenue> visitedPred = visitedOpt
                 .map(this::makeVisitedPred)
                 .orElse(ANY_VENUE);
@@ -81,7 +102,10 @@ public class UsersController extends Controller {
     }
 
     @Authenticate(types = {"ROOT","SYSUSER"})
-    public Result lastAccess(User user) {
+    public Result lastAccess(String userId) {
+
+        var user = retrieveUserOrFail(userId);
+
         String lastAccessFormatted = user.getLastAccess().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
         return ok(

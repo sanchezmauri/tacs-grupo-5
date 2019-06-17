@@ -13,12 +13,32 @@ import play.mvc.Result;
 import play.mvc.With;
 import services.*;
 
+import javax.inject.Inject;
 import java.awt.desktop.UserSessionEvent;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ListsController extends Controller {
+
+
+    private final UsersService usersService;
+    private final ListsService listsService;
+    private final FoursquareVenueService foursquareVenueService;
+    private final UserVenuesService userVenuesService;
+
+    @Inject
+    public ListsController(
+            UsersService usersService,
+            ListsService listsService,
+            FoursquareVenueService foursquareVenueService,
+            UserVenuesService userVenuesService) {
+        this.usersService = usersService;
+        this.listsService = listsService;
+        this.foursquareVenueService = foursquareVenueService;
+        this.userVenuesService = userVenuesService;
+    }
+
     @Authenticate(types = {"ROOT", "SYSUSER"})
     public Result list(Http.Request request) {
         User user = request.attrs().get(RequestAttrs.USER);
@@ -27,7 +47,7 @@ public class ListsController extends Controller {
         // si es admin, mandarle todas las listas
         // si es user, solo las de el
         if (user.getRol().equals(Rol.ROOT)) {
-            allLists = UsersService.index()
+            allLists = usersService.index()
                     .stream()
                     .flatMap(u -> u.getAllLists().stream())
                     .collect(Collectors.toList());
@@ -63,7 +83,7 @@ public class ListsController extends Controller {
 
         User user = request.attrs().get(RequestAttrs.USER);
         user.addList(newList);
-        UsersService.addList(user, newList);
+        usersService.addList(user, newList);
         return created(Json.toJson(newList));
     }
 
@@ -71,7 +91,7 @@ public class ListsController extends Controller {
     @With(VenueListAction.class)
     public Result delete(String listId, Http.Request request) {
         User user = request.attrs().get(RequestAttrs.USER);
-        UsersService.deleteUserVenueList(user, listId);
+        usersService.deleteUserVenueList(user, listId);
         user.removeList(listId);
 
         return ok();
@@ -147,12 +167,12 @@ public class ListsController extends Controller {
             String name = venueJson.get("name").asText();
             String address = venueJson.get("location").get("address").asText();
 
-            FoursquareVenue fqVenue = FoursquareVenueService.getOrCreate(name, address);
+            FoursquareVenue fqVenue = foursquareVenueService.getOrCreate(name, address);
 
             UserVenue userVenue = new UserVenue(fqVenue, false);
 
             // user.addVenueToList(list, fqVenue).ifPresent(addedVenue -> {
-            UsersService.addVenueToList(user, list, userVenue);
+            usersService.addVenueToList(user, list, userVenue);
             //});
         });
 
@@ -164,7 +184,8 @@ public class ListsController extends Controller {
     public Result removeVenueFromList(String listId, Http.Request request) throws Exception {
 
         Map<String, Object> map = CodesService.decodeMapFromToken(request.session().data().get("token"));
-        User user = UsersService.findById(map.get("userId").toString()); //Aca deberia buscar el usuario segun id y traerlo con los PERMISOS QUE TIENE;
+        User user = usersService.findById(map.get("userId").toString()).orElseThrow(); //Aca deberia buscar el usuario segun id y traerlo con los PERMISOS QUE TIENE;
+
 
         JsonNode venueIdJson = request.body().asJson();
 
@@ -178,7 +199,7 @@ public class ListsController extends Controller {
 
 
         if (list.removeVenue(venueId)) {
-            UsersService.deleteUserVenue(user, venueId);
+            usersService.deleteUserVenue(user, venueId);
             return ok(Json.toJson(list));
 
         } else
@@ -190,8 +211,8 @@ public class ListsController extends Controller {
     public Result visitVenue(String listId, String venueId, Http.Request request) {
         VenueList venueList = request.attrs().get(RequestAttrs.LIST);
         User user = request.attrs().get(RequestAttrs.USER);
-        UsersService.visitUserVenue(user, listId, venueId);
-        UserVenue userVenue = UserVenuesService.findById(venueId);
+        usersService.visitUserVenue(user, listId, venueId);
+        UserVenue userVenue = userVenuesService.findById(venueId);
         userVenue.visit();
         return ok(Json.toJson(userVenue));
     }
@@ -208,8 +229,8 @@ public class ListsController extends Controller {
             );
         }
 
-        var list1 = ListsService.getById(list1Id);
-        var list2 = ListsService.getById(list2Id);
+        var list1 = listsService.getById(list1Id);
+        var list2 = listsService.getById(list2Id);
 
         if (list1.isEmpty()) {
             return badRequest(

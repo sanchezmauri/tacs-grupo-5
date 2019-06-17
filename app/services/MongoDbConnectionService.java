@@ -1,5 +1,6 @@
 package services;
 
+import com.google.inject.AbstractModule;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.typesafe.config.Config;
@@ -11,12 +12,19 @@ import models.FoursquareVenue;
 import models.User;
 import models.UserVenue;
 import models.VenueList;
+import play.Environment;
 import play.api.Play;
+import play.inject.Binding;
+import play.inject.Module;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.Arrays;
+import java.util.List;
 
+@Singleton
 public class MongoDbConnectionService {
-
+/*
     private static MongoDbConnectionService _instance;
 
     public static MongoDbConnectionService getInstance() {
@@ -30,12 +38,17 @@ public class MongoDbConnectionService {
         return getInstance().getInternalDatastore();
     }
 
+    */
     private String workingDataBaseName = "TACS";
 
     private final Morphia morphia = new Morphia();
     private Datastore datastore = null;
 
-    MongoDbConnectionService() {
+    private final String mongoConnectionString;
+
+    @Inject
+    public MongoDbConnectionService(Config config) {
+        this.mongoConnectionString = config.getString("mongo.connectionString");
         try {
             // morphia.mapPackage("models.User");
             morphia.map(FoursquareVenue.class, UserVenue.class, VenueList.class, User.class);
@@ -55,17 +68,13 @@ public class MongoDbConnectionService {
     }
 
 
-    @Inject Config config;
 
 
-    private Datastore getInternalDatastore() {
+    public Datastore getDatastore() {
         if (datastore == null) {
-            Config config = Play.current().injector().instanceOf(Config.class);
-            String connectionString = config.getString("mongo.connectionString");
+            System.out.println("The mongo Connection is --> "+mongoConnectionString+" <-- ");
 
-            System.out.println("The mongo Connection is --> "+connectionString+" <-- ");
-
-            datastore = morphia.createDatastore(new MongoClient(new MongoClientURI(connectionString)), workingDataBaseName);
+            datastore = morphia.createDatastore(new MongoClient(new MongoClientURI(mongoConnectionString)), workingDataBaseName);
             datastore.ensureIndexes();
         }
 
@@ -86,4 +95,5 @@ public class MongoDbConnectionService {
     public void setWorkingDataBaseToTest(){
         setWorkingDataBase("TEST");
     }
+
 }

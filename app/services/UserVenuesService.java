@@ -5,20 +5,32 @@ import models.UserVenue;
 import models.exceptions.UserException;
 import org.bson.types.ObjectId;
 
+import javax.inject.Inject;
+
 
 public class UserVenuesService {
-    public static void create(UserVenue userVenue) throws UserException {
+
+    private final MongoDbConnectionService dbConnectionService;
+
+    @Inject
+    public UserVenuesService(MongoDbConnectionService dbConnectionService) {
+        this.dbConnectionService = dbConnectionService;
+    }
+
+    public void create(UserVenue userVenue) throws UserException {
         try {
-            MongoDbConnectionService.getDatastore().save(userVenue);
+            dbConnectionService.getDatastore().save(userVenue);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
-    public static UserVenue findById(String id)
+    public UserVenue findById(String id)
     {
-        return new UserVenue(MongoDbConnectionService.getDatastore().createQuery(FoursquareVenue.class).field("id").equal(new ObjectId(id)).first(),true);
+        return new UserVenue(
+                dbConnectionService.getDatastore().createQuery(FoursquareVenue.class).field("id").equal(new ObjectId(id)).first(),
+                true);
     }
 
 
