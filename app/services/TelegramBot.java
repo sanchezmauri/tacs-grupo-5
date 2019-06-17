@@ -78,9 +78,8 @@ public final class TelegramBot {
                 break;
 
             case "/logout":
-
                 result = telegramBot -> telegramBot.logout(chatId);
-
+                break;
             case "/start":
             default:
                 return telegramBot -> { };
