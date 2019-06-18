@@ -1,9 +1,11 @@
 package services;
 
 import bussiness.Venues;
+import models.FoursquareVenue;
 import models.User;
 import models.VenueList;
 import models.communication.LoginResult;
+import models.exceptions.FoursquareException;
 import models.telegram.Update;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -95,6 +97,16 @@ public final class TelegramBot {
                 result = telegramBot -> telegramBot.displayList(chatId, message);
                 break;
 
+            case "/search":
+                result = telegramBot -> telegramBot.startSearchVenueFor(chatId);
+                break;
+            case "/searchVenueWhere":
+                result = telegramBot -> telegramBot.storeNearAndPromptForFilter(chatId, message, update);
+                break;
+
+            case "/searchVenueNearLocation":
+                result = telegramBot -> telegramBot.searchVenuesAndDisplay(chatId,message);
+
             case "/start":
             default:
                 return telegramBot -> { };
@@ -169,17 +181,75 @@ public final class TelegramBot {
 
     private void displayList(Integer chatId, String listChatId) {
 
-        var list = listsService.getById(VenueList.getIdFromChatId(listChatId)).get();
+
+        var list = listsService.getById(VenueList.getIdFromChatId(listChatId));
+
+        if (list.isEmpty())
+        {
+            this.comunicator.sendMessage(chatId, "The desired list doesn't exist, please contact the admins");
+            return;
+        }
 
 
         var text = new StringBuilder();
         text.append("* Venues at ");
-        text.append(list.getName());
-        text.append("\n");
+        text.append(list.get().getName());
+        text.append(" *\n");
 
-        list.getVenues().forEach(userVenue -> text.append("- ").append(userVenue.getName()).append("\n"));
+        list.get().getVenues().forEach(userVenue -> text.append("- ").append(userVenue.getName()).append("\n"));
 
         this.comunicator.sendMessage(chatId, text.toString());
+
+    }
+
+    private void startSearchVenueFor(Integer chatId) {
+        this.state.pendingOperations.put(chatId, "/searchVenueWhere");
+
+        this.comunicator.sendMessageRequestingLocation(chatId, "Where can we search the venues?", BUTTON_OPTION_NEAR_LOCATION);
+    }
+
+    private void storeNearAndPromptForFilter(Integer chatId, String nearParameter, Update update) {
+
+        if (nearParameter.equals(BUTTON_OPTION_NEAR_LOCATION)){
+            state.pendingOperations.put(chatId, "/searchVenueNearLocation");
+            state.lastKnownLocations.put(chatId, update.message.location.get());
+
+            comunicator.sendMessage(chatId, "Please input the search filter");
+        } else {
+            comunicator.sendMessage(chatId, "\"near\" parameter not recognized, please provide your location using the provided keyboard");
+        }
+    }
+
+    private void searchVenuesAndDisplay(Integer chatId, String filter) {
+
+        if (state.lastKnownLocations.containsKey(chatId)) {
+
+            var location = state.lastKnownLocations.get(chatId);
+
+            try {
+                var venues = venuesBusiness.search(filter,Venues.LAT_LONG_PARAM, location.latitude.toString() + ";" + location.longitude.toString());
+
+                var text = new StringBuilder();
+                text.append(" Venues found: \n");
+
+                venues.elements().forEachRemaining(jn -> text.append(jn.get("name").textValue())
+                        .append(" :")
+                        .append(jn.get("address"))
+                        .append(" (")
+                        .append(jn.get("id"))
+                        .append(")"));
+
+                comunicator.sendMessage(chatId, text.toString());
+
+            } catch (FoursquareException e) {
+                e.printStackTrace();
+                comunicator.sendMessage(chatId, "There was an error searching for the venues, please contact the admins");
+            }
+
+
+        } else {
+            comunicator.sendMessage(chatId, "No location provided for the user, please start the process with /search");
+        }
 
     }
 
@@ -220,6 +290,8 @@ public final class TelegramBot {
     public static String MESSAGES_LOGOUT_SUCCESS = "See you next time!";
     public static String MESSAGES_ERROR_FOR_USER = "Sorry, there was an error, please try again or contact the admins";
     public static String MESSAGES_USER_NOT_FOUND = "User not found, please communicate with the admins";
+
+    public static String BUTTON_OPTION_NEAR_LOCATION = "Near my location";
 
 
 

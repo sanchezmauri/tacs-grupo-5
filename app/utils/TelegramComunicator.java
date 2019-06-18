@@ -56,4 +56,29 @@ public class TelegramComunicator {
                 .thenApply(Message::fromWSResponse);
     }
 
+    public void sendMessageRequestingLocation(Integer chatId, String message, String buttonText) {
+
+        var keyboard = Json.newArray();
+        var row = Json.newArray();
+
+        var button = Json.newObject()
+                .put("text", buttonText)
+                .put("request_location", true);
+
+        row.add(button);
+        keyboard.add(row);
+
+        var replyMarkup = Json.newObject()
+                .put("resize_keyboard",true)
+                .put("one_time_keyboard", true)
+                .set("keyboard", keyboard);
+
+
+        JsonNode body = Json.newObject()
+                .put("chat_id", chatId)
+                .put("parse_mode","Markdown")
+                .put("text", message)
+                .set("reply_markup", replyMarkup);
+    }
+
 }
