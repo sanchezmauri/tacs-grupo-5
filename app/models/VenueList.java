@@ -54,6 +54,17 @@ public class VenueList {
     public void setName(String newName) { name = newName; }
     public List<UserVenue> getVenues() { return venues; }
 
+    public String getChatId() {
+        return getName().trim() + "("+getId()+")";
+    }
+
+    public static String getIdFromChatId(String chatId){
+        var a = chatId.lastIndexOf('(');
+        var b = chatId.lastIndexOf(')');
+        return chatId.substring(a+1,b);
+    }
+
+
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();

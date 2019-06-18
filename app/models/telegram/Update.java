@@ -76,11 +76,17 @@ public class Update {
     }
 
     public Optional<String> getCommand() {
-        return this.message.entities
-                .stream()
-                .filter(e -> e.type.equals("bot_command"))
-                .findAny()
-                .map( e -> this.getMessageText().substring(e.offset, e.offset + e.length));
+        try {
+            return this.message.entities
+                    .stream()
+                    .filter(e -> e.type.equals("bot_command"))
+                    .findAny()
+                    .map( e -> this.getMessageText().substring(e.offset, e.offset + e.length));
+
+        } catch (Exception e) {
+            System.out.println("Warning: Error fetching command from Update");
+            return Optional.empty();
+        }
 
     }
 

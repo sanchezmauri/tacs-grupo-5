@@ -46,6 +46,7 @@ public class Message {
 
     public static Optional<Message> fromWSResponse(WSResponse response) {
         if (response.getStatus() != 200) {
+            System.out.println(response.asJson());
             return Optional.empty();
         }
         try {

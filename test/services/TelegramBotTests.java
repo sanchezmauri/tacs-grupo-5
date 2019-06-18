@@ -39,6 +39,7 @@ public class TelegramBotTests {
 
     Venues venuesMock;
     UsersService usersServiceMock;
+    ListsService listsServiceMock;
 
     TelegramBot bot;
     @Before
@@ -47,10 +48,11 @@ public class TelegramBotTests {
         usersServiceMock = mock(UsersService.class);
         comunicatorMock = mock(TelegramComunicator.class);
         venuesMock = mock(Venues.class);
+        listsServiceMock = mock(ListsService.class);
 
         stateMock = new TelegramState();
 
-        bot = new TelegramBot(comunicatorMock, stateMock, usersServiceMock, venuesMock);
+        bot = new TelegramBot(comunicatorMock, stateMock, usersServiceMock, venuesMock, listsServiceMock);
 
         doAnswer((Answer<Void>) invocation -> {
             Object[] args = invocation.getArguments();

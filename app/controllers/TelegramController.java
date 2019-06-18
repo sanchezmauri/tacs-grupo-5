@@ -8,6 +8,7 @@ import play.libs.ws.WSClient;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
+import services.ListsService;
 import services.TelegramBot;
 import services.UsersService;
 import utils.TelegramComunicator;
@@ -23,13 +24,17 @@ public class TelegramController extends Controller {
 
 
     @Inject
-    public TelegramController(Config config, WSClient ws, TelegramState state, Venues bVenues, UsersService usersService) {
+    public TelegramController(Config config, WSClient ws,
+                              TelegramState state,
+                              Venues bVenues,
+                              UsersService usersService,
+                              ListsService listsService) {
 
         var endpoint = config.getString("telegram.url");
         var token = config.getString("telegram.token");
 
         this.comunicator = new TelegramComunicator(ws,endpoint,token);
-        this.bot = new TelegramBot(comunicator, state, usersService, bVenues);
+        this.bot = new TelegramBot(comunicator, state, usersService, bVenues, listsService);
     }
 
     public Result receiveUpdate(String token, Http.Request request) {
@@ -38,8 +43,6 @@ public class TelegramController extends Controller {
         if (token.equalsIgnoreCase(comunicator.token)) {
 
             try {
-
-
 
                 Update update = Update.fromJson(request.body().asJson());
 

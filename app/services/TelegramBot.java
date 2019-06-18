@@ -2,18 +2,20 @@ package services;
 
 import bussiness.Venues;
 import models.User;
+import models.VenueList;
 import models.communication.LoginResult;
 import models.telegram.Update;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
+
 import utils.TelegramComunicator;
 import utils.TelegramState;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Function;
+
 
 
 public final class TelegramBot {
@@ -22,6 +24,7 @@ public final class TelegramBot {
     //Business Layer Injects
     private final Venues venuesBusiness;
     private final UsersService usersService;
+    private final ListsService listsService;
 
     private TelegramComunicator comunicator;
     private TelegramState state;
@@ -29,12 +32,14 @@ public final class TelegramBot {
     public TelegramBot(TelegramComunicator comm,
                        TelegramState state,
                        UsersService usersService,
-                       Venues bVenues) {
+                       Venues bVenues,
+                       ListsService listsService) {
         this.comunicator = comm;
         this.state = state;
 
         this.usersService = usersService;
         this.venuesBusiness = bVenues;
+        this.listsService = listsService;
     }
 
     public Optional<String> getUserToken(Integer chatId) {
@@ -80,12 +85,26 @@ public final class TelegramBot {
             case "/logout":
                 result = telegramBot -> telegramBot.logout(chatId);
                 break;
+
+            case "/lists":
+                result = telegramBot -> telegramBot.sendListsTo(chatId);
+                break;
+
+            case "/displayList":
+
+                result = telegramBot -> telegramBot.displayList(chatId, message);
+                break;
+
             case "/start":
             default:
                 return telegramBot -> { };
         }
 
         return result;
+    }
+
+    private void echo(Integer chatId, String message) {
+        this.comunicator.sendMessage(chatId, message);
     }
 
     private void login(Integer chatId, String email, String password) {
@@ -112,102 +131,62 @@ public final class TelegramBot {
 
     }
 
+    private void sendListsTo(Integer chatId) {
+
+        var token = this.getUserToken(chatId);
+
+        if (token.isEmpty()) {
+            this.comunicator.sendMessage(chatId, MESSAGES_ERROR_FOR_USER);
+            return;
+        }
+
+
+        Map<String, Object> map = null;
+        try {
+            map = CodesService.decodeMapFromToken(token.get());
+        } catch (Exception e) {
+            this.comunicator.sendMessage(chatId, MESSAGES_ERROR_FOR_USER);
+            return;
+        }
+
+        Optional<User> user = usersService.findById(map.get("userId").toString());
+
+        if (user.isEmpty()) {
+            this.comunicator.sendMessage(chatId, MESSAGES_USER_NOT_FOUND);
+            return;
+        }
+
+        var lists = user.get().getAllLists();
+        if (lists.size() > 0) {
+            state.pendingOperations.put(chatId, "/displayList");
+            var listNames = lists.stream().map(VenueList::getChatId).iterator();
+
+            this.comunicator.sendMessageWithOptions(chatId,"You have the following lists: ",listNames);
+        } else {
+            this.comunicator.sendMessage(chatId, "You don't have created lists");
+        }
+    }
+
+    private void displayList(Integer chatId, String listChatId) {
+
+        var list = listsService.getById(VenueList.getIdFromChatId(listChatId)).get();
+
+
+        var text = new StringBuilder();
+        text.append("* Venues at ");
+        text.append(list.getName());
+        text.append("\n");
+
+        list.getVenues().forEach(userVenue -> text.append("- ").append(userVenue.getName()).append("\n"));
+
+        this.comunicator.sendMessage(chatId, text.toString());
+
+    }
+
+
     @Deprecated()
     public Result handleUpdate(Update update, Http.Request request) {
 
-        String message = update.getMessageText();
-
-        if (message.length() <= 0) {
-            System.out.println("Empty message received on Telegram Update "+update.updateId);
-            return Results.noContent();
-        }
-
-        System.out.println("Received Update from :" + update.getChatId() + ", message: " + message);
-        System.out.println("Payload: {" + update.originalJson + "}");
-
-
-        String command;
-        String parameters;
-        if (state.pendingOperations.containsKey(update.getChatId())) {
-            command = state.pendingOperations.get(update.getChatId());
-            parameters = message.trim();
-            state.pendingOperations.remove(update.getChatId());
-        } else {
-            command = update.getCommand().orElse("");
-            parameters = message.substring(command.length()).trim();
-        }
-
-        if (command.length() <= 0) {
-            System.out.println("No command found on Telegram Update "+update.updateId);
-            return Results.noContent();
-        }
-
-
-
-        String reply;
-        switch(command) {
-            case "/login":
-
-                this.comunicator.maskMessage(update, "Thanks!, processing request");
-
-                String email = parameters.split(" ")[0];
-                String password = parameters.split(" ")[1];
-
-                LoginResult result = usersService.login(email,password);
-
-                if (result.success()) {
-                    this.comunicator.maskMessage(update, "Logged in successfully");
-                    return Results.ok().addingToSession(request,"token",result.token);
-                } else {
-                    this.comunicator.maskMessage(update, "There was an error :C");
-                    return Results.noContent();
-                }
-            case "/start":
-                reply = request.session().getOptional("token")
-                        .map(s -> "Hey you!, you are logged in and your token is " + s)
-                        .orElse("Who are you, do we know each other? Introduce yourself using /login {email} {password}");
-
-                this.comunicator.sendMessage(update.getChatId(), reply);
-
-                break;
-            case "/lists":
-
-                String token;
-                if (request.session().data().containsKey("token")) {
-                    token = request.session().data().get("token");
-                } else {
-                    this.comunicator.sendMessage(update.getChatId(),"Session doesn't include token");
-                    return Results.ok();
-                }
-                Map<String, Object> map = null;
-                try {
-                    map = CodesService.decodeMapFromToken(token);
-                } catch (Exception e) {
-                    this.comunicator.sendMessage(update.getChatId(),"Session doesn't include token");
-                    return Results.ok();
-                }
-                Optional<User> user = usersService.findById(map.get("userId").toString());
-
-                if (user.isEmpty()) {
-                    this.comunicator.sendMessage(update.getChatId(),"User not found, please communicate with the admins");
-                    return Results.ok();
-                }
-
-                var lists = user.get().getAllLists();
-                if (lists.size() > 0) {
-                    state.pendingOperations.put(update.getChatId(), "/displayList");
-
-                    this.comunicator.sendMessageWithOptions(update.getChatId(),"You have the following lists: ",lists.iterator());
-                } else {
-                    this.comunicator.sendMessage(update.getChatId(), "You don't have created lists");
-                }
-
-                break;
-
-            case "/displayList":
-
-                this.comunicator.sendMessage(update.getChatId(), "Echo Test:" + message);
-                break;
 /*
 
             case "/search":
@@ -231,10 +210,6 @@ public final class TelegramBot {
 
                 break;
 */
-            default:
-                break;
-        }
-
         return Results.ok();
 
     }
@@ -244,7 +219,7 @@ public final class TelegramBot {
     public static String MESSAGES_LOGIN_SUCCESS = "Logged in successfully!";
     public static String MESSAGES_LOGOUT_SUCCESS = "See you next time!";
     public static String MESSAGES_ERROR_FOR_USER = "Sorry, there was an error, please try again or contact the admins";
-
+    public static String MESSAGES_USER_NOT_FOUND = "User not found, please communicate with the admins";
 
 
 
