@@ -7,6 +7,7 @@ import dev.morphia.query.UpdateOperations;
 import models.*;
 import models.communication.LoginResult;
 import models.exceptions.UserException;
+import models.venues.FSVenueSearch;
 import org.bson.types.ObjectId;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -21,10 +22,14 @@ public class UsersService {
 
     private MongoDbConnectionService dbConnectionService;
     private ListsService listsService;
+    private FoursquareVenueService foursquareVenueService;
     @Inject
-    public UsersService(MongoDbConnectionService dbConnectionService) {
+    public UsersService(MongoDbConnectionService dbConnectionService,
+                        ListsService listsService,
+                        FoursquareVenueService foursquareVenueService) {
         this.dbConnectionService = dbConnectionService;
-        this.listsService = new ListsService(dbConnectionService);
+        this.listsService = listsService;
+        this.foursquareVenueService = foursquareVenueService;
     }
 
 
@@ -77,7 +82,7 @@ public class UsersService {
 
     }
 
-    public void addVenueToList(User user, VenueList list, UserVenue addedVenue) {
+    private Boolean addVenueToList(User user, VenueList list, UserVenue addedVenue) {
         try {
             Datastore datastore = dbConnectionService.getDatastore();
 
@@ -89,9 +94,10 @@ public class UsersService {
             UpdateOperations<User> addVenueUpdate = datastore.createUpdateOperations(User.class).push("venueslists." + Integer.toString(index) + ".venues", addedVenue);
             datastore.update(userQuery, addVenueUpdate);
 
-            // ListsService.addVenue(list, addedVenue);
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -166,12 +172,23 @@ public class UsersService {
     public void deleteUserVenueList(User user, String listId) {
         try {
 
-                    UpdateOperations<User> ops = dbConnectionService.getDatastore().createUpdateOperations(User.class).disableValidation().removeAll("venueslists", new BasicDBObject("_id", listId));
-                    final Query<User> userVenueListQuery = dbConnectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
+            UpdateOperations<User> ops = dbConnectionService.getDatastore().createUpdateOperations(User.class).disableValidation().removeAll("venueslists", new BasicDBObject("_id", listId));
+            final Query<User> userVenueListQuery = dbConnectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
             dbConnectionService.getDatastore().update(userVenueListQuery, ops);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public Boolean addVenuesToList(User user, VenueList list, List<FSVenueSearch> venueSearches) {
+        return venueSearches.stream().map((venue) -> {
+
+            FoursquareVenue fqVenue = foursquareVenueService.getOrCreate(venue.id ,venue.name, venue.location.address);
+
+            UserVenue userVenue = new UserVenue(fqVenue, false);
+
+            return this.addVenueToList(user, list, userVenue);
+        }).allMatch(x-> x);
     }
 }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Chat {
 
-    public Integer id;
+    public Long id;
     public String username;
     @JsonProperty("first_name") public String FirstName;
     @JsonProperty("last_name") public String LastName;

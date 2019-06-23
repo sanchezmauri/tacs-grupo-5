@@ -8,21 +8,22 @@ import play.libs.ws.WSClient;
 
 import java.util.Iterator;
 
-public class TelegramComunicator {
+public class TelegramCommunicator {
 
     private final WSClient ws;
     private final String endpoint;
     public final String token;
 
-    public TelegramComunicator(WSClient ws, String endpoint, String token) {
+    public TelegramCommunicator(WSClient ws, String endpoint, String token) {
         this.ws = ws;
         this.endpoint = endpoint;
         this.token = token;
     }
 
-    public void sendMessage(Integer chatId, String text) {
+    public void sendMessage(Long chatId, String text) {
         JsonNode body = Json.newObject()
                 .put("chat_id", chatId)
+                .put("parse_mode","Markdown")
                 .put("text", text);
 
         ws.url(endpoint + token + "/sendMessage")
@@ -41,7 +42,7 @@ public class TelegramComunicator {
     }
 
 
-    public <K> void sendMessageWithOptions(Integer chatId, String message, Iterator<K> elements) {
+    public <K> void sendMessageWithOptions(Long chatId, String message, Iterator<K> elements) {
 
         var replyMarkup = TelegramUtils.getKeyboard(elements);
 
@@ -56,7 +57,7 @@ public class TelegramComunicator {
                 .thenApply(Message::fromWSResponse);
     }
 
-    public void sendMessageRequestingLocation(Integer chatId, String message, String buttonText) {
+    public void sendMessageRequestingLocation(Long chatId, String message, String buttonText) {
 
         var keyboard = Json.newArray();
         var row = Json.newArray();
@@ -76,9 +77,12 @@ public class TelegramComunicator {
 
         JsonNode body = Json.newObject()
                 .put("chat_id", chatId)
-                .put("parse_mode","Markdown")
                 .put("text", message)
                 .set("reply_markup", replyMarkup);
+
+        ws.url(endpoint + token + "/sendMessage")
+                .post(body)
+                .thenApply(Message::fromWSResponse);
     }
 
 }

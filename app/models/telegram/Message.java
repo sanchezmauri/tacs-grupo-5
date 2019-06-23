@@ -42,7 +42,7 @@ public class Message {
     public User from;
     public Chat chat;
     public List<MessageEntity> entities;
-    public Optional<Location> location;
+    public Location location;
 
     public static Optional<Message> fromWSResponse(WSResponse response) {
         if (response.getStatus() != 200) {

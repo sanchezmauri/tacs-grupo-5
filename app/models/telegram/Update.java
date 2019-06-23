@@ -31,10 +31,18 @@ public class Update {
     public String originalJson;
 
     public String getMessageText() {
-        return message != null ? message.text : editedMessage.text;
+
+        var msg = Optional.ofNullable(message)
+                .map(m -> m.text);
+
+        var editedMsg = Optional.ofNullable(editedMessage)
+                .map(m -> m.text);
+
+        return msg.or(() -> editedMsg).orElse("");
+
     }
 
-    public Integer getChatId() {
+    public Long getChatId() {
         return message != null ? message.chat.id : editedMessage.chat.id;
     }
 

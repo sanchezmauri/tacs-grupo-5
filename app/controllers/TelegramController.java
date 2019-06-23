@@ -11,7 +11,7 @@ import play.mvc.Result;
 import services.ListsService;
 import services.TelegramBot;
 import services.UsersService;
-import utils.TelegramComunicator;
+import utils.TelegramCommunicator;
 import utils.TelegramState;
 
 import javax.inject.Inject;
@@ -20,7 +20,7 @@ import java.util.Arrays;
 public class TelegramController extends Controller {
 
     private final TelegramBot bot;
-    private final TelegramComunicator comunicator;
+    private final TelegramCommunicator comunicator;
 
 
     @Inject
@@ -33,7 +33,7 @@ public class TelegramController extends Controller {
         var endpoint = config.getString("telegram.url");
         var token = config.getString("telegram.token");
 
-        this.comunicator = new TelegramComunicator(ws,endpoint,token);
+        this.comunicator = new TelegramCommunicator(ws,endpoint,token);
         this.bot = new TelegramBot(comunicator, state, usersService, bVenues, listsService);
     }
 
@@ -46,25 +46,20 @@ public class TelegramController extends Controller {
 
                 Update update = Update.fromJson(request.body().asJson());
 
-                if (update.getCommand().orElse("").equals("/start")) {
-                    var reply = bot.getUserToken(update.getChatId())
-                            .map(s -> "Hey you!, you are logged in and your token is " + s)
-                            .orElse("Who are you, do we know each other? Introduce yourself using /login {email} {password}");
+                var callback = bot.routeUpdate(update.getChatId(), update.getCommand().orElse(""), update.getMessageText(), update);
 
-                    comunicator.sendMessage(update.getChatId(), reply);
-                }
-                else {
-                    var callback = bot.routeUpdate(update.getChatId(), update.getCommand().orElse(""), update.getMessageText(), update);
+                callback.accept(bot);
 
-                    callback.accept(bot);
-                }
 
                 return ok();
 
             } catch (JsonProcessingException ex) {
                 System.out.println("Error processing Update for Telegram bot");
-                result = internalServerError(ex.getMessage());
+                System.out.println(request.body().asJson().toString());
+                result = noContent();//internalServerError(ex.getMessage());
             } catch (Exception e) {
+                System.out.println("There was an unexpected error");
+                System.out.println(request.body().asJson().toString());
                 System.out.println(e.getMessage());
                 System.err.print(Arrays.toString(e.getStackTrace()));
                 result = noContent();

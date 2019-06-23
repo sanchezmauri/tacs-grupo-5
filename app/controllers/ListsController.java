@@ -1,9 +1,13 @@
 package controllers;
 
 import annotations.Authenticate;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import controllers.actions.VenueListAction;
 import models.exceptions.UserException;
+import models.venues.FSVenueSearch;
 import play.libs.F;
 import models.*;
 import play.libs.Json;
@@ -15,6 +19,7 @@ import services.*;
 
 import javax.inject.Inject;
 import java.awt.desktop.UserSessionEvent;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -24,18 +29,15 @@ public class ListsController extends Controller {
 
     private final UsersService usersService;
     private final ListsService listsService;
-    private final FoursquareVenueService foursquareVenueService;
     private final UserVenuesService userVenuesService;
 
     @Inject
     public ListsController(
             UsersService usersService,
             ListsService listsService,
-            FoursquareVenueService foursquareVenueService,
             UserVenuesService userVenuesService) {
         this.usersService = usersService;
         this.listsService = listsService;
-        this.foursquareVenueService = foursquareVenueService;
         this.userVenuesService = userVenuesService;
     }
 
@@ -116,8 +118,7 @@ public class ListsController extends Controller {
     @Authenticate(types = {"SYSUSER"})
     @With(VenueListAction.class)
     public Result addVenuesToList(String listId, Http.Request request) {
-        // todo: extraer parseo de json a algún lugar
-        // esto de decir missing field y toda la gilada
+
         JsonNode venuesJson = request.body().asJson();
 
         if (venuesJson.isObject()) {
@@ -127,54 +128,19 @@ public class ListsController extends Controller {
         User user = request.attrs().get(RequestAttrs.USER);
         VenueList list = request.attrs().get(RequestAttrs.LIST);
 
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectReader reader = mapper.readerFor(new TypeReference<List<FSVenueSearch>>() {});
+        List<FSVenueSearch> venueSearches;
 
-        // chequeo que esten todos bien o no hago nada.
-        // todo: acumular todos los errores
-        Iterator<JsonNode> venuesIter = venuesJson.elements();
-        StringBuilder errorBuilder = new StringBuilder();
+        try {
+             venueSearches = reader.readValue(venuesJson);
+        } catch (IOException e) {
+            e.printStackTrace();
 
-        while (venuesIter.hasNext()) {
-            JsonNode venueJson = venuesIter.next();
-
-            if (!venueJson.has("id")) {
-                errorBuilder.append("Missing id in ");
-                errorBuilder.append(venueJson.toString());
-                errorBuilder.append('\n');
-                continue;
-            }
-
-            if (!venueJson.has("name")) {
-                errorBuilder.append("Missing name in ");
-                errorBuilder.append(venueJson.toString());
-                errorBuilder.append('\n');
-                continue;
-            }
-
-            if (!venueJson.has("location") || !venueJson.get("location").has("address")) {
-                errorBuilder.append("Missing name location.address");
-                errorBuilder.append(venueJson.toString());
-                errorBuilder.append('\n');
-                continue;
-            }
+            return badRequest("Unable to parse request into valid Venues, please confirm the structure is\n { \"id\": \"<SomeId>\", \"name\": \"<A valid name>\", \"location\": { \"address\": \"<Your Address>\" ... } }");
         }
 
-        if (!errorBuilder.toString().isEmpty()) {
-            return badRequest(Utils.createErrorMessage(errorBuilder.toString()));
-        }
-
-        venuesJson.forEach((venueJson) -> {
-//            String id = venueJson.get("id").asText();
-            String name = venueJson.get("name").asText();
-            String address = venueJson.get("location").get("address").asText();
-
-            FoursquareVenue fqVenue = foursquareVenueService.getOrCreate(name, address);
-
-            UserVenue userVenue = new UserVenue(fqVenue, false);
-
-            // user.addVenueToList(list, fqVenue).ifPresent(addedVenue -> {
-            usersService.addVenueToList(user, list, userVenue);
-            //});
-        });
+        usersService.addVenuesToList(user, list, venueSearches);
 
         return ok(Json.toJson(list));
     }

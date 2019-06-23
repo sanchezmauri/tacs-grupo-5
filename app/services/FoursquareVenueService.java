@@ -23,23 +23,23 @@ public class FoursquareVenueService {
         dbConnectionService.getDatastore().save(fqVenue);
     }
 
-    public FoursquareVenue findById(String id) {
+    public FoursquareVenue findByFoursquareId(String id) {
         return dbConnectionService.getDatastore()
                 .createQuery(FoursquareVenue.class)
-                .field("id")
-                .equal(new ObjectId(id))
+                .field("fsId")
+                .equal(id)
                 .first();
     }
 
     // acá le paso el id que viene desde foursquare
     // el formato parece el mismo que usa mongo
     // si empieza a quejarse chequear esto
-    public  FoursquareVenue getOrCreate(String name, String address) {
-//        FoursquareVenue fqVenueFromDB = findById(id);
-//
-//        if (fqVenueFromDB != null) return fqVenueFromDB;
+    public  FoursquareVenue getOrCreate(String fsId, String name, String address) {
+        FoursquareVenue fqVenueFromDB = findByFoursquareId(fsId);
 
-        FoursquareVenue newFqVenue = new FoursquareVenue(name, address, LocalDate.now());
+        if (fqVenueFromDB != null) return fqVenueFromDB;
+
+        FoursquareVenue newFqVenue = new FoursquareVenue(fsId, name, address, LocalDate.now());
 
         try {
             create(newFqVenue);

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Location {
 
-    public Float longitude;
-    public Float latitude;
+    public double longitude;
+    public double latitude;
 
 }

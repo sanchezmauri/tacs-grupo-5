@@ -12,6 +12,8 @@ import annotations.Authenticate;
 import javax.inject.Inject;
 
 import bussiness.Venues;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.Config;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -118,8 +120,11 @@ public class VenuesController extends Controller {
 
         try {
             var venues = businessVenues.search(query, positionParamKey, positionParamVal);
+            ObjectMapper mapper = new ObjectMapper();
 
-            return CompletableFuture.completedFuture(ok(venues));
+            var venuesJson = mapper.valueToTree(venues);
+
+            return CompletableFuture.completedFuture(ok(venuesJson));
 
         } catch (FoursquareException e) {
 
