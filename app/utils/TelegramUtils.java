@@ -29,15 +29,15 @@ public class TelegramUtils {
             var mod = i % 3;
             switch (mod) {
                 case 0:
-                    row1.add(String.valueOf(i));
+                    row1.add(element.toString());
                     idx1++;
                     break;
                 case 1:
-                    row2.add(String.valueOf(i));
+                    row2.add(element.toString());
                     idx2++;
                     break;
                 case 2:
-                    row3.add(String.valueOf(i));
+                    row3.add(element.toString());
                     idx3++;
                     break;
             }
@@ -58,6 +58,7 @@ public class TelegramUtils {
 
         return Json.newObject()
                 .put("resize_keyboard",true)
+                .put("one_time_keyboard", true)
                 .set("keyboard", keyboard);
 
     }

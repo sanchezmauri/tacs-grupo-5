@@ -1,12 +1,15 @@
 package models.telegram;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import play.libs.ws.WSResponse;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,12 +27,22 @@ public class Update {
     @JsonProperty("edited_message")
     public Message editedMessage;
 
+    @JsonIgnore
+    public String originalJson;
 
     public String getMessageText() {
-        return message != null ? message.text : editedMessage.text;
+
+        var msg = Optional.ofNullable(message)
+                .map(m -> m.text);
+
+        var editedMsg = Optional.ofNullable(editedMessage)
+                .map(m -> m.text);
+
+        return msg.or(() -> editedMsg).orElse("");
+
     }
 
-    public Integer getChatId() {
+    public Long getChatId() {
         return message != null ? message.chat.id : editedMessage.chat.id;
     }
 
@@ -56,7 +69,33 @@ public class Update {
     }
 
     public static Update fromJson(JsonNode jsonNode) throws JsonProcessingException {
-       return new ObjectMapper().treeToValue(jsonNode,Update.class);
+        Update update = new ObjectMapper().treeToValue(jsonNode,Update.class);
+        update.originalJson = jsonNode.toString();
+        return update;
+    }
+
+    public static Update fromJsonString(String json) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node = null;
+
+            node = mapper.readTree(json);
+
+        return Update.fromJson(node);
+    }
+
+    public Optional<String> getCommand() {
+        try {
+            return this.message.entities
+                    .stream()
+                    .filter(e -> e.type.equals("bot_command"))
+                    .findAny()
+                    .map( e -> this.getMessageText().substring(e.offset, e.offset + e.length));
+
+        } catch (Exception e) {
+            System.out.println("Warning: Error fetching command from Update");
+            return Optional.empty();
+        }
+
     }
 
     public static Optional<List<Update>> arrayFromWSResponse(WSResponse response) {

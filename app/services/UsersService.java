@@ -7,9 +7,11 @@ import dev.morphia.query.UpdateOperations;
 import models.*;
 import models.communication.LoginResult;
 import models.exceptions.UserException;
+import models.venues.FSVenueSearch;
 import org.bson.types.ObjectId;
 import org.mindrot.jbcrypt.BCrypt;
 
+import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,28 +19,48 @@ import java.util.Optional;
 
 
 public class UsersService {
-    public static void create(User user) throws UserException {
-        if (MongoDbConnectionService.getDatastore().createQuery(User.class).filter("email =", user.getEmail()).first() == null) {
-            MongoDbConnectionService.getDatastore().save(user);
+
+    private MongoDbConnectionService dbConnectionService;
+    private ListsService listsService;
+    private FoursquareVenueService foursquareVenueService;
+    @Inject
+    public UsersService(MongoDbConnectionService dbConnectionService,
+                        ListsService listsService,
+                        FoursquareVenueService foursquareVenueService) {
+        this.dbConnectionService = dbConnectionService;
+        this.listsService = listsService;
+        this.foursquareVenueService = foursquareVenueService;
+    }
+
+
+    public void create(User user) throws UserException {
+        if (dbConnectionService.getDatastore().createQuery(User.class).filter("email =", user.getEmail()).first() == null) {
+            dbConnectionService.getDatastore().save(user);
         } else {
             throw new UserException("email ya existente.");
         }
     }
 
-    public static List<User> index() {
-        return MongoDbConnectionService.getDatastore().createQuery(User.class).find().toList();
+    public List<User> index() {
+        return dbConnectionService.getDatastore().createQuery(User.class).find().toList();
     }
 
-    public static User findById(String id) {
-        return MongoDbConnectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(id)).first();
+    public Optional<User> findById(String id) {
+        return Optional.ofNullable(
+                    dbConnectionService.getDatastore()
+                            .createQuery(User.class)
+                            .field("id")
+                            .equal(new ObjectId(id))
+                            .first()
+        );
     }
 
-    public static User findByEmail(String email) {
-        return MongoDbConnectionService.getDatastore().createQuery(User.class).filter("email =", email).first();
+    public Optional<User> findByEmail(String email) {
+        return Optional.ofNullable(dbConnectionService.getDatastore().createQuery(User.class).filter("email =", email).first());
     }
 
-    public static List<User> findByName(String name) {
-        Datastore ds = MongoDbConnectionService.getDatastore();
+    public List<User> findByName(String name) {
+        Datastore ds = dbConnectionService.getDatastore();
 
         return ds.createQuery(User.class)
                 .field("name")
@@ -47,13 +69,13 @@ public class UsersService {
                 .toList();
     }
 
-    public static void addList(User user, VenueList list) {
+    public void addList(User user, VenueList list) {
         try {
-            ListsService.create(list);
-            Query<User> userToUpdate = MongoDbConnectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
-            UpdateOperations<User> userUpdate = MongoDbConnectionService.getDatastore().createUpdateOperations(User.class)
+            listsService.create(list);
+            Query<User> userToUpdate = dbConnectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
+            UpdateOperations<User> userUpdate = dbConnectionService.getDatastore().createUpdateOperations(User.class)
                     .push("venueslists", list);
-            MongoDbConnectionService.getDatastore().update(userToUpdate, userUpdate);
+            dbConnectionService.getDatastore().update(userToUpdate, userUpdate);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -61,9 +83,9 @@ public class UsersService {
 
     }
 
-    public static void addVenueToList(User user, VenueList list, UserVenue addedVenue) {
+    private Boolean addVenueToList(User user, VenueList list, UserVenue addedVenue) {
         try {
-            Datastore datastore = MongoDbConnectionService.getDatastore();
+            Datastore datastore = dbConnectionService.getDatastore();
 
             Query<User> userQuery = datastore.createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
 
@@ -73,17 +95,18 @@ public class UsersService {
             UpdateOperations<User> addVenueUpdate = datastore.createUpdateOperations(User.class).push("venueslists." + Integer.toString(index) + ".venues", addedVenue);
             datastore.update(userQuery, addVenueUpdate);
 
-            // ListsService.addVenue(list, addedVenue);
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 
 
-    public static LoginResult login(String email, String password) {
-        Optional<User> user = Optional.ofNullable(UsersService.findByEmail(email));
+    public LoginResult login(String email, String password) {
+        Optional<User> user = this.findByEmail(email);
 
-        if (!user.isPresent()) {
+        if (user.isEmpty()) {
             return LoginResult.InvalidUsernameOrPassword;
         } else {
             if (BCrypt.checkpw(password, user.get().getPasswordHash())) {
@@ -96,10 +119,8 @@ public class UsersService {
         }
     }
 
-    public static void deleteUserVenue(User user, String venueId) {
+    public void deleteUserVenue(User user, String venueId) {
         try {
-
-
             int venueCount = 0;
 
             for(VenueList venueList : user.getAllLists())
@@ -107,9 +128,9 @@ public class UsersService {
                 for (UserVenue userVenue : venueList.getVenues())
                 {
 
-                    UpdateOperations<User> ops = MongoDbConnectionService.getDatastore().createUpdateOperations(User.class).disableValidation().removeAll("venueslists."+venueCount+".venues", new BasicDBObject("_id", venueId));
-                    final Query<User> userVenueQuery = MongoDbConnectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
-                    MongoDbConnectionService.getDatastore().update(userVenueQuery, ops);
+                    UpdateOperations<User> ops = dbConnectionService.getDatastore().createUpdateOperations(User.class).disableValidation().removeAll("venueslists."+venueCount+".venues", new BasicDBObject("_id", venueId));
+                    final Query<User> userVenueQuery = dbConnectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
+                    dbConnectionService.getDatastore().update(userVenueQuery, ops);
                 }
                 venueCount ++;
 
@@ -118,7 +139,8 @@ public class UsersService {
             e.printStackTrace();
         }
     }
-    public static void visitUserVenue(User user,String listId, String venueId) {
+
+    public void visitUserVenue(User user,String listId, String venueId) {
         try {
 
 
@@ -129,12 +151,12 @@ public class UsersService {
                 int venueCount = 0;
                 for (UserVenue userVenue : venueList.getVenues())
                 {
-                    if (MongoDbConnectionService.getDatastore().createQuery(User.class).field("venueslists."+venueListCount+".venues."+venueCount+".id").equal(venueId).first() != null)
+                    if (dbConnectionService.getDatastore().createQuery(User.class).field("venueslists."+venueListCount+".venues."+venueCount+".id").equal(venueId).first() != null)
 
                     {
-                        UpdateOperations<User> ops = MongoDbConnectionService.getDatastore().createUpdateOperations(User.class).disableValidation().set("venueslists."+venueListCount+".venues."+venueCount+".visited", true);
-                        final Query<User> userVenueQuery = MongoDbConnectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
-                        MongoDbConnectionService.getDatastore().update(userVenueQuery, ops);
+                        UpdateOperations<User> ops = dbConnectionService.getDatastore().createUpdateOperations(User.class).disableValidation().set("venueslists."+venueListCount+".venues."+venueCount+".visited", true);
+                        final Query<User> userVenueQuery = dbConnectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
+                        dbConnectionService.getDatastore().update(userVenueQuery, ops);
                     }
 
                     venueCount ++;
@@ -148,15 +170,26 @@ public class UsersService {
         }
     }
 
-    public static void deleteUserVenueList(User user, String listId) {
+    public void deleteUserVenueList(User user, String listId) {
         try {
 
-                    UpdateOperations<User> ops = MongoDbConnectionService.getDatastore().createUpdateOperations(User.class).disableValidation().removeAll("venueslists", new BasicDBObject("_id", listId));
-                    final Query<User> userVenueListQuery = MongoDbConnectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
-                    MongoDbConnectionService.getDatastore().update(userVenueListQuery, ops);
+            UpdateOperations<User> ops = dbConnectionService.getDatastore().createUpdateOperations(User.class).disableValidation().removeAll("venueslists", new BasicDBObject("_id", listId));
+            final Query<User> userVenueListQuery = dbConnectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
+            dbConnectionService.getDatastore().update(userVenueListQuery, ops);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public Boolean addVenuesToList(User user, VenueList list, List<FSVenueSearch> venueSearches) {
+        return venueSearches.stream().map((venue) -> {
+
+            FoursquareVenue fqVenue = foursquareVenueService.getOrCreate(venue.id ,venue.name, venue.location.address);
+
+            UserVenue userVenue = new UserVenue(fqVenue, false);
+
+            return this.addVenueToList(user, list, userVenue);
+        }).allMatch(x-> x);
     }
 }

@@ -20,9 +20,12 @@ import java.util.stream.Collectors;
 @Indexes(
     @Index(fields = @Field("email"))
 )
-public class User implements PathBindable<User> {
+public class User {
 
+    //Zero-arg constructor for morphia
+    public User() {
 
+    }
 
     private Rol rol;
     @Id
@@ -41,11 +44,6 @@ public class User implements PathBindable<User> {
         this.lastAccess = LocalDateTime.now();
         this.rol = rol;
         this.venueslists = new ArrayList<>();
-    }
-
-    // este ctor está porque el pathBindable necesita una instancia
-    // para hacer el bindeo path -> objeto
-    public User(){
     }
 
 
@@ -178,16 +176,6 @@ public class User implements PathBindable<User> {
     public LocalDateTime getLastAccess() { return lastAccess; }
 
 
-    // estos metodos son para que linkee una id de la request path
-    // con un user (interface PathBindable)
-    public User bind(String key, String txt) {
-        return Optional.ofNullable(UsersService.findById(txt)).orElseThrow(() -> new RuntimeException("Couldn't find user with id " + txt));
-    }
-
-    public String unbind(String key) {
-        return id.toString();
-    }
-    public String javascriptUnbind() { return null; }
 
     @Override
     public String toString() {

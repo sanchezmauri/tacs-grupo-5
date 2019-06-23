@@ -12,6 +12,8 @@ import annotations.Authenticate;
 import javax.inject.Inject;
 
 import bussiness.Venues;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.Config;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -28,14 +30,19 @@ public class VenuesController extends Controller {
 
 
     private final Venues businessVenues;
+    private final UsersService usersService;
+    private final FoursquareVenueService foursquareVenueService;
+
     @Inject
-    public VenuesController(Venues bVenues) {
-        businessVenues = bVenues;
+    public VenuesController(Venues bVenues,UsersService usersService, FoursquareVenueService foursquareVenueService) {
+        this.businessVenues = bVenues;
+        this.usersService = usersService;
+        this.foursquareVenueService = foursquareVenueService;
     }
 
     @Authenticate(types = {"ROOT"})
     public Result usersInterested(String venueId) {
-        long interestedCount = UsersService.index()
+        long interestedCount = usersService.index()
                 .stream()
                 .filter(user -> user.hasVenue(venueId))
                 .count();
@@ -59,7 +66,7 @@ public class VenuesController extends Controller {
 
         Date current = new Date();
 
-        var count = FoursquareVenueService.getCountByDate(current, sinceDays);
+        var count = foursquareVenueService.getCountByDate(current, sinceDays);
 
         return ok(
                 Json.newObject().put("count", count)
@@ -113,8 +120,11 @@ public class VenuesController extends Controller {
 
         try {
             var venues = businessVenues.search(query, positionParamKey, positionParamVal);
+            ObjectMapper mapper = new ObjectMapper();
 
-            return CompletableFuture.completedFuture(ok(venues));
+            var venuesJson = mapper.valueToTree(venues);
+
+            return CompletableFuture.completedFuture(ok(venuesJson));
 
         } catch (FoursquareException e) {
 

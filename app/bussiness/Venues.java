@@ -3,15 +3,15 @@ package bussiness;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.typesafe.config.Config;
 import models.exceptions.FoursquareException;
+import models.venues.FSLocation;
+import models.venues.FSVenueSearch;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 
 import javax.inject.Inject;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class Venues {
 
@@ -64,7 +64,7 @@ public class Venues {
     }
 
 
-        public JsonNode search(String query, String positionTypeKey, String positionTypeParameter) throws FoursquareException {
+        public List<FSVenueSearch> search(String query, String positionTypeKey, String positionTypeParameter) throws FoursquareException {
 
             WSResponse response =  ws.url(foursquareURL)
                     .addQueryParameter("client_id", clientId)
@@ -77,9 +77,15 @@ public class Venues {
                     .toCompletableFuture()
                     .join();
 
-            return processFoursquareResponse(response);
+            var fsResponse = processFoursquareResponse(response);
 
+            var results = new ArrayList<FSVenueSearch>();
+            fsResponse.elements().forEachRemaining( jn -> {
+                var res = new FSVenueSearch(jn);
+                results.add(res);
+            });
 
+            return results;
         }
 
         private JsonNode processFoursquareResponse(WSResponse foursquareResp) throws FoursquareException {

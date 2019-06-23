@@ -14,10 +14,10 @@ POST    /api/users                           controllers.UsersController.create(
 
 #users (for admins)
 GET     /api/users                          controllers.UsersController.list(name: java.util.Optional[String])
-GET     /api/users/:user                    controllers.UsersController.user(user: models.User)
-GET     /api/users/:user/lists/count        controllers.UsersController.listsCount(user: models.User)
-GET     /api/users/:user/venues/count       controllers.UsersController.venuesCount(user: models.User, visited: java.util.Optional[java.lang.Boolean])
-GET     /api/users/:user/lastAccess         controllers.UsersController.lastAccess(user: models.User)
+GET     /api/users/:userId                    controllers.UsersController.user(userId: String)
+GET     /api/users/:userId/lists/count        controllers.UsersController.listsCount(userId: String)
+GET     /api/users/:userId/venues/count       controllers.UsersController.venuesCount(userId: String, visited: java.util.Optional[java.lang.Boolean])
+GET     /api/users/:userId/lastAccess         controllers.UsersController.lastAccess(userId: String)
 
 # venues resource
 GET     /api/venues                         controllers.VenuesController.search(request: Request)

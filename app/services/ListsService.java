@@ -5,22 +5,31 @@ import models.User;
 import models.VenueList;
 import org.bson.types.ObjectId;
 
+import javax.inject.Inject;
 import java.util.Objects;
 import java.util.Optional;
 
 public class ListsService {
-    public static Key<VenueList> create(VenueList list) {
-        return MongoDbConnectionService.getDatastore().save(list);
+
+    private MongoDbConnectionService dbConnectionService;
+
+    @Inject
+    public ListsService(MongoDbConnectionService dbConnection){
+        this.dbConnectionService = dbConnection;
     }
 
-    public static Optional<VenueList> getById(String listId) {
+    public Key<VenueList> create(VenueList list) {
+        return dbConnectionService.getDatastore().save(list);
+    }
 
-        var query = MongoDbConnectionService.getDatastore()
+    public Optional<VenueList> getById(String listId) {
+
+        var query = dbConnectionService.getDatastore()
                 .createQuery(VenueList.class)
                 .field("_id")
                 .equal(listId);
 
-        var user = MongoDbConnectionService.getDatastore()
+        var user = dbConnectionService.getDatastore()
                 .createQuery(User.class)
                 .field("venueslists")
                 .elemMatch(query)

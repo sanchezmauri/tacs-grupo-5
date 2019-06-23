@@ -4,6 +4,7 @@ import dev.morphia.query.Sort;
 import models.FoursquareVenue;
 import org.bson.types.ObjectId;
 
+import javax.inject.Inject;
 import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
@@ -11,27 +12,34 @@ import java.util.List;
 
 
 public class FoursquareVenueService {
-    public static void create(FoursquareVenue fqVenue) {
-            MongoDbConnectionService.getDatastore().save(fqVenue);
+
+    private MongoDbConnectionService dbConnectionService;
+    @Inject
+    public FoursquareVenueService(MongoDbConnectionService dbConnectionService) {
+        this.dbConnectionService = dbConnectionService;
     }
 
-    public static FoursquareVenue findById(String id) {
-        return MongoDbConnectionService.getDatastore()
+    public void create(FoursquareVenue fqVenue) {
+        dbConnectionService.getDatastore().save(fqVenue);
+    }
+
+    public FoursquareVenue findByFoursquareId(String id) {
+        return dbConnectionService.getDatastore()
                 .createQuery(FoursquareVenue.class)
-                .field("id")
-                .equal(new ObjectId(id))
+                .field("fsId")
+                .equal(id)
                 .first();
     }
 
     // acá le paso el id que viene desde foursquare
     // el formato parece el mismo que usa mongo
     // si empieza a quejarse chequear esto
-    public static FoursquareVenue getOrCreate(String name, String address) {
-//        FoursquareVenue fqVenueFromDB = findById(id);
-//
-//        if (fqVenueFromDB != null) return fqVenueFromDB;
+    public  FoursquareVenue getOrCreate(String fsId, String name, String address) {
+        FoursquareVenue fqVenueFromDB = findByFoursquareId(fsId);
 
-        FoursquareVenue newFqVenue = new FoursquareVenue(name, address, LocalDate.now());
+        if (fqVenueFromDB != null) return fqVenueFromDB;
+
+        FoursquareVenue newFqVenue = new FoursquareVenue(fsId, name, address, LocalDate.now());
 
         try {
             create(newFqVenue);
@@ -40,10 +48,10 @@ public class FoursquareVenueService {
         return newFqVenue;
     }
 
-    public static Long getCountByDate(Date fromDate, Integer days) {
+    public  Long getCountByDate(Date fromDate, Integer days) {
 
         if (days == Integer.MAX_VALUE) {
-            return MongoDbConnectionService.getDatastore()
+            return dbConnectionService.getDatastore()
                     .createQuery(FoursquareVenue.class)
                     .count();
         } else {
@@ -51,7 +59,7 @@ public class FoursquareVenueService {
             cal.setTime(fromDate);
             cal.add(Calendar.DATE, -days);
             
-            return MongoDbConnectionService.getDatastore()
+            return dbConnectionService.getDatastore()
                     .createQuery(FoursquareVenue.class)
                     .order(Sort.ascending("added"))
                     .field("added")

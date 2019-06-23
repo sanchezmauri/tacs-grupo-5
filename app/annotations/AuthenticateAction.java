@@ -10,6 +10,7 @@ import play.mvc.Result;
 import services.CodesService;
 import services.UsersService;
 
+import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -17,6 +18,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 public class AuthenticateAction extends Action<Authenticate> {
+
+    private final UsersService usersService;
+
+    @Inject
+    public AuthenticateAction(UsersService usersService) {
+        this.usersService = usersService;
+    }
 
     public CompletionStage<Result> call(Http.Request req) {
         try {
@@ -27,7 +35,7 @@ public class AuthenticateAction extends Action<Authenticate> {
             }
 
             Map<String, Object> map = CodesService.decodeMapFromToken(token);
-            Optional<User> user = Optional.ofNullable(UsersService.findById((String) map.get("userId").toString())); //Aca deberia buscar el usuario segun id y traerlo con los PERMISOS QUE TIENE;
+            Optional<User> user = usersService.findById(map.get("userId").toString()); //Aca deberia buscar el usuario segun id y traerlo con los PERMISOS QUE TIENE;
 
             if (user.isEmpty()) {
                 return CompletableFuture.completedFuture(Utils.unauthorizedErrorJson("no user found"));

@@ -8,6 +8,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.stream.Collector;
 
 import static org.junit.Assert.assertEquals;
 
@@ -18,11 +20,15 @@ public class TelegramUtilsTest {
 
         ObjectMapper mapper = new ObjectMapper();
         try {
-            JsonNode actualObj = mapper.readTree("[ {\"name\":\"Jonh0\"}, {\"name\":\"Jonh1\"}, {\"name\":\"Jonh3\"}]");
+            var elements = new ArrayList<String>();
+            elements.add("Element 1");
+            elements.add("Element 2");
+            elements.add("Element 3");
+            elements.add("Element 4");
 
-            var keyboard = TelegramUtils.getKeyboard(actualObj.elements());
+            var keyboard = TelegramUtils.getKeyboard(elements.iterator());
 
-            assertEquals("", mapper.writeValueAsString(keyboard));
+            assertEquals("{\"resize_keyboard\":true,\"keyboard\":[[\"Element 1\",\"Element 4\"],[\"Element 2\"],[\"Element 3\"]]}", mapper.writeValueAsString(keyboard));
 
         } catch (IOException e) {
             e.printStackTrace();
