@@ -44,11 +44,11 @@ public class VenuesController extends Controller {
     public Result usersInterested(String venueId) {
         long interestedCount = usersService.index()
                 .stream()
-                .filter(user -> user.hasVenue(venueId))
+                .filter(user -> user.hasFoursquareVenue(venueId))
                 .count();
 
         return ok(
-            Json.newObject().put("usersInterested", interestedCount)
+                Json.newObject().put("usersInterested", interestedCount)
         );
     }
 
