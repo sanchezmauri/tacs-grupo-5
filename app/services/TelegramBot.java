@@ -163,7 +163,7 @@ public final class TelegramBot {
             this.communicator.sendMessage(chatId, MESSAGES_LOGIN_SUCCESS);
             state.loggedUserTokens.put(chatId, result.token);
         } else {
-            postErrorToChat(chatId, "Invalid Username or Password");
+            this.communicator.sendMessage(chatId, "Invalid username or password");
         }
     }
 
@@ -332,7 +332,7 @@ public final class TelegramBot {
         if (success) {
             this.communicator.sendMessage(chatId,"Item"+ (venues.size() > 1 ? "s":"")+" added!");
         } else {
-            this.communicator.sendMessage(chatId, "Invalid username or password");
+            postErrorToChat(chatId, "There was an error adding the venue");
         }
     }
 
