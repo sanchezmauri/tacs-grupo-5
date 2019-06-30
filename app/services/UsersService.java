@@ -32,7 +32,6 @@ public class UsersService {
         this.foursquareVenueService = foursquareVenueService;
     }
 
-
     public void create(User user) throws UserException {
         if (dbConnectionService.getDatastore().createQuery(User.class).filter("email =", user.getEmail()).first() == null) {
             dbConnectionService.getDatastore().save(user);
@@ -80,20 +79,20 @@ public class UsersService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     private Boolean addVenueToList(User user, VenueList list, UserVenue addedVenue) {
         try {
             Datastore datastore = dbConnectionService.getDatastore();
 
-            Query<User> userQuery = datastore.createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
+            var userQuery = datastore
+                    .find(User.class)
+                    .filter("id", new ObjectId(user.getId()))
+                    .filter("venueslists.id", list.getId());
 
-            // todo: averiguar cómo hacer en mongo esto mejor
-            int index = user.listIndex(list);
+            var venueQuery = datastore.createUpdateOperations(User.class).push("venueslists.$.venues", addedVenue);
 
-            UpdateOperations<User> addVenueUpdate = datastore.createUpdateOperations(User.class).push("venueslists." + Integer.toString(index) + ".venues", addedVenue);
-            datastore.update(userQuery, addVenueUpdate);
+            datastore.update(userQuery, venueQuery);
 
             return true;
         } catch (Exception e) {
