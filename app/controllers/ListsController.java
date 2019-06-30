@@ -65,7 +65,7 @@ public class ListsController extends Controller {
     // por ahí si el admin quiere agregar a 1 user un lugar
     // debería hacer: users/:userId/lists/:listId en vez de lists/:listId
     @Authenticate(types = "SYSUSER")
-    public Result create(Http.Request request) throws UserException {
+    public Result create(Http.Request request) {
         // extraer esto en algún lado tipo validar json o algo
         JsonNode newListJson = request.body().asJson();
 
@@ -177,10 +177,12 @@ public class ListsController extends Controller {
     public Result visitVenue(String listId, String venueId, Http.Request request) {
         VenueList venueList = request.attrs().get(RequestAttrs.LIST);
         User user = request.attrs().get(RequestAttrs.USER);
-        usersService.visitUserVenue(user, listId, venueId);
-        UserVenue userVenue = userVenuesService.findById(venueId);
-        userVenue.visit();
-        return ok(Json.toJson(userVenue));
+        UserVenue userVenue = usersService.visitUserVenue(user, listId, venueId);
+
+        if (userVenue == null)
+            return badRequest(Utils.createErrorMessage("User hasn't venue " + venueId));
+        else
+            return ok(Json.toJson(userVenue));
     }
 
     @Authenticate(types = {"ROOT"})

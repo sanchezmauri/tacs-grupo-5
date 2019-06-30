@@ -162,9 +162,7 @@ public class User {
         // todo: delegar en lista si tiene o no fs venue
         return venueslists.stream()
                 .flatMap(list -> list.getVenues().stream())
-                .filter(venue -> venue.getFoursquareVenue().getFsId().equals(fsVenueId))
-                .findAny()
-                .isPresent();
+                .anyMatch(venue -> venue.getFoursquareVenue().getId().equals(fsVenueId));
     }
 
     public int venuesCount(Predicate<UserVenue> predicate) {

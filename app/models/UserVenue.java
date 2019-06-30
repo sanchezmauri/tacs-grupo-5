@@ -11,7 +11,6 @@ public class UserVenue {
     // no uso herencia porque estas venues serían compartidas
     // entre todos los usuarios, para saber desde cuando está agregada en el sistema
 
-
     @Override
     public boolean equals(Object obj) {
         if (obj.getClass() == UserVenue.class) {
@@ -22,13 +21,11 @@ public class UserVenue {
 
     @Id
     String id;
-    @Embedded
+    @Reference
     private FoursquareVenue foursquare;
     private boolean visited;
 
-    public UserVenue(){
-
-    }
+    public UserVenue() { }
 
     public UserVenue(FoursquareVenue foursquareVenue, boolean visited) {
         this.foursquare = foursquareVenue;

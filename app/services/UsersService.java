@@ -140,9 +140,9 @@ public class UsersService {
         }
     }
 
-    public void visitUserVenue(User user,String listId, String venueId) {
+    public UserVenue visitUserVenue(User user,String listId, String venueId) {
         try {
-
+            Datastore datastore = dbConnectionService.getDatastore();
 
             int venueListCount = 0;
 
@@ -151,12 +151,14 @@ public class UsersService {
                 int venueCount = 0;
                 for (UserVenue userVenue : venueList.getVenues())
                 {
-                    if (dbConnectionService.getDatastore().createQuery(User.class).field("venueslists."+venueListCount+".venues."+venueCount+".id").equal(venueId).first() != null)
+                    if (datastore.createQuery(User.class).field("venueslists."+venueListCount+".venues."+venueCount+".id").equal(venueId).first() != null)
 
                     {
-                        UpdateOperations<User> ops = dbConnectionService.getDatastore().createUpdateOperations(User.class).disableValidation().set("venueslists."+venueListCount+".venues."+venueCount+".visited", true);
-                        final Query<User> userVenueQuery = dbConnectionService.getDatastore().createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
-                        dbConnectionService.getDatastore().update(userVenueQuery, ops);
+                        UpdateOperations<User> ops = datastore.createUpdateOperations(User.class).disableValidation().set("venueslists."+venueListCount+".venues."+venueCount+".visited", true);
+                        final Query<User> userVenueQuery = datastore.createQuery(User.class).field("id").equal(new ObjectId(user.getId()));
+                        datastore.update(userVenueQuery, ops);
+                        userVenue.visit();
+                        return userVenue;
                     }
 
                     venueCount ++;
@@ -168,6 +170,8 @@ public class UsersService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return null;
     }
 
     public void deleteUserVenueList(User user, String listId) {
