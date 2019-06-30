@@ -36,7 +36,6 @@ public class MongoDbConnectionService {
     public MongoDbConnectionService(Config config) {
         this.mongoConnectionString = config.getString("mongo.connectionString");
         try {
-            // morphia.mapPackage("models.User");
             morphia.map(FoursquareVenue.class, UserVenue.class, VenueList.class, User.class);
             morphia.getMapper().setOptions(
                     MapperOptions.builder()
@@ -48,6 +47,23 @@ public class MongoDbConnectionService {
             throw mapError;
         }
     }
+
+    public MongoDbConnectionService(String connectionString) {
+        this.mongoConnectionString = connectionString;
+        try {
+            morphia.map(FoursquareVenue.class, UserVenue.class, VenueList.class, User.class);
+            morphia.getMapper().setOptions(
+                    MapperOptions.builder()
+                            .storeEmpties(true)
+                            .build()
+            );
+        } catch(MappingException mapError) {
+            mapError.printStackTrace();
+            throw mapError;
+        }
+    }
+
+
 
     public Datastore getDatastore() {
         if (datastore == null) {

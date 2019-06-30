@@ -3,6 +3,8 @@ package services;
 import com.mongodb.BasicDBObject;
 import dev.morphia.Datastore;
 import dev.morphia.Key;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import models.User;
 import models.VenueList;
 import org.bson.types.ObjectId;
@@ -66,15 +68,21 @@ public class ListsService {
         try {
             Datastore datastore = dbConnectionService.getDatastore();
 
-            var userQuery = datastore
-                    .find(User.class)
-                    .filter("venueslists.id", listId)
-                    .filter("venueslists.$.venues.id", venueId);
+            UpdateOperations<User> ops;
+            Query<User> updateQuery = datastore
+                    .createQuery(User.class)
 
-            var ops = datastore.createUpdateOperations(User.class)
-                    .disableValidation()
-                    .removeAll("venueslists.$.venues", new BasicDBObject("id", venueId));
-            datastore.update(userQuery, ops);
+                    .field("venueslists.id")
+                    .equal(listId)
+
+                    .field("venueslists.venues.id")
+                    .equal(venueId);
+
+            // IDK why, but the BasicDBObject requires the actual mongo field name (_id) instead of the mapped one from morphia (id)
+            ops = datastore.createUpdateOperations(User.class)
+                    .removeAll("venueslists.$.venues", new BasicDBObject("_id", venueId));
+
+            datastore.update(updateQuery, ops);
 
             return true;
         } catch (Exception e) {

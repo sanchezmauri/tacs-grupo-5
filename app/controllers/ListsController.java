@@ -150,9 +150,6 @@ public class ListsController extends Controller {
 
         String venueId = venueIdJson.get("id").asText();
 
-
-
-
         if (listsService.removeVenueFromList(listId, venueId)) {
             var list = listsService.getById(listId);
             return ok(Json.toJson(list));
