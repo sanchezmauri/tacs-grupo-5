@@ -97,17 +97,15 @@ public class ListsController extends Controller {
     }
 
     @Authenticate(types = {"SYSUSER"})
-    @With(VenueListAction.class)
     public Result changeListName(String listId, Http.Request request) {
         JsonNode changeJson = request.body().asJson();
 
         if (!changeJson.has("name"))
             return badRequest(Utils.createErrorMessage("Missing field: name."));
-
-        VenueList list = request.attrs().get(RequestAttrs.LIST);
         String newName = changeJson.get("name").asText();
 
-        list.setName(newName);
+        listsService.updateName(listId, newName);
+        var list = listsService.getById(listId);
 
         return ok(Json.toJson(list));
     }
