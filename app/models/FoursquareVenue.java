@@ -15,21 +15,19 @@ import java.time.LocalDate;
 @Entity("fq_venues")
 public class FoursquareVenue {
 
-    public FoursquareVenue(){
-    }
+    public FoursquareVenue() { }
 
     @Id
     private String id;
     private String name;
     private String address;
     private LocalDate added;
-    private String fsId;
 
     public FoursquareVenue(String fsId, String name, String address, LocalDate added) {
         this.name = name;
         this.address = address;
         this.added = added;
-        this.fsId = fsId;
+        this.id = fsId;
     }
 
     public String getId() {
@@ -50,14 +48,16 @@ public class FoursquareVenue {
     public LocalDate getAdded() { return added; }
     public void setAdded(LocalDate added) { this.added = added; }
 
-    public String getFsId(){ return fsId; }
-    public void setFsId(String fsId){ this.fsId = fsId; }
-
     @Override
     public boolean equals(Object other) {
         if (other == null) return false;
         FoursquareVenue otherFqVenue = (FoursquareVenue) other;
         return  id.equals(otherFqVenue.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 
     @Override

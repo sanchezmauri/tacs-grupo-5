@@ -23,10 +23,10 @@ public class FoursquareVenueService {
         dbConnectionService.getDatastore().save(fqVenue);
     }
 
-    public FoursquareVenue findByFoursquareId(String id) {
+    public FoursquareVenue findById(String id) {
         return dbConnectionService.getDatastore()
                 .createQuery(FoursquareVenue.class)
-                .field("fsId")
+                .field("id")
                 .equal(id)
                 .first();
     }
@@ -35,7 +35,7 @@ public class FoursquareVenueService {
     // el formato parece el mismo que usa mongo
     // si empieza a quejarse chequear esto
     public  FoursquareVenue getOrCreate(String fsId, String name, String address) {
-        FoursquareVenue fqVenueFromDB = findByFoursquareId(fsId);
+        FoursquareVenue fqVenueFromDB = findById(fsId);
 
         if (fqVenueFromDB != null) return fqVenueFromDB;
 

@@ -6,9 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import controllers.actions.VenueListAction;
-import models.exceptions.UserException;
 import models.venues.FSVenueSearch;
-import play.libs.F;
+import models.FoursquareVenue;
 import models.*;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -18,11 +17,9 @@ import play.mvc.With;
 import services.*;
 
 import javax.inject.Inject;
-import java.awt.desktop.UserSessionEvent;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class ListsController extends Controller {
 
@@ -65,7 +62,7 @@ public class ListsController extends Controller {
     // por ahí si el admin quiere agregar a 1 user un lugar
     // debería hacer: users/:userId/lists/:listId en vez de lists/:listId
     @Authenticate(types = "SYSUSER")
-    public Result create(Http.Request request) throws UserException {
+    public Result create(Http.Request request) {
         // extraer esto en algún lado tipo validar json o algo
         JsonNode newListJson = request.body().asJson();
 
@@ -100,17 +97,15 @@ public class ListsController extends Controller {
     }
 
     @Authenticate(types = {"SYSUSER"})
-    @With(VenueListAction.class)
     public Result changeListName(String listId, Http.Request request) {
         JsonNode changeJson = request.body().asJson();
 
         if (!changeJson.has("name"))
             return badRequest(Utils.createErrorMessage("Missing field: name."));
-
-        VenueList list = request.attrs().get(RequestAttrs.LIST);
         String newName = changeJson.get("name").asText();
 
-        list.setName(newName);
+        listsService.updateName(listId, newName);
+        var list = listsService.getById(listId);
 
         return ok(Json.toJson(list));
     }
@@ -177,10 +172,12 @@ public class ListsController extends Controller {
     public Result visitVenue(String listId, String venueId, Http.Request request) {
         VenueList venueList = request.attrs().get(RequestAttrs.LIST);
         User user = request.attrs().get(RequestAttrs.USER);
-        usersService.visitUserVenue(user, listId, venueId);
-        UserVenue userVenue = userVenuesService.findById(venueId);
-        userVenue.visit();
-        return ok(Json.toJson(userVenue));
+        UserVenue userVenue = usersService.visitUserVenue(user, listId, venueId);
+
+        if (userVenue == null)
+            return badRequest(Utils.createErrorMessage("User hasn't venue " + venueId));
+        else
+            return ok(Json.toJson(userVenue));
     }
 
     @Authenticate(types = {"ROOT"})
@@ -208,12 +205,17 @@ public class ListsController extends Controller {
             );
         }
 
-        Set<UserVenue> result = list1.get().getVenues().stream()
-                .distinct()
-                .filter(list2.get().getVenues()::contains)
+        Set<FoursquareVenue> list2FsVenues = list2.get().getVenues().stream()
+                .map(UserVenue::getFoursquareVenue)
                 .collect(Collectors.toSet());
 
-        return ok(Json.toJson(result));
+        List<FoursquareVenue> intersection = list1.get().getVenues().stream()
+                .map(UserVenue::getFoursquareVenue)
+                .distinct()
+                .filter(list2FsVenues::contains)
+                .collect(Collectors.toList());
+
+        return ok(Json.toJson(intersection));
     }
 
 }

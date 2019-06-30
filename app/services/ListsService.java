@@ -1,5 +1,6 @@
 package services;
 
+import dev.morphia.Datastore;
 import dev.morphia.Key;
 import models.User;
 import models.VenueList;
@@ -40,8 +41,24 @@ public class ListsService {
         } else {
             return user.getList(listId);
         }
+    }
 
+    public void updateName(String listId, String name) {
+        try {
+            Datastore datastore = dbConnectionService.getDatastore();
 
+            var userQuery = datastore
+                    .find(User.class)
+                    .filter("venueslists.id", listId);
+
+            var venueQuery = datastore.createUpdateOperations(User.class).set("venueslists.$.name", name);
+
+            datastore.update(userQuery, venueQuery);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
     }
 }
 

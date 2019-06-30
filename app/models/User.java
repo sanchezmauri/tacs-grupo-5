@@ -24,7 +24,7 @@ public class User {
 
     //Zero-arg constructor for morphia
     public User() {
-
+        venueslists = new ArrayList<>();
     }
 
     private Rol rol;
@@ -110,10 +110,6 @@ public class User {
     }
 
     public void addList(VenueList newList) {
-        if (this.venueslists == null)
-        {
-            venueslists = new ArrayList<>();
-        }
         venueslists.add(newList);
     }
 
@@ -160,6 +156,13 @@ public class User {
 
     public boolean hasVenue(String venueId) {
         return getVenue(venueId).isPresent();
+    }
+
+    public boolean hasFoursquareVenue(String fsVenueId) {
+        // todo: delegar en lista si tiene o no fs venue
+        return venueslists.stream()
+                .flatMap(list -> list.getVenues().stream())
+                .anyMatch(venue -> venue.getFoursquareVenue().getId().equals(fsVenueId));
     }
 
     public int venuesCount(Predicate<UserVenue> predicate) {
