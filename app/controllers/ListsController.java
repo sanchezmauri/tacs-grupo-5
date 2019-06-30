@@ -141,12 +141,7 @@ public class ListsController extends Controller {
     }
 
     @Authenticate(types = {"SYSUSER"})
-    @With(VenueListAction.class)
     public Result removeVenueFromList(String listId, Http.Request request) throws Exception {
-
-        Map<String, Object> map = CodesService.decodeMapFromToken(request.session().data().get("token"));
-        User user = usersService.findById(map.get("userId").toString()).orElseThrow(); //Aca deberia buscar el usuario segun id y traerlo con los PERMISOS QUE TIENE;
-
 
         JsonNode venueIdJson = request.body().asJson();
 
@@ -156,13 +151,11 @@ public class ListsController extends Controller {
         String venueId = venueIdJson.get("id").asText();
 
 
-        VenueList list = request.attrs().get(RequestAttrs.LIST);
 
 
-        if (list.removeVenue(venueId)) {
-            usersService.deleteUserVenue(user, venueId);
+        if (listsService.removeVenueFromList(listId, venueId)) {
+            var list = listsService.getById(listId);
             return ok(Json.toJson(list));
-
         } else
             return badRequest(Utils.createErrorMessage("No venue with id " + venueId));
     }

@@ -1,5 +1,6 @@
 package services;
 
+import com.mongodb.BasicDBObject;
 import dev.morphia.Datastore;
 import dev.morphia.Key;
 import models.User;
@@ -58,6 +59,27 @@ public class ListsService {
         } catch (Exception e) {
             e.printStackTrace();
 
+        }
+    }
+
+    public boolean removeVenueFromList(String listId, String venueId) {
+        try {
+            Datastore datastore = dbConnectionService.getDatastore();
+
+            var userQuery = datastore
+                    .find(User.class)
+                    .filter("venueslists.id", listId)
+                    .filter("venueslists.$.venues.id", venueId);
+
+            var ops = datastore.createUpdateOperations(User.class)
+                    .disableValidation()
+                    .removeAll("venueslists.$.venues", new BasicDBObject("id", venueId));
+            datastore.update(userQuery, ops);
+
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }
