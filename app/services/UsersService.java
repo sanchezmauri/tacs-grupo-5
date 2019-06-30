@@ -12,6 +12,7 @@ import org.bson.types.ObjectId;
 import org.mindrot.jbcrypt.BCrypt;
 
 import javax.inject.Inject;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +56,28 @@ public class UsersService {
     }
 
     public Optional<User> findByEmail(String email) {
-        return Optional.ofNullable(dbConnectionService.getDatastore().createQuery(User.class).filter("email =", email).first());
+        var user = dbConnectionService.getDatastore().createQuery(User.class).field("email").equal(email).first();
+        return Optional.ofNullable(user);
+    }
+
+    private void setLastAccess(User user, LocalDateTime date) {
+
+        try {
+            Datastore datastore = dbConnectionService.getDatastore();
+
+            var userQuery = datastore
+                    .find(User.class)
+                    .filter("_id", new ObjectId(user.getId()));
+
+            var lastAccessQuery = datastore.createUpdateOperations(User.class).set("lastAccess", date);
+
+            datastore.update(userQuery, lastAccessQuery);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
     }
 
     public List<User> findByName(String name) {
@@ -111,6 +133,9 @@ public class UsersService {
             if (BCrypt.checkpw(password, user.get().getPasswordHash())) {
                 Map<String, Object> token = new HashMap<>();
                 token.put("userId", user.get().getId());
+
+                setLastAccess(user.get(), LocalDateTime.now());
+
                 return LoginResult.Success(CodesService.generateTokenFromMap(token), user.get());
             } else {
                 return LoginResult.InvalidUsernameOrPassword;
