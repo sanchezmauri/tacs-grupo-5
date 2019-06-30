@@ -332,7 +332,7 @@ public final class TelegramBot {
         if (success) {
             this.communicator.sendMessage(chatId,"Item"+ (venues.size() > 1 ? "s":"")+" added!");
         } else {
-            postErrorToChat(chatId, "There was an error adding the venue");
+            this.communicator.sendMessage(chatId, "Invalid username or password");
         }
     }
 
