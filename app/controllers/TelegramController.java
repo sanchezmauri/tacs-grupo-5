@@ -16,6 +16,7 @@ import utils.TelegramState;
 
 import javax.inject.Inject;
 import java.util.Arrays;
+import java.util.Optional;
 
 public class TelegramController extends Controller {
 
@@ -40,35 +41,43 @@ public class TelegramController extends Controller {
     public Result receiveUpdate(String token, Http.Request request) {
 
         Result result;
-        if (token.equalsIgnoreCase(comunicator.token)) {
-
-            try {
+        String stepStatus = "Starting";
+        Optional<Long> chatId = Optional.empty();
+        Integer updateId = 0;
+        try {
+            if (token.equalsIgnoreCase(comunicator.token)) {
 
                 Update update = Update.fromJson(request.body().asJson());
+                stepStatus = "Got Update";
+                chatId = Optional.of(update.getChatId());
+                updateId = update.updateId;
 
-                var callback = bot.routeUpdate(update.getChatId(), update.getCommand().orElse(""), update.getMessageText(), update);
-
+                stepStatus = "Identified Chat";
+                var callback = bot.routeUpdate(chatId.get(), update.getCommand().orElse(""), update.getMessageText(), update);
+                stepStatus = "Routed Update";
                 callback.accept(bot);
+                stepStatus = "Finished";
+                result = ok();
 
-
-                return ok();
-
-            } catch (JsonProcessingException ex) {
-                System.out.println("Error processing Update for Telegram bot");
-                System.out.println(request.body().asJson().toString());
-                result = noContent();//internalServerError(ex.getMessage());
-            } catch (Exception e) {
-                System.out.println("There was an unexpected error");
-                System.out.println(request.body().asJson().toString());
-                System.out.println(e.getMessage());
-                System.err.print(Arrays.toString(e.getStackTrace()));
+            } else {
+                System.out.println("Invalid Bot Token");
                 result = noContent();
             }
+        }
+        catch (Exception e) {
+            System.out.println("There was an unexpected error");
+            System.out.println("Request Body: ");
+            System.out.println(request.body().asJson().toString());
+            System.out.println("Last Status: "+ stepStatus);
 
-        } else {
-            System.out.println("Invalid Bot Token");
+            if (chatId.isPresent()) {
+                comunicator.sendMessage(
+                        chatId.get(),
+                        "There was an error, please contact the dev team with this number: "+updateId
+                );
+            }
+
             result = noContent();
-
         }
 
         return result;

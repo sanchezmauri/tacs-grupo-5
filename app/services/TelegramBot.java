@@ -62,7 +62,7 @@ public final class TelegramBot {
 
         if (command.length() <= 0) {
             System.out.println("No command found on Telegram Update ");
-            return telegramBot -> { };
+            return telegramBot -> telegramBot.properOptions(chatId,false);
         }
 
         Consumer<TelegramBot> result;
@@ -105,12 +105,14 @@ public final class TelegramBot {
                 case "/login":
                     if (parameters.length != 2) {
                         return telegramBot -> {
+                            telegramBot.communicator.sendMessage(chatId, "Invalid username or password");
                         };
                     }
                     var email = parameters[0];
                     var password = parameters[1];
                     if (email == null || password == null || email.isEmpty() || password.isEmpty()) {
                         return telegramBot -> {
+                            telegramBot.communicator.sendMessage(chatId, "Invalid username or password");
                         };
                     } else {
                         result = telegramBot -> telegramBot.login(chatId, parameters[0], parameters[1]);
