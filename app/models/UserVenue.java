@@ -13,6 +13,8 @@ public class UserVenue {
 
     @Override
     public boolean equals(Object obj) {
+        if (obj == null) return false;
+
         if (obj.getClass() == UserVenue.class) {
             return id.equals(((UserVenue) obj).id);
         }

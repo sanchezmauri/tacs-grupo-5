@@ -56,6 +56,11 @@ public class FoursquareVenue {
     }
 
     @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Override
     public String toString() {
         return String.format("foursquareVenue: %s (%s)\nAddress: %s\nAdded: %s",
                 name, id, address, added.toString());

@@ -6,9 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import controllers.actions.VenueListAction;
-import models.exceptions.UserException;
 import models.venues.FSVenueSearch;
-import play.libs.F;
+import models.FoursquareVenue;
 import models.*;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -18,11 +17,9 @@ import play.mvc.With;
 import services.*;
 
 import javax.inject.Inject;
-import java.awt.desktop.UserSessionEvent;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class ListsController extends Controller {
 
@@ -210,12 +207,17 @@ public class ListsController extends Controller {
             );
         }
 
-        Set<UserVenue> result = list1.get().getVenues().stream()
-                .distinct()
-                .filter(list2.get().getVenues()::contains)
+        Set<FoursquareVenue> list2FsVenues = list2.get().getVenues().stream()
+                .map(UserVenue::getFoursquareVenue)
                 .collect(Collectors.toSet());
 
-        return ok(Json.toJson(result));
+        List<FoursquareVenue> intersection = list1.get().getVenues().stream()
+                .map(UserVenue::getFoursquareVenue)
+                .distinct()
+                .filter(list2FsVenues::contains)
+                .collect(Collectors.toList());
+
+        return ok(Json.toJson(intersection));
     }
 
 }
