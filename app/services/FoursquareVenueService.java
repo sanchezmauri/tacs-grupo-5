@@ -76,7 +76,7 @@ public class FoursquareVenueService {
 
     public List<FoursquareVenue> getUsersInterestedCount(String filter) {
 
-        var asd = new ArrayList<FoursquareVenue>();
+        var result = new ArrayList<FoursquareVenue>();
         dbConnectionService.getDatastore()
                 .createQuery(FoursquareVenue.class)
                 .search(filter)
@@ -100,10 +100,10 @@ public class FoursquareVenueService {
                             .elemMatch(listQuery)
                             .count();
 
-                    asd.add(foursquareVenue);
+                    result.add(foursquareVenue);
         });
 
-        return asd.stream().filter(x -> x.count > 0).collect(Collectors.toList());
+        return result.stream().filter(x -> x.count > 0).collect(Collectors.toList());
 
     }
 }
