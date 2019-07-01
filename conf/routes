@@ -22,6 +22,7 @@ GET     /api/users/:userId/lastAccess         controllers.UsersController.lastAc
 # venues resource
 GET     /api/venues                         controllers.VenuesController.search(request: Request)
 GET     /api/venues/:id/userCount           controllers.VenuesController.usersInterested(id: String)
+GET     /api/venues/userCount/:filter       controllers.VenuesController.allUsersInterested(filter: String)
 GET     /api/venues/count                   controllers.VenuesController.venuesAddedSince(since ?= null)
 
 # list resource

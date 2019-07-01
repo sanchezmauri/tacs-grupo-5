@@ -1,7 +1,10 @@
 package models;
 
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import dev.morphia.annotations.*;
+import dev.morphia.utils.IndexType;
+import json.LocalDateSerializer;
+import json.LocalDateTimeSerializer;
 
 import java.time.LocalDate;
 
@@ -13,6 +16,7 @@ import java.time.LocalDate;
 // porque podríamos hacer que los lugares de usuario repitan la data
 // Como esta @referenciado, está en su propia collection (fq_venues).
 @Entity("fq_venues")
+@Indexes(@Index(fields = @Field(value = "$**", type = IndexType.TEXT)))
 public class FoursquareVenue {
 
     public FoursquareVenue() { }
@@ -21,7 +25,11 @@ public class FoursquareVenue {
     private String id;
     private String name;
     private String address;
+
+    @JsonSerialize(using = LocalDateSerializer.class)
     private LocalDate added;
+
+    public Long count;
 
     public FoursquareVenue(String fsId, String name, String address, LocalDate added) {
         this.name = name;

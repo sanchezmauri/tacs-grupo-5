@@ -1,14 +1,20 @@
 package services;
 
+import bussiness.Venues;
 import dev.morphia.query.Sort;
 import models.FoursquareVenue;
+import models.User;
+import models.UserVenue;
+import models.VenueList;
 import org.bson.types.ObjectId;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class FoursquareVenueService {
@@ -48,7 +54,7 @@ public class FoursquareVenueService {
         return newFqVenue;
     }
 
-    public  Long getCountByDate(Date fromDate, Integer days) {
+    public Long getCountByDate(Date fromDate, Integer days) {
 
         if (days == Integer.MAX_VALUE) {
             return dbConnectionService.getDatastore()
@@ -66,7 +72,38 @@ public class FoursquareVenueService {
                     .greaterThanOrEq(cal.getTime())
                     .count();
         }
+    }
 
+    public List<FoursquareVenue> getUsersInterestedCount(String filter) {
+
+        var asd = new ArrayList<FoursquareVenue>();
+        dbConnectionService.getDatastore()
+                .createQuery(FoursquareVenue.class)
+                .search(filter)
+                .find()
+                .forEachRemaining(foursquareVenue -> {
+
+                    var venueQuery = dbConnectionService.getDatastore()
+                            .createQuery(UserVenue.class)
+                            .field("_id")
+                            .equal(foursquareVenue.getId());
+
+                    var listQuery = dbConnectionService.getDatastore()
+                            .createQuery(VenueList.class)
+                            .field("venues")
+                            .elemMatch(venueQuery);
+
+                    foursquareVenue.count = dbConnectionService
+                            .getDatastore()
+                            .createQuery(User.class)
+                            .field("venueslists")
+                            .elemMatch(listQuery)
+                            .count();
+
+                    asd.add(foursquareVenue);
+        });
+
+        return asd.stream().filter(x -> x.count > 0).collect(Collectors.toList());
 
     }
 }

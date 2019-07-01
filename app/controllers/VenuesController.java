@@ -52,6 +52,16 @@ public class VenuesController extends Controller {
         );
     }
 
+    public Result allUsersInterested(String filter) {
+        var venues = foursquareVenueService.getUsersInterestedCount(filter);
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        var venuesJson = mapper.valueToTree(venues);
+
+        return ok(venuesJson);
+
+    }
 
 
     @Authenticate(types = {"ROOT"})
