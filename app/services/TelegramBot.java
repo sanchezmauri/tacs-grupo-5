@@ -62,7 +62,7 @@ public final class TelegramBot {
 
         if (command.length() <= 0) {
             System.out.println("No command found on Telegram Update ");
-            return telegramBot -> telegramBot.properOptions(chatId,false);
+            return telegramBot -> telegramBot.properOptions(chatId,userLoggedIn(chatId));
         }
 
         Consumer<TelegramBot> result;
@@ -202,7 +202,11 @@ public final class TelegramBot {
         text.append(list.getName());
         text.append("*\n");
 
-        list.getVenues().forEach(userVenue -> text.append("+").append(userVenue.getName()).append("\n"));
+        list.getVenues().forEach(userVenue -> text
+            .append("+")
+            .append(userVenue.getName())
+            .append("(").append(userVenue.getAddress()).append(")")
+            .append("\n"));
 
         this.communicator.sendMessage(chatId, text.toString());
 
